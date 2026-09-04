@@ -8,4 +8,8 @@
     <AssemblyName>BetaLauncher</AssemblyName>
     <RootNamespace>BetaLauncher</RootNamespace>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="8.0.0" />
+  </ItemGroup>
 </Project>
