@@ -31,6 +31,11 @@ public partial class MainWindow : Window
 
     private const string ProtectedAdminUsername = "admin";
 
+    // Social Media Links
+    private const string DiscordUrl = "https://discord.gg";
+    private const string YouTubeUrl = "https://youtube.com";
+    private const string InstagramUrl = "https://instagram.com";
+
     private string GameDirectory = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "RealisticFunfairGames",
@@ -65,7 +70,6 @@ public partial class MainWindow : Window
         try
         {
             Directory.CreateDirectory(GameDirectory);
-            GamePathTextBox.Text = GameDirectory;
 
             ShowPage(HomePage);
             UpdateHomeInformation();
@@ -88,22 +92,25 @@ public partial class MainWindow : Window
         Http.Dispose();
     }
 
-    private void SelectGamePathButton_Click(object sender, RoutedEventArgs e)
+    private void OpenUrl(string url)
     {
-        var dialog = new Microsoft.Win32.OpenFolderDialog
+        try
         {
-            Title = "Installationsordner für das Spiel auswählen"
-        };
-
-        if (dialog.ShowDialog() == true)
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = url,
+                UseShellExecute = true
+            });
+        }
+        catch (Exception ex)
         {
-            GameDirectory = dialog.FolderName;
-            GamePathTextBox.Text = GameDirectory;
-            Directory.CreateDirectory(GameDirectory);
-            UpdateHomeInformation();
-            _ = CheckForUpdatesAsync();
+            MessageBox.Show("Link konnte nicht geöffnet werden:\n" + ex.Message, "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
+
+    private void DiscordButton_Click(object sender, RoutedEventArgs e) => OpenUrl(DiscordUrl);
+    private void YouTubeButton_Click(object sender, RoutedEventArgs e) => OpenUrl(YouTubeUrl);
+    private void InstagramButton_Click(object sender, RoutedEventArgs e) => OpenUrl(InstagramUrl);
 
     private async Task SilentCheckLauncherUpdateAsync()
     {
@@ -250,7 +257,6 @@ del ""%~f0""
     {
         HomePage.Visibility = Visibility.Collapsed;
         UpdatesPage.Visibility = Visibility.Collapsed;
-        BetaPage.Visibility = Visibility.Collapsed;
         AccountPage.Visibility = Visibility.Collapsed;
         ChangePasswordPage.Visibility = Visibility.Collapsed;
         AdminPage.Visibility = Visibility.Collapsed;
@@ -264,7 +270,6 @@ del ""%~f0""
 
     private void HomeButton_Click(object sender, RoutedEventArgs e) => ShowPage(HomePage);
     private void UpdatesButton_Click(object sender, RoutedEventArgs e) => ShowPage(UpdatesPage);
-    private void BetaButton_Click(object sender, RoutedEventArgs e) => ShowPage(BetaPage);
     private void AccountButton_Click(object sender, RoutedEventArgs e) => ShowPage(AccountPage);
     private void SettingsButton_Click(object sender, RoutedEventArgs e) => ShowPage(SettingsPage);
     private void AdminButton_Click(object sender, RoutedEventArgs e)
