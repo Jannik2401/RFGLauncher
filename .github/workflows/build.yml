@@ -11,6 +11,8 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Repository auschecken
@@ -32,13 +34,22 @@ jobs:
         run: |
           $ver = "1.0.${{ github.run_number }}"
           echo "RAW_VERSION=$ver" >> $env:GITHUB_OUTPUT
-          echo "TAG_NAME=v$ver" >> $env:GITHUB_OUTPUT
+          echo "TAG_NAME=latest" >> $env:GITHUB_OUTPUT
+
+      - name: Altes Release löschen falls vorhanden
+        uses: dev-drprasad/delete-tag-and-release@v1.1.0
+        with:
+          delete_release: true
+          tag_name: latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
 
       - name: GitHub Release erstellen & EXE hochladen
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.version.outputs.TAG_NAME }}
-          name: BetaLauncher ${{ steps.version.outputs.TAG_NAME }}
+          tag_name: latest
+          name: BetaLauncher v${{ steps.version.outputs.RAW_VERSION }}
           files: ./publish/BetaLauncher.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -47,7 +58,7 @@ jobs:
         run: |
           $json = @{
               version = "${{ steps.version.outputs.RAW_VERSION }}"
-              downloadUrl = "https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.TAG_NAME }}/BetaLauncher.exe"
+              downloadUrl = "https://github.com/${{ github.repository }}/releases/download/latest/BetaLauncher.exe"
           } | ConvertTo-Json
           Set-Content -Path version.json -Value $json
           
