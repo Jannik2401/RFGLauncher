@@ -11,12 +11,14 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
+        // Fängt WPF UI-Thread-Fehler ab
         DispatcherUnhandledException += (sender, args) =>
         {
             ShowError(args.Exception);
             args.Handled = true;
         };
 
+        // Fängt allgemeine AppDomain-Fehler ab
         AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
         {
             if (args.ExceptionObject is Exception ex)
@@ -25,12 +27,14 @@ public partial class App : Application
             }
         };
 
+        // Fängt unbestimmte Task-Fehler ab
         TaskScheduler.UnobservedTaskException += (sender, args) =>
         {
             ShowError(args.Exception);
             args.SetObserved();
         };
 
+        // Startet das Hauptfenster
         try
         {
             var mainWindow = new MainWindow();
@@ -47,10 +51,21 @@ public partial class App : Application
         try
         {
             string message =
-                "Der Kirmes Beta Launcher konnte nicht gestartet werden.\n\n" +
+                "Der Kirmes Beta Launcher konnte nicht gestartet werden oder ist unerwartet abgestürzt.\n\n" +
                 ex.Message +
                 "\n\nDetails:\n" +
                 ex;
+
+            // Optional: Logdatei im lokalen Anwendungsordner schreiben
+            string logFolder = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "RealisticFunfairGames"
+            );
+
+            Directory.CreateDirectory(logFolder);
+            string logPath = Path.Combine(logFolder, "crashlog.txt");
+
+            File.WriteAllText(logPath, $"[{DateTime.Now}] CRASH LOG:\n{ex}\n\n");
 
             MessageBox.Show(
                 message,
@@ -60,6 +75,7 @@ public partial class App : Application
         }
         catch
         {
+            // Fallback, falls die MessageBox oder das Dateisystem fehlschlägt
         }
     }
 }
