@@ -29,7 +29,6 @@ public partial class MainWindow : Window
     private const string GameExeName = "kirmes.exe";
     private const string AccountServerUrl = "http://node1.waifly.com:25433";
 
-    // Geschützter Admin-Name aus deiner Server-JSON
     private const string ProtectedAdminUsername = "admin";
 
     private string GameDirectory = Path.Combine(
@@ -405,11 +404,13 @@ del ""%~f0""
             StatusText.Text = "Suche nach Updates...";
             var release = await GetLatestGameReleaseAsync();
 
+            // Buttons aktiv lassen, damit manuell geklickt werden kann
+            UpdateButton.IsEnabled = true;
+            BottomUpdateButton.IsEnabled = true;
+
             if (release == null)
             {
-                StatusText.Text = "Kein passendes Release mit 'game.zip' auf GitHub gefunden.";
-                UpdateButton.IsEnabled = false;
-                BottomUpdateButton.IsEnabled = false;
+                StatusText.Text = "Kein Release mit 'game.zip' auf GitHub gefunden.";
                 return;
             }
 
@@ -421,18 +422,14 @@ del ""%~f0""
             bool versionDifferent = !string.Equals(remoteVersion, localVersion, StringComparison.OrdinalIgnoreCase);
             bool digestDifferent = !string.IsNullOrWhiteSpace(remoteDigest) && !string.Equals(remoteDigest, localDigest, StringComparison.OrdinalIgnoreCase);
 
-            if (versionDifferent || digestDifferent)
+            if (versionDifferent || digestDifferent || !IsGameInstalled())
             {
                 StatusText.Text = $"Update verfügbar: {release.Name} ({remoteVersion})";
-                UpdateButton.IsEnabled = true;
-                BottomUpdateButton.IsEnabled = true;
                 ShowReleaseNotes(release);
             }
             else
             {
                 StatusText.Text = "Du hast bereits die aktuelle Version.";
-                UpdateButton.IsEnabled = false;
-                BottomUpdateButton.IsEnabled = false;
                 ShowReleaseNotes(release);
             }
 
@@ -442,8 +439,8 @@ del ""%~f0""
         catch (Exception ex)
         {
             StatusText.Text = "Update-Prüfung fehlgeschlagen: " + ex.Message;
-            UpdateButton.IsEnabled = false;
-            BottomUpdateButton.IsEnabled = false;
+            UpdateButton.IsEnabled = true;
+            BottomUpdateButton.IsEnabled = true;
         }
     }
 
@@ -515,18 +512,7 @@ del ""%~f0""
 
         if (releases == null || releases.Length == 0) return null;
 
-        // 1. Priorität: Release enthält "game.zip" UND einen Titel/Tag mit Kirmes/Game/RFG
-        var matched = releases.Where(r => !r.Draft && !r.Prerelease)
-                              .Where(r => r.Assets.Any(a => string.Equals(a.Name, "game.zip", StringComparison.OrdinalIgnoreCase)))
-                              .Where(r => r.Name.Contains("Kirmes", StringComparison.OrdinalIgnoreCase) || 
-                                          r.Name.Contains("Game", StringComparison.OrdinalIgnoreCase) ||
-                                          r.TagName.Contains("Kirmes", StringComparison.OrdinalIgnoreCase) ||
-                                          r.TagName.Contains("v", StringComparison.OrdinalIgnoreCase))
-                              .FirstOrDefault();
-
-        if (matched != null) return matched;
-
-        // 2. Fallback: Nimmt das allerneueste Release, solange darin eine "game.zip" enthalten ist
+        // Versucht das erste Release zu finden, das eine game.zip enthält
         return releases.Where(r => !r.Draft && !r.Prerelease)
                        .FirstOrDefault(r => r.Assets.Any(a => string.Equals(a.Name, "game.zip", StringComparison.OrdinalIgnoreCase)));
     }
