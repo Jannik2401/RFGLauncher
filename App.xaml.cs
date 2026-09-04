@@ -11,14 +11,12 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
-        // Fängt WPF UI-Thread-Fehler ab
         DispatcherUnhandledException += (sender, args) =>
         {
             ShowError(args.Exception);
             args.Handled = true;
         };
 
-        // Fängt allgemeine AppDomain-Fehler ab
         AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
         {
             if (args.ExceptionObject is Exception ex)
@@ -27,14 +25,12 @@ public partial class App : Application
             }
         };
 
-        // Fängt unbestimmte Task-Fehler ab
         TaskScheduler.UnobservedTaskException += (sender, args) =>
         {
             ShowError(args.Exception);
             args.SetObserved();
         };
 
-        // Startet das Hauptfenster
         try
         {
             var mainWindow = new MainWindow();
@@ -56,7 +52,6 @@ public partial class App : Application
                 "\n\nDetails:\n" +
                 ex;
 
-            // Optional: Logdatei im lokalen Anwendungsordner schreiben
             string logFolder = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "RealisticFunfairGames"
@@ -75,7 +70,6 @@ public partial class App : Application
         }
         catch
         {
-            // Fallback, falls die MessageBox oder das Dateisystem fehlschlägt
         }
     }
 }
