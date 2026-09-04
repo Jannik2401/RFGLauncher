@@ -26,21 +26,26 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Launcher bauen
-        run: dotnet publish BetaLauncher.csproj -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:EnableCompressionInSingleFile=false -o ./publish
-
-      - name: Version festlegen
-        id: version
+      - name: Version in .csproj eintragen
         run: |
           $ver = "1.0.${{ github.run_number }}"
-          echo "RAW_VERSION=$ver" >> $env:GITHUB_OUTPUT
+          Write-Host "Setze Projekt-Version auf: $ver"
+          
+          [xml]$csproj = Get-Content BetaLauncher.csproj
+          $csproj.Project.PropertyGroup.Version = $ver
+          $csproj.Project.PropertyGroup.AssemblyVersion = "$ver.0"
+          $csproj.Project.PropertyGroup.FileVersion = "$ver.0"
+          $csproj.Save("$PWD/BetaLauncher.csproj")
+
+      - name: Launcher bauen
+        run: dotnet publish BetaLauncher.csproj -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:EnableCompressionInSingleFile=false -o ./publish
 
       - name: Release erstellen oder aktualisieren & EXE hochladen
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest
-          name: BetaLauncher (Aktuelle Version)
-          body: "Automatisch aktualisiertes Release für den Launcher."
+          name: BetaLauncher (Version 1.0.${{ github.run_number }})
+          body: "Automatisch aktualisiertes Release für den Launcher (Version 1.0.${{ github.run_number }})."
           files: ./publish/BetaLauncher.exe
           overwrite_files: true
           prerelease: false
@@ -49,7 +54,7 @@ jobs:
 
       - name: version.json automatisch aktualisieren
         run: |
-          $ver = "${{ steps.version.outputs.RAW_VERSION }}"
+          $ver = "1.0.${{ github.run_number }}"
           $json = @{
               version = "$ver"
               downloadUrl = "https://github.com/${{ github.repository }}/releases/download/latest/BetaLauncher.exe"
