@@ -19,6 +19,7 @@ namespace BetaLauncher;
 
 public partial class MainWindow : Window
 {
+    // Liest die Version automatisch aus der .csproj/Assembly aus (z.B. 1.0.20)
     private static readonly string CurrentLauncherVersion = 
         Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.0.0";
 
@@ -136,6 +137,12 @@ public partial class MainWindow : Window
                     LauncherUpdateStatusText.Text = $"Neues Launcher-Update verfügbar: Version {onlineVersion}";
                     LauncherUpdateStatusText.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#38BDF8")!;
                 }
+                else
+                {
+                    LauncherUpdateStatusText.Visibility = Visibility.Visible;
+                    LauncherUpdateStatusText.Text = $"Launcher ist auf dem neuesten Stand (v{installedVersion}).";
+                    LauncherUpdateStatusText.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#10B981")!;
+                }
             }
         }
         catch
@@ -179,7 +186,7 @@ public partial class MainWindow : Window
                 }
                 else
                 {
-                    LauncherUpdateStatusText.Text = "Launcher ist auf dem neuesten Stand.";
+                    LauncherUpdateStatusText.Text = $"Du nutzt bereits die neueste Version (v{installedVersion}).";
                     LauncherUpdateStatusText.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#10B981")!;
                 }
             }
