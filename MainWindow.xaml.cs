@@ -109,8 +109,10 @@ public partial class MainWindow : Window
         }
     }
 
+    // Social Media Click Handler
     private void DiscordButton_Click(object sender, RoutedEventArgs e) => OpenUrl(DiscordUrl);
     private void TwitchButton_Click(object sender, RoutedEventArgs e) => OpenUrl(TwitchUrl);
+    private void YouTubeButton_Click(object sender, RoutedEventArgs e) => OpenUrl(TwitchUrl);
     private void InstagramButton_Click(object sender, RoutedEventArgs e) => OpenUrl(InstagramUrl);
     private void TikTokButton_Click(object sender, RoutedEventArgs e) => OpenUrl(TikTokUrl);
 
