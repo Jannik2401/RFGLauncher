@@ -8,6 +8,11 @@
     <UseWPF>true</UseWPF>
     <ApplicationIcon />
     <StartupObject>BetaLauncher.App</StartupObject>
+    
+    <!-- AUTOMATISCHE VERSIONIERUNG -->
+    <Version>1.0.20</Version>
+    <AssemblyVersion>1.0.20.0</AssemblyVersion>
+    <FileVersion>1.0.20.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
