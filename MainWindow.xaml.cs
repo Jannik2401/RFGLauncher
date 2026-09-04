@@ -33,9 +33,9 @@ public partial class MainWindow : Window
 
     // Social Media Links
     private const string DiscordUrl = "https://discord.gg/qaxg7UdafU";
+    private const string TwitchUrl = "https://www.twitch.tv/realistic_funfair_games";
     private const string InstagramUrl = "https://www.instagram.com/realistic_funfair_games/";
     private const string TikTokUrl = "https://www.tiktok.com/@realisticfunfairgames";
-    private const string TwitchUrl = "https://www.twitch.tv/realistic_funfair_games";
 
     private string GameDirectory = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -110,10 +110,9 @@ public partial class MainWindow : Window
     }
 
     private void DiscordButton_Click(object sender, RoutedEventArgs e) => OpenUrl(DiscordUrl);
-    private void YouTubeButton_Click(object sender, RoutedEventArgs e) => OpenUrl(TwitchUrl); // Öffnet Twitch
+    private void TwitchButton_Click(object sender, RoutedEventArgs e) => OpenUrl(TwitchUrl);
     private void InstagramButton_Click(object sender, RoutedEventArgs e) => OpenUrl(InstagramUrl);
     private void TikTokButton_Click(object sender, RoutedEventArgs e) => OpenUrl(TikTokUrl);
-    private void TwitchButton_Click(object sender, RoutedEventArgs e) => OpenUrl(TwitchUrl);
 
     private async Task SilentCheckLauncherUpdateAsync()
     {
