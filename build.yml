@@ -1,0 +1,59 @@
+name: Build and Release BetaLauncher
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'version.json'
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: .NET installieren
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Launcher bauen
+        run: dotnet publish BetaLauncher.csproj -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:EnableCompressionInSingleFile=false -o ./publish
+
+      - name: Version festlegen
+        id: version
+        run: |
+          $ver = "1.0.${{ github.run_number }}"
+          echo "RAW_VERSION=$ver" >> $env:GITHUB_OUTPUT
+          echo "TAG_NAME=v$ver" >> $env:GITHUB_OUTPUT
+
+      - name: GitHub Release erstellen & EXE hochladen
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.TAG_NAME }}
+          name: BetaLauncher ${{ steps.version.outputs.TAG_NAME }}
+          files: ./publish/BetaLauncher.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: version.json automatisch aktualisieren
+        run: |
+          $json = @{
+              version = "${{ steps.version.outputs.RAW_VERSION }}"
+              downloadUrl = "https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.TAG_NAME }}/BetaLauncher.exe"
+          } | ConvertTo-Json
+          Set-Content -Path version.json -Value $json
+          
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add version.json
+          git commit -m "Auto-update version.json to ${{ steps.version.outputs.RAW_VERSION }} [skip ci]" || exit 0
+          git pull origin main --rebase
+          git push origin HEAD:main
