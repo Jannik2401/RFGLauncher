@@ -22,10 +22,10 @@ public partial class MainWindow : Window
     private static readonly string CurrentLauncherVersion = 
         Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.0.0";
 
-    private const string LauncherVersionUrl = "https://raw.githubusercontent.com/Jannik2401/Betatest-RFG/main/version.json";
+    private const string LauncherVersionUrl = "https://raw.githubusercontent.com/Jannik2401/RFGLauncher/main/version.json";
 
     private const string GitHubOwner = "Jannik2401";
-    private const string GitHubRepo = "Betatest-RFG";
+    private const string GitHubRepo = "RFGLauncher";
     private const string GameExeName = "kirmes.exe";
     private const string AccountServerUrl = "http://node1.waifly.com:25433";
 
@@ -404,7 +404,6 @@ del ""%~f0""
             StatusText.Text = "Suche nach Updates...";
             var release = await GetLatestGameReleaseAsync();
 
-            // Buttons aktiv lassen, damit manuell geklickt werden kann
             UpdateButton.IsEnabled = true;
             BottomUpdateButton.IsEnabled = true;
 
@@ -474,7 +473,11 @@ del ""%~f0""
             StatusText.Text = $"Lade Kirmes Game ({remoteVersion}) herunter...";
             Progress.Value = 0;
 
-            await DownloadFileAsync(asset.BrowserDownloadUrl, tempZip);
+            using (HttpClient downloadClient = new HttpClient())
+            {
+                downloadClient.Timeout = TimeSpan.FromMinutes(30);
+                await DownloadFileWithClientAsync(downloadClient, asset.BrowserDownloadUrl, tempZip);
+            }
 
             StatusText.Text = "Installiere Update...";
             InstallZip(tempZip);
@@ -512,14 +515,13 @@ del ""%~f0""
 
         if (releases == null || releases.Length == 0) return null;
 
-        // Versucht das erste Release zu finden, das eine game.zip enthält
         return releases.Where(r => !r.Draft && !r.Prerelease)
                        .FirstOrDefault(r => r.Assets.Any(a => string.Equals(a.Name, "game.zip", StringComparison.OrdinalIgnoreCase)));
     }
 
-    private async Task DownloadFileAsync(string url, string destination)
+    private async Task DownloadFileWithClientAsync(HttpClient client, string url, string destination)
     {
-        using HttpResponseMessage response = await Http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+        using HttpResponseMessage response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
         response.EnsureSuccessStatusCode();
 
         long? totalBytes = response.Content.Headers.ContentLength;
