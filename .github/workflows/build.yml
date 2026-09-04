@@ -36,14 +36,11 @@ jobs:
           echo "RAW_VERSION=$ver" >> $env:GITHUB_OUTPUT
           echo "TAG_NAME=latest" >> $env:GITHUB_OUTPUT
 
-      - name: Altes Release löschen (überschreiben)
-        uses: dev-drprasad/delete-tag-and-release@v1.1.0
-        with:
-          delete_release: true
-          tag_name: latest
+      - name: Altes Release löschen falls vorhanden (GitHub CLI)
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release delete latest --cleanup-tag -y 2>$null || echo "Kein altes Release zum Löschen da."
 
       - name: Neues Release erstellen & EXE hochladen
         uses: softprops/action-gh-release@v2
