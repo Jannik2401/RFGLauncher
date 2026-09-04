@@ -49,15 +49,17 @@ jobs:
 
       - name: version.json automatisch aktualisieren
         run: |
+          $ver = "${{ steps.version.outputs.RAW_VERSION }}"
           $json = @{
-              version = "${{ steps.version.outputs.RAW_VERSION }}"
+              version = "$ver"
               downloadUrl = "https://github.com/${{ github.repository }}/releases/download/latest/BetaLauncher.exe"
           } | ConvertTo-Json
           Set-Content -Path version.json -Value $json
           
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
           git add version.json
-          git commit -m "Auto-update version.json to ${{ steps.version.outputs.RAW_VERSION }} [skip ci]" || exit 0
+          git commit -m "Auto-update version.json to $ver [skip ci]" || exit 0
           git pull origin main --rebase
           git push origin HEAD:main
