@@ -17,8 +17,6 @@
         <SolidColorBrush x:Key="BackgroundBrush" Color="#0A0F1D"/>
         <SolidColorBrush x:Key="SidebarBrush" Color="#0F172A"/>
         <SolidColorBrush x:Key="CardBrush" Color="#1E293B"/>
-        <SolidColorBrush x:Key="RedBrush" Color="#E11D48"/>
-        <SolidColorBrush x:Key="BlueHighlightBrush" Color="#38BDF8"/>
 
         <Style x:Key="MenuButton" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
