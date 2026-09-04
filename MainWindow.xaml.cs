@@ -409,8 +409,9 @@ del ""%~f0""
 
             if (release == null)
             {
-                StatusText.Text = "Keine veröffentlichte Version gefunden.";
+                StatusText.Text = "Kein 'Kirmes Game' Release mit 'game.zip' gefunden.";
                 UpdateButton.IsEnabled = false;
+                BottomUpdateButton.IsEnabled = false;
                 return;
             }
 
@@ -424,14 +425,16 @@ del ""%~f0""
 
             if (versionDifferent || digestDifferent)
             {
-                StatusText.Text = $"Update verfügbar: {remoteVersion}";
+                StatusText.Text = $"Update verfügbar: {release.Name} ({remoteVersion})";
                 UpdateButton.IsEnabled = true;
+                BottomUpdateButton.IsEnabled = true;
                 ShowReleaseNotes(release);
             }
             else
             {
                 StatusText.Text = "Du hast bereits die aktuelle Version.";
                 UpdateButton.IsEnabled = false;
+                BottomUpdateButton.IsEnabled = false;
                 ShowReleaseNotes(release);
             }
 
@@ -442,6 +445,7 @@ del ""%~f0""
         {
             StatusText.Text = "Update-Prüfung fehlgeschlagen.";
             UpdateButton.IsEnabled = false;
+            BottomUpdateButton.IsEnabled = false;
         }
     }
 
@@ -453,10 +457,18 @@ del ""%~f0""
             StatusText.Text = "Suche nach neuester Version...";
 
             var release = await GetLatestGameReleaseAsync();
-            if (release == null) return;
+            if (release == null)
+            {
+                MessageBox.Show("Kein Kirmes Game Release mit einer game.zip gefunden.", "Update nicht möglich", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
 
             var asset = release.Assets.FirstOrDefault(a => string.Equals(a.Name, "game.zip", StringComparison.OrdinalIgnoreCase));
-            if (asset == null) return;
+            if (asset == null)
+            {
+                MessageBox.Show("In diesem Release befindet sich keine 'game.zip' Datei.", "Datei fehlt", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
 
             string remoteVersion = NormalizeVersion(release.TagName);
             string remoteDigest = GetGameDigest(release) ?? "";
@@ -464,7 +476,7 @@ del ""%~f0""
 
             if (File.Exists(tempZip)) File.Delete(tempZip);
 
-            StatusText.Text = $"Lade RFG {remoteVersion} herunter...";
+            StatusText.Text = $"Lade Kirmes Game ({remoteVersion}) herunter...";
             Progress.Value = 0;
 
             await DownloadFileAsync(asset.BrowserDownloadUrl, tempZip);
@@ -503,7 +515,13 @@ del ""%~f0""
         string json = await response.Content.ReadAsStringAsync();
         var releases = JsonSerializer.Deserialize<GitHubRelease[]>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-        return releases?.Where(r => !r.Draft && !r.Prerelease && r.Assets.Any(a => string.Equals(a.Name, "game.zip", StringComparison.OrdinalIgnoreCase)))
+        if (releases == null) return null;
+
+        // Sucht gezielt nach Releases, die "Kirmes Game" im Namen oder Tag tragen UND zwingend eine "game.zip" beinhalten
+        return releases.Where(r => !r.Draft && !r.Prerelease)
+                        .Where(r => (r.Name.Contains("Kirmes Game", StringComparison.OrdinalIgnoreCase) || 
+                                     r.TagName.Contains("Kirmes Game", StringComparison.OrdinalIgnoreCase)))
+                        .Where(r => r.Assets.Any(a => string.Equals(a.Name, "game.zip", StringComparison.OrdinalIgnoreCase)))
                         .OrderByDescending(r => ParseVersion(r.TagName))
                         .FirstOrDefault();
     }
@@ -891,6 +909,7 @@ del ""%~f0""
     private void SetBusy(bool busy)
     {
         UpdateButton.IsEnabled = !busy;
+        BottomUpdateButton.IsEnabled = !busy;
         StartButton.IsEnabled = !busy && IsGameInstalled();
         if (busy) Progress.Value = 0;
     }
