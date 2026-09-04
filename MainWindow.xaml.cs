@@ -19,7 +19,6 @@ namespace BetaLauncher;
 
 public partial class MainWindow : Window
 {
-    // Liest die Version automatisch aus der .csproj/Assembly aus (z.B. 1.0.20)
     private static readonly string CurrentLauncherVersion = 
         Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.0.0";
 
@@ -271,7 +270,6 @@ del ""%~f0""
         AccountPage.Visibility = Visibility.Collapsed;
         ChangePasswordPage.Visibility = Visibility.Collapsed;
         AdminPage.Visibility = Visibility.Collapsed;
-        CommunityPage.Visibility = Visibility.Collapsed;
         PerformancePage.Visibility = Visibility.Collapsed;
         CreditsPage.Visibility = Visibility.Collapsed;
         SettingsPage.Visibility = Visibility.Collapsed;
@@ -288,7 +286,6 @@ del ""%~f0""
         ShowPage(AdminPage);
         _ = LoadAdminUserListAsync();
     }
-    private void CommunityButton_Click(object sender, RoutedEventArgs e) => ShowPage(CommunityPage);
     private void PerformanceButton_Click(object sender, RoutedEventArgs e) => ShowPage(PerformancePage);
     private void CreditsButton_Click(object sender, RoutedEventArgs e) => ShowPage(CreditsPage);
     private void ExitButton_Click(object sender, RoutedEventArgs e) => Close();
