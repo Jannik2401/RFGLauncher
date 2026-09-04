@@ -19,7 +19,6 @@ namespace BetaLauncher;
 
 public partial class MainWindow : Window
 {
-    // Liest die Version automatisch direkt aus den Datei-Eigenschaften / .csproj der .exe aus
     private static readonly string CurrentLauncherVersion = 
         Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.0.0";
 
@@ -30,10 +29,9 @@ public partial class MainWindow : Window
     private const string GameExeName = "kirmes.exe";
     private const string AccountServerUrl = "http://node1.waifly.com:25433";
 
-    // Geschützter Admin-Name, der im UI nicht gelöscht werden kann
-    private const string ProtectedAdminUsername = "Jannik2401";
+    // Geschützter Admin-Name aus deiner Server-JSON
+    private const string ProtectedAdminUsername = "admin";
 
-    // Standardpfad außerhalb des Downloads-Ordners (im Benutzerverzeichnis AppData)
     private string GameDirectory = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "RealisticFunfairGames",
@@ -409,7 +407,7 @@ del ""%~f0""
 
             if (release == null)
             {
-                StatusText.Text = "Kein 'Kirmes Game' Release mit 'game.zip' gefunden.";
+                StatusText.Text = "Kein passendes Release mit 'game.zip' auf GitHub gefunden.";
                 UpdateButton.IsEnabled = false;
                 BottomUpdateButton.IsEnabled = false;
                 return;
@@ -441,9 +439,9 @@ del ""%~f0""
             VersionText.Text = "Installiert: " + (string.IsNullOrWhiteSpace(localVersion) ? "Keine" : localVersion);
             HomeVersionText.Text = "Version " + (string.IsNullOrWhiteSpace(localVersion) ? "Keine" : localVersion);
         }
-        catch
+        catch (Exception ex)
         {
-            StatusText.Text = "Update-Prüfung fehlgeschlagen.";
+            StatusText.Text = "Update-Prüfung fehlgeschlagen: " + ex.Message;
             UpdateButton.IsEnabled = false;
             BottomUpdateButton.IsEnabled = false;
         }
@@ -459,7 +457,7 @@ del ""%~f0""
             var release = await GetLatestGameReleaseAsync();
             if (release == null)
             {
-                MessageBox.Show("Kein Kirmes Game Release mit einer game.zip gefunden.", "Update nicht möglich", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Kein Spiel-Release mit einer 'game.zip' Datei auf GitHub gefunden.", "Update nicht möglich", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -508,22 +506,29 @@ del ""%~f0""
 
     private async Task<GitHubRelease?> GetLatestGameReleaseAsync()
     {
-        string url = $"https://api.github.com/repos/{GitHubOwner}/{GitHubRepo}/releases?per_page=20";
+        string url = $"https://api.github.com/repos/{GitHubOwner}/{GitHubRepo}/releases?per_page=50";
         using HttpResponseMessage response = await Http.GetAsync(url);
         response.EnsureSuccessStatusCode();
 
         string json = await response.Content.ReadAsStringAsync();
         var releases = JsonSerializer.Deserialize<GitHubRelease[]>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-        if (releases == null) return null;
+        if (releases == null || releases.Length == 0) return null;
 
-        // Sucht gezielt nach Releases, die "Kirmes Game" im Namen oder Tag tragen UND zwingend eine "game.zip" beinhalten
+        // 1. Priorität: Release enthält "game.zip" UND einen Titel/Tag mit Kirmes/Game/RFG
+        var matched = releases.Where(r => !r.Draft && !r.Prerelease)
+                              .Where(r => r.Assets.Any(a => string.Equals(a.Name, "game.zip", StringComparison.OrdinalIgnoreCase)))
+                              .Where(r => r.Name.Contains("Kirmes", StringComparison.OrdinalIgnoreCase) || 
+                                          r.Name.Contains("Game", StringComparison.OrdinalIgnoreCase) ||
+                                          r.TagName.Contains("Kirmes", StringComparison.OrdinalIgnoreCase) ||
+                                          r.TagName.Contains("v", StringComparison.OrdinalIgnoreCase))
+                              .FirstOrDefault();
+
+        if (matched != null) return matched;
+
+        // 2. Fallback: Nimmt das allerneueste Release, solange darin eine "game.zip" enthalten ist
         return releases.Where(r => !r.Draft && !r.Prerelease)
-                        .Where(r => (r.Name.Contains("Kirmes Game", StringComparison.OrdinalIgnoreCase) || 
-                                     r.TagName.Contains("Kirmes Game", StringComparison.OrdinalIgnoreCase)))
-                        .Where(r => r.Assets.Any(a => string.Equals(a.Name, "game.zip", StringComparison.OrdinalIgnoreCase)))
-                        .OrderByDescending(r => ParseVersion(r.TagName))
-                        .FirstOrDefault();
+                       .FirstOrDefault(r => r.Assets.Any(a => string.Equals(a.Name, "game.zip", StringComparison.OrdinalIgnoreCase)));
     }
 
     private async Task DownloadFileAsync(string url, string destination)
@@ -777,16 +782,30 @@ del ""%~f0""
         {
             try
             {
+                AdminActionStatus.Text = $"Ändere Beta-Zugang für {user.Username}...";
+
                 using HttpClient client = new();
                 client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
                 client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
 
                 var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/admin/toggle-beta", new { username = user.Username });
+                var result = await response.Content.ReadFromJsonAsync<AccountResponse>();
+
+                if (result != null && result.success)
+                {
+                    AdminActionStatus.Text = $"Beta-Zugang für {user.Username} erfolgreich geändert.";
+                }
+                else
+                {
+                    AdminActionStatus.Text = result?.message ?? "Fehler beim Ändern des Beta-Zugangs.";
+                }
+
                 await LoadAdminUserListAsync();
             }
-            catch
+            catch (Exception ex)
             {
-                MessageBox.Show("Fehler beim Ändern des Beta-Zugangs.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                AdminActionStatus.Text = "Fehler beim Verbinden zum Server.";
+                MessageBox.Show("Fehler beim Ändern des Beta-Zugangs:\n" + ex.Message, "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }
@@ -843,7 +862,6 @@ del ""%~f0""
     {
         if ((sender as Button)?.DataContext is UserItem user)
         {
-            // Schutz vor dem Löschen des festen Haupt-Admins
             if (string.Equals(user.Username, ProtectedAdminUsername, StringComparison.OrdinalIgnoreCase))
             {
                 MessageBox.Show($"Der Haupt-Admin-Account '{ProtectedAdminUsername}' ist geschützt und kann nicht gelöscht werden!", "Aktion gesperrt", MessageBoxButton.OK, MessageBoxImage.Stop);
