@@ -3,37 +3,29 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BetaLauncher"
         mc:Ignorable="d"
-        Title="Realistic Funfair Games Launcher"
-        Width="1400"
-        Height="850"
-        MinWidth="1100"
-        MinHeight="700"
+        Title="RFG Beta Launcher" Height="650" Width="1000"
         WindowStartupLocation="CenterScreen"
-        Background="#0A0F1D"
-        Foreground="White">
+        Background="#0F172A" Foreground="#F8FAFC">
 
     <Window.Resources>
-        <SolidColorBrush x:Key="BackgroundBrush" Color="#0A0F1D"/>
-        <SolidColorBrush x:Key="SidebarBrush" Color="#0F172A"/>
-        <SolidColorBrush x:Key="CardBrush" Color="#1E293B"/>
-
-        <Style x:Key="MenuButton" TargetType="Button">
+        <!-- Button Style -->
+        <Style x:Key="NavButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="#94A3B8"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="HorizontalContentAlignment" Value="Left"/>
-            <Setter Property="Padding" Value="18,0"/>
-            <Setter Property="Margin" Value="10,3"/>
-            <Setter Property="Height" Value="46"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Margin" Value="0,2,0,2"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Padding" Value="15,0,0,0"/>
+            <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+                        <Border Background="{TemplateBinding Background}" CornerRadius="8">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center"/>
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
@@ -46,41 +38,18 @@
             </Style.Triggers>
         </Style>
 
-        <Style x:Key="SocialIconButton" TargetType="Button">
-            <Setter Property="Background" Value="#1E293B"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Width" Value="38"/>
-            <Setter Property="Height" Value="38"/>
-            <Setter Property="Margin" Value="4,0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="8">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#334155"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="RedButton" TargetType="Button">
-            <Setter Property="Background" Value="#E11D48"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="FontWeight" Value="Bold"/>
+        <Style x:Key="ActionButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#0284C7"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
             <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Padding" Value="20,10"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Padding" Value="20,0,20,0"/>
+            <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="8">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                     </ControlTemplate>
@@ -88,7 +57,7 @@
             </Setter>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#F43F5E"/>
+                    <Setter Property="Background" Value="#0369A1"/>
                 </Trigger>
                 <Trigger Property="IsEnabled" Value="False">
                     <Setter Property="Background" Value="#334155"/>
@@ -96,386 +65,223 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
-
-        <Style TargetType="TextBox">
-            <Setter Property="Background" Value="#0F172A"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderBrush" Value="#334155"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="10"/>
-            <Setter Property="FontSize" Value="14"/>
-        </Style>
-
-        <Style TargetType="PasswordBox">
-            <Setter Property="Background" Value="#0F172A"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderBrush" Value="#334155"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="10"/>
-            <Setter Property="FontSize" Value="14"/>
-        </Style>
-
-        <Style TargetType="ProgressBar">
-            <Setter Property="Height" Value="8"/>
-            <Setter Property="Background" Value="#0F172A"/>
-            <Setter Property="Foreground" Value="#E11D48"/>
-        </Style>
     </Window.Resources>
 
-    <Grid Background="{StaticResource BackgroundBrush}">
+    <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="235"/>
+            <ColumnDefinition Width="220"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- SIDEBAR -->
-        <Border Grid.Column="0" Background="{StaticResource SidebarBrush}" BorderBrush="#1E293B" BorderThickness="0,0,1,0">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
+        <!-- Navigation Left Sidebar -->
+        <Border Grid.Column="0" Background="#020617" BorderBrush="#1E293B" BorderThickness="0,0,1,0">
+            <DockPanel Margin="10,20,10,20">
+                <StackPanel DockPanel.Dock="Top">
+                    <TextBlock Text="RFG LAUNCHER" FontSize="18" FontWeight="Bold" Foreground="#38BDF8" Margin="10,0,0,20"/>
 
-                <StackPanel Grid.Row="0" Margin="22,25,22,20">
-                    <TextBlock Text="REALISTIC" FontSize="21" FontWeight="Bold" Foreground="#38BDF8"/>
-                    <TextBlock Text="FUNFAIR GAMES" FontSize="12" FontWeight="Bold" Foreground="#E11D48" Margin="0,2,0,0"/>
-                    <Border Height="2" Background="#E11D48" Margin="0,18,0,0"/>
+                    <Button Content="Home" Style="{StaticResource NavButtonStyle}" Click="HomeButton_Click"/>
+                    <Button Content="Updates" Style="{StaticResource NavButtonStyle}" Click="UpdatesButton_Click"/>
+                    <Button Content="Account" Style="{StaticResource NavButtonStyle}" Click="AccountButton_Click"/>
+                    <Button x:Name="AdminMenuButton" Content="Admin Panel" Style="{StaticResource NavButtonStyle}" Click="AdminButton_Click" Visibility="Collapsed"/>
+                    <Button Content="Performance" Style="{StaticResource NavButtonStyle}" Click="PerformanceButton_Click"/>
+                    <Button Content="Credits" Style="{StaticResource NavButtonStyle}" Click="CreditsButton_Click"/>
+                    <Button Content="Einstellungen" Style="{StaticResource NavButtonStyle}" Click="SettingsButton_Click"/>
                 </StackPanel>
 
-                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Hidden">
-                    <StackPanel>
-                        <Button Content="⌂   Startseite" Style="{StaticResource MenuButton}" Click="HomeButton_Click"/>
-                        <Button Content="↻   Updates" Style="{StaticResource MenuButton}" Click="UpdatesButton_Click"/>
-                        <Button Content="●   Konto" Style="{StaticResource MenuButton}" Click="AccountButton_Click"/>
-                        <Button Content="⚙   Einstellungen" Style="{StaticResource MenuButton}" Click="SettingsButton_Click"/>
-                        <Button x:Name="AdminMenuButton" Content="🛠   Admin Panel" Visibility="Collapsed" Style="{StaticResource MenuButton}" Click="AdminButton_Click"/>
-                        <Button Content="☁   Community" Style="{StaticResource MenuButton}" Click="CommunityButton_Click"/>
-                        <Button Content="▣   Performance" Style="{StaticResource MenuButton}" Click="PerformanceButton_Click"/>
-                        <Button Content="★   Credits" Style="{StaticResource MenuButton}" Click="CreditsButton_Click"/>
-                    </StackPanel>
-                </ScrollViewer>
-
-                <StackPanel Grid.Row="2" Margin="10,10,10,20">
-                    <!-- SOCIAL MEDIA LINKS -->
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,15">
-                        <!-- Discord -->
-                        <Button Style="{StaticResource SocialIconButton}" Click="DiscordButton_Click" ToolTip="Discord Server">
-                            <Path Data="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.893.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" Fill="#5865F2" Width="18" Height="18" Stretch="Uniform"/>
-                        </Button>
-                        <!-- Twitch -->
-                        <Button Style="{StaticResource SocialIconButton}" Click="TwitchButton_Click" ToolTip="Twitch Kanal">
-                            <Path Data="M11.571 4.714h1.715v5.143h-1.715zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.429h-3.429l-3 3v-3H6.857V1.714h13.714z" Fill="#9146FF" Width="18" Height="18" Stretch="Uniform"/>
-                        </Button>
-                        <!-- Instagram -->
-                        <Button Style="{StaticResource SocialIconButton}" Click="InstagramButton_Click" ToolTip="Instagram">
-                            <Path Data="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" Fill="#E1306C" Width="18" Height="18" Stretch="Uniform"/>
-                        </Button>
-                    </StackPanel>
-
-                    <Button Content="✕   Beenden" Style="{StaticResource MenuButton}" Click="ExitButton_Click"/>
+                <StackPanel DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
+                    <TextBlock x:Name="LauncherVersionText" Text="Version: 1.0.0" Foreground="#64748B" FontSize="12" Margin="10,0,0,10"/>
+                    <Button Content="Beenden" Style="{StaticResource NavButtonStyle}" Click="ExitButton_Click" Foreground="#E11D48"/>
                 </StackPanel>
-            </Grid>
+            </DockPanel>
         </Border>
 
-        <!-- MAIN AREA -->
-        <Grid Grid.Column="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="70"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="80"/>
-            </Grid.RowDefinitions>
+        <!-- Main Content Area -->
+        <Grid Grid.Column="1" Margin="30">
 
-            <!-- TOP BAR -->
-            <Border Grid.Row="0" Background="#0F172A" BorderBrush="#1E293B" BorderThickness="0,0,0,1">
-                <Grid>
-                    <TextBlock Text="RFG BETA LAUNCHER" VerticalAlignment="Center" Margin="30,0" FontSize="17" FontWeight="Bold" Foreground="#F8FAFC"/>
-                    <TextBlock x:Name="StatusText" Text="Bereit" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,30,0" Foreground="#94A3B8"/>
-                </Grid>
-            </Border>
+            <!-- HOME PAGE -->
+            <Grid x:Name="HomePage" Visibility="Visible">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock Text="Realistic Funfair Games" FontSize="32" FontWeight="Bold" Foreground="#F8FAFC" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                    <TextBlock x:Name="HomeVersionText" Text="Version 1.0.0" FontSize="16" Foreground="#94A3B8" HorizontalAlignment="Center" Margin="0,0,0,30"/>
 
-            <!-- CONTENT -->
-            <Grid Grid.Row="1">
-                <!-- STARTSEITE -->
-                <Grid x:Name="HomePage" Visibility="Visible">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <StackPanel Margin="35">
-                            <Border Background="{StaticResource CardBrush}" CornerRadius="15" Padding="35" Margin="0,0,0,25" BorderBrush="#334155" BorderThickness="1">
-                                <StackPanel>
-                                    <TextBlock Text="WILLKOMMEN BEI" Foreground="#38BDF8" FontSize="14" FontWeight="Bold"/>
-                                    <TextBlock Text="REALISTIC FUNFAIR GAMES" FontSize="34" FontWeight="Bold" Margin="0,7,0,0"/>
-                                    <TextBlock Text="Dein Zugang zur RFG Kirmes-Simulation." Foreground="#94A3B8" FontSize="15" Margin="0,8,0,25"/>
-                                    <Button x:Name="StartButton" Content="▶   SPIEL STARTEN" Width="190" Height="45" HorizontalAlignment="Left" Style="{StaticResource RedButton}" Click="StartButton_Click"/>
-                                </StackPanel>
-                            </Border>
-                            <Grid Margin="0,0,0,25">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <Border Grid.Column="0" Background="{StaticResource CardBrush}" CornerRadius="12" Margin="0,0,10,0" Padding="20">
-                                    <StackPanel>
-                                        <TextBlock Text="VERSION" Foreground="#94A3B8" FontSize="12" FontWeight="Bold"/>
-                                        <TextBlock x:Name="HomeVersionText" Text="Version --" FontSize="22" FontWeight="Bold" Margin="0,8,0,0" Foreground="#38BDF8"/>
-                                    </StackPanel>
-                                </Border>
-                                <Border Grid.Column="1" Background="{StaticResource CardBrush}" CornerRadius="12" Margin="10,0" Padding="20">
-                                    <StackPanel>
-                                        <TextBlock Text="SPIELSTATUS" Foreground="#94A3B8" FontSize="12" FontWeight="Bold"/>
-                                        <TextBlock x:Name="HomeStatusText" Text="WIRD GEPRÜFT..." FontSize="18" FontWeight="Bold" Margin="0,8,0,0"/>
-                                    </StackPanel>
-                                </Border>
-                                <Border Grid.Column="2" Background="{StaticResource CardBrush}" CornerRadius="12" Margin="10,0,0,0" Padding="20">
-                                    <StackPanel>
-                                        <TextBlock Text="BETA STATUS" Foreground="#94A3B8" FontSize="12" FontWeight="Bold"/>
-                                        <TextBlock x:Name="HomeBetaAccessText" Text="NICHT ANGEMELDET" Foreground="#E11D48" FontSize="18" FontWeight="Bold" Margin="0,8,0,0"/>
-                                    </StackPanel>
-                                </Border>
+                    <Border Background="#1E293B" CornerRadius="12" Padding="25" Width="400" Margin="0,0,0,30">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,10">
+                                <TextBlock Text="Spiel-Status:" Foreground="#94A3B8" FontSize="14"/>
+                                <TextBlock x:Name="HomeStatusText" Text="PRÜFE..." Foreground="#38BDF8" FontWeight="Bold" FontSize="14" HorizontalAlignment="Right"/>
                             </Grid>
-                        </StackPanel>
-                    </ScrollViewer>
-                </Grid>
-
-                <!-- UPDATES -->
-                <Grid x:Name="UpdatesPage" Visibility="Collapsed">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <StackPanel Margin="35">
-                            <TextBlock Text="UPDATES" FontSize="32" FontWeight="Bold"/>
-                            <TextBlock Text="Verwalte hier deine RFG-Version." Foreground="#94A3B8" Margin="0,5,0,25"/>
-                            <Border Background="{StaticResource CardBrush}" CornerRadius="12" Padding="25">
-                                <StackPanel>
-                                    <TextBlock Text="Aktuelle Version" Foreground="#94A3B8" FontSize="12" FontWeight="Bold"/>
-                                    <TextBlock x:Name="VersionText" Text="Installiert: --" FontSize="22" FontWeight="Bold" Margin="0,7,0,20" Foreground="#38BDF8"/>
-                                    <ProgressBar x:Name="Progress" Minimum="0" Maximum="100" Value="0" Margin="0,0,0,20"/>
-                                    <Button x:Name="UpdateButton" Content="↻   UPDATE SUCHEN / INSTALLIEREN" Width="270" Height="45" HorizontalAlignment="Left" Style="{StaticResource RedButton}" Click="UpdateButton_Click"/>
-                                </StackPanel>
-                            </Border>
-                            <TextBlock Text="Release Notes" FontSize="23" FontWeight="Bold" Margin="0,30,0,12"/>
-                            <Border Background="{StaticResource CardBrush}" CornerRadius="12" Padding="20">
-                                <TextBlock x:Name="ReleaseNotesText" Text="Noch keine Release Notes geladen." Foreground="#CBD5E1" TextWrapping="Wrap"/>
-                            </Border>
-                        </StackPanel>
-                    </ScrollViewer>
-                </Grid>
-
-                <!-- KONTO -->
-                <Grid x:Name="AccountPage" Visibility="Collapsed">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <StackPanel Margin="35">
-                            <TextBlock Text="KONTO" FontSize="32" FontWeight="Bold"/>
-                            <TextBlock Text="Melde dich mit deinem RFG-Konto an." Foreground="#94A3B8" Margin="0,5,0,25"/>
-                            <Border Background="{StaticResource CardBrush}" CornerRadius="12" Padding="25" Width="500" HorizontalAlignment="Left">
-                                <StackPanel>
-                                    <TextBlock Text="Benutzername" Foreground="White" FontWeight="Bold"/>
-                                    <TextBox x:Name="AccountUsernameTextBox" Height="42" Margin="0,8,0,18"/>
-                                    <TextBlock Text="Passwort" Foreground="White" FontWeight="Bold"/>
-                                    <PasswordBox x:Name="AccountPasswordBox" Height="42" Margin="0,8,0,20"/>
-                                    <Button x:Name="AccountLoginButton" Content="ANMELDEN" Height="44" Style="{StaticResource RedButton}" Click="LoginAccountButton_Click"/>
-                                    <TextBlock x:Name="AccountStatusText" Text="" Foreground="#CBD5E1" TextWrapping="Wrap" Margin="0,20,0,0"/>
-                                </StackPanel>
-                            </Border>
-                        </StackPanel>
-                    </ScrollViewer>
-                </Grid>
-
-                <!-- EINSTELLUNGEN -->
-                <Grid x:Name="SettingsPage" Visibility="Collapsed">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <StackPanel Margin="35">
-                            <TextBlock Text="EINSTELLUNGEN" FontSize="32" FontWeight="Bold"/>
-                            <TextBlock Text="Verwalte hier die Launcher-Einstellungen und Updates." Foreground="#94A3B8" Margin="0,5,0,25"/>
-
-                            <Border Background="{StaticResource CardBrush}" CornerRadius="12" Padding="25" Margin="0,0,0,25">
-                                <StackPanel>
-                                    <TextBlock Text="LAUNCHER AKTUALISIERUNG" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
-                                    <TextBlock x:Name="LauncherVersionText" Text="Installierte Version: 1.0.59" Foreground="#94A3B8" FontSize="14" Margin="0,0,0,15"/>
-                                    <TextBlock x:Name="LauncherUpdateStatusText" Text="" Foreground="#CBD5E1" FontSize="14" Margin="0,0,0,15" Visibility="Collapsed"/>
-                                    <Button x:Name="CheckLauncherUpdateButton" Content="↻   AUF LAUNCHER-UPDATE PRÜFEN" Width="280" Height="42" HorizontalAlignment="Left" Style="{StaticResource RedButton}" Click="CheckLauncherUpdateButton_Click"/>
-                                </StackPanel>
-                            </Border>
-                        </StackPanel>
-                    </ScrollViewer>
-                </Grid>
-
-                <!-- PASSWORT ÄNDERN -->
-                <Grid x:Name="ChangePasswordPage" Visibility="Collapsed">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <StackPanel Margin="35">
-                            <TextBlock Text="PASSWORT ÄNDERN" FontSize="32" FontWeight="Bold"/>
-                            <TextBlock Text="Du nutzt ein temporäres Passwort. Bitte erstelle ein neues eigenes Passwort." Foreground="#E11D48" Margin="0,5,0,25"/>
-                            <Border Background="{StaticResource CardBrush}" CornerRadius="12" Padding="25" Width="500" HorizontalAlignment="Left">
-                                <StackPanel>
-                                    <TextBlock Text="Neues Passwort (min. 8 Zeichen)" Foreground="White" FontWeight="Bold"/>
-                                    <PasswordBox x:Name="NewPasswordBox" Height="42" Margin="0,8,0,18"/>
-                                    <TextBlock Text="Neues Passwort wiederholen" Foreground="White" FontWeight="Bold"/>
-                                    <PasswordBox x:Name="ConfirmPasswordBox" Height="42" Margin="0,8,0,20"/>
-                                    <Button Content="PASSWORT SPEICHERN" Height="44" Style="{StaticResource RedButton}" Click="SaveNewPasswordButton_Click"/>
-                                    <TextBlock x:Name="ChangePasswordStatusText" Text="" Foreground="#CBD5E1" TextWrapping="Wrap" Margin="0,20,0,0"/>
-                                </StackPanel>
-                            </Border>
-                        </StackPanel>
-                    </ScrollViewer>
-                </Grid>
-
-                <!-- ADMIN SEITE -->
-                <Grid x:Name="AdminPage" Visibility="Collapsed">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <StackPanel Margin="35">
-                            <TextBlock Text="ADMIN PANEL" FontSize="32" FontWeight="Bold"/>
-                            <TextBlock Text="Verwaltung von Benutzern, Beta-Zugängen und Berechtigungen." Foreground="#94A3B8" Margin="0,5,0,25"/>
-
-                            <Border Background="{StaticResource CardBrush}" CornerRadius="12" Padding="25" Margin="0,0,0,25">
-                                <StackPanel>
-                                    <TextBlock Text="NEUEN ACCOUNT ERSTELLEN" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
-                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
-                                        <StackPanel Width="220" Margin="0,0,15,0">
-                                            <TextBlock Text="Benutzername" Foreground="#94A3B8"/>
-                                            <TextBox x:Name="AdminNewUsernameBox" Height="38" Margin="0,5,0,0"/>
-                                        </StackPanel>
-                                        <StackPanel Width="220" Margin="0,0,15,0">
-                                            <TextBlock Text="Temp. Passwort" Foreground="#94A3B8"/>
-                                            <TextBox x:Name="AdminNewTempPassBox" Height="38" Margin="0,5,0,0"/>
-                                        </StackPanel>
-                                        <StackPanel Width="150" Margin="0,0,15,0">
-                                            <TextBlock Text="Rolle" Foreground="#94A3B8"/>
-                                            <ComboBox x:Name="AdminRoleComboBox" Height="38" Margin="0,5,0,0" SelectedIndex="0">
-                                                <ComboBoxItem Content="User"/>
-                                                <ComboBoxItem Content="Admin"/>
-                                            </ComboBox>
-                                        </StackPanel>
-                                        <Button Content="ACCOUNT ANLEGEN" Style="{StaticResource RedButton}" VerticalAlignment="Bottom" Height="38" Click="AdminCreateUser_Click"/>
-                                    </StackPanel>
-                                    <TextBlock x:Name="AdminActionStatus" Text="" Foreground="#CBD5E1"/>
-                                </StackPanel>
-                            </Border>
-
-                            <Border Background="{StaticResource CardBrush}" CornerRadius="12" Padding="25">
-                                <StackPanel>
-                                    <TextBlock Text="BENUTZERLISTE" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
-                                    <DataGrid x:Name="UsersDataGrid" AutoGenerateColumns="False" IsReadOnly="True" Background="#0F172A" RowBackground="#1E293B" AlternatingRowBackground="#0F172A" Foreground="White" GridLinesVisibility="None" HeadersVisibility="Column" Height="300">
-                                        <DataGrid.Resources>
-                                            <Style TargetType="DataGridColumnHeader">
-                                                <Setter Property="Background" Value="#1E293B"/>
-                                                <Setter Property="Foreground" Value="#F8FAFC"/>
-                                                <Setter Property="FontWeight" Value="Bold"/>
-                                                <Setter Property="Padding" Value="10,8"/>
-                                                <Setter Property="BorderBrush" Value="#334155"/>
-                                                <Setter Property="BorderThickness" Value="0,0,1,1"/>
-                                            </Style>
-                                        </DataGrid.Resources>
-
-                                        <DataGrid.Columns>
-                                            <DataGridTextColumn Header="Benutzername" Binding="{Binding Username}" Width="*"/>
-                                            <DataGridTextColumn Header="Rolle" Binding="{Binding Role}" Width="90"/>
-                                            <DataGridTextColumn Header="Beta-Zugang" Binding="{Binding HasBetaAccess}" Width="100"/>
-                                            <DataGridTextColumn Header="Temp PW aktiv?" Binding="{Binding MustChangePassword}" Width="120"/>
-                                            <DataGridTextColumn Header="Gesperrt?" Binding="{Binding IsLocked}" Width="80"/>
-                                            <DataGridTemplateColumn Header="Aktionen" Width="420">
-                                                <DataGridTemplateColumn.CellTemplate>
-                                                    <DataTemplate>
-                                                        <StackPanel Orientation="Horizontal">
-                                                            <Button Content="Beta-Zugang" Margin="2" Padding="5,2" Click="AdminToggleBeta_Click"/>
-                                                            <Button Content="Reset PW" Margin="2" Padding="5,2" Click="AdminResetPw_Click"/>
-                                                            <Button Content="Sperren/Entsperren" Margin="2" Padding="5,2" Click="AdminToggleLock_Click"/>
-                                                            <Button Content="Löschen" Margin="2" Padding="5,2" Background="#991B1B" Foreground="White" Click="AdminDeleteUser_Click"/>
-                                                        </StackPanel>
-                                                    </DataTemplate>
-                                                </DataGridTemplateColumn.CellTemplate>
-                                            </DataGridTemplateColumn>
-                                        </DataGrid.Columns>
-                                    </DataGrid>
-                                </StackPanel>
-                            </Border>
-                        </StackPanel>
-                    </ScrollViewer>
-                </Grid>
-
-                <!-- COMMUNITY -->
-                <Grid x:Name="CommunityPage" Visibility="Collapsed">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <StackPanel Margin="35">
-                            <TextBlock Text="COMMUNITY" FontSize="32" FontWeight="Bold"/>
-                            <TextBlock Text="RFG Community" Foreground="#94A3B8" Margin="0,5,0,25"/>
-                            <Border Background="{StaticResource CardBrush}" CornerRadius="12" Padding="25">
-                                <StackPanel>
-                                    <TextBlock Text="LIVE CHAT" FontSize="18" FontWeight="Bold"/>
-                                    <TextBlock Text="Der Community-Live-Chat wird später mit dem RFG-Server verbunden." Foreground="#94A3B8" TextWrapping="Wrap" Margin="0,10,0,0"/>
-                                </StackPanel>
-                            </Border>
-                        </StackPanel>
-                    </ScrollViewer>
-                </Grid>
-
-                <!-- PERFORMANCE -->
-                <Grid x:Name="PerformancePage" Visibility="Collapsed">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <StackPanel Margin="35">
-                            <TextBlock Text="PERFORMANCE" FontSize="32" FontWeight="Bold"/>
-                            <TextBlock Text="Systeminformationen" Foreground="#94A3B8" Margin="0,5,0,25"/>
                             <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <Border Grid.Column="0" Background="{StaticResource CardBrush}" CornerRadius="12" Margin="0,0,10,0" Padding="25">
-                                    <StackPanel>
-                                        <TextBlock Text="PROZESSOR" Foreground="#94A3B8" FontSize="12" FontWeight="Bold"/>
-                                        <TextBlock x:Name="CpuText" Text="CPU: --" FontSize="24" FontWeight="Bold" Margin="0,8,0,0" Foreground="#38BDF8"/>
-                                    </StackPanel>
-                                </Border>
-                                <Border Grid.Column="1" Background="{StaticResource CardBrush}" CornerRadius="12" Margin="10,0,0,0" Padding="25">
-                                    <StackPanel>
-                                        <TextBlock Text="ARBEITSSPEICHER" Foreground="#94A3B8" FontSize="12" FontWeight="Bold"/>
-                                        <TextBlock x:Name="RamText" Text="RAM: --" FontSize="24" FontWeight="Bold" Margin="0,8,0,0" Foreground="#38BDF8"/>
-                                    </StackPanel>
-                                </Border>
+                                <TextBlock Text="Beta-Zugang:" Foreground="#94A3B8" FontSize="14"/>
+                                <TextBlock x:Name="HomeBetaAccessText" Text="PRÜFE..." Foreground="#38BDF8" FontWeight="Bold" FontSize="14" HorizontalAlignment="Right"/>
                             </Grid>
                         </StackPanel>
-                    </ScrollViewer>
-                </Grid>
+                    </Border>
 
-                <!-- CREDITS -->
-                <Grid x:Name="CreditsPage" Visibility="Collapsed">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <StackPanel Margin="35">
-                            <TextBlock Text="CREDITS" FontSize="32" FontWeight="Bold"/>
-                            <TextBlock Text="Die Menschen hinter RFG." Foreground="#94A3B8" Margin="0,5,0,25"/>
-                            <Border Background="{StaticResource CardBrush}" CornerRadius="12" Padding="25" Margin="0,0,0,15">
-                                <StackPanel>
-                                    <TextBlock Text="DENNYS" FontSize="20" FontWeight="Bold" Foreground="#E11D48"/>
-                                    <TextBlock Text="Danke an Dennys für die Idee und Inspiration zum Launcher." Foreground="#CBD5E1" TextWrapping="Wrap" Margin="0,7,0,0"/>
-                                </StackPanel>
-                            </Border>
-                            <Border Background="{StaticResource CardBrush}" CornerRadius="12" Padding="25" Margin="0,0,0,15">
-                                <StackPanel>
-                                    <TextBlock Text="RFG TEAM" FontSize="20" FontWeight="Bold" Foreground="#38BDF8"/>
-                                    <TextBlock Text="Realistic Funfair Games Team" Foreground="#CBD5E1" Margin="0,7,0,0"/>
-                                </StackPanel>
-                            </Border>
-                            <Border Background="{StaticResource CardBrush}" CornerRadius="12" Padding="25">
-                                <StackPanel>
-                                    <TextBlock Text="BETA TESTER ♥" FontSize="20" FontWeight="Bold" Foreground="#E11D48"/>
-                                    <TextBlock Text="Danke an alle Beta Tester, die RFG testen und Feedback geben." Foreground="#CBD5E1" TextWrapping="Wrap" Margin="0,7,0,0"/>
-                                </StackPanel>
-                            </Border>
-                        </StackPanel>
-                    </ScrollViewer>
-                </Grid>
+                    <Button x:Name="StartButton" Content="SPIEL STARTEN" Style="{StaticResource ActionButtonStyle}" Height="50" Width="250" FontSize="16" Click="StartButton_Click"/>
+                </StackPanel>
             </Grid>
 
-            <!-- BOTTOM BAR -->
-            <Border Grid.Row="2" Background="#0F172A" BorderBrush="#1E293B" BorderThickness="0,1,0,0">
-                <Grid>
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="30,0">
-                        <TextBlock Text="RFG Beta Launcher" Foreground="#64748B" VerticalAlignment="Center"/>
+            <!-- UPDATES PAGE -->
+            <Grid x:Name="UpdatesPage" Visibility="Collapsed">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Top" Margin="0,0,0,20">
+                        <TextBlock Text="Spiel-Updates" FontSize="24" FontWeight="Bold" Margin="0,0,0,5"/>
+                        <TextBlock x:Name="VersionText" Text="Installiert: Keine" Foreground="#94A3B8"/>
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,30,0">
-                        <Button x:Name="BottomUpdateButton" Content="UPDATE" Width="120" Height="40" Margin="0,0,10,0" Style="{StaticResource RedButton}" Click="UpdateButton_Click"/>
-                        <Button Content="SPIEL STARTEN" Width="150" Height="40" Style="{StaticResource RedButton}" Click="StartButton_Click"/>
+
+                    <StackPanel DockPanel.Dock="Bottom" Margin="0,20,0,0">
+                        <ProgressBar x:Name="Progress" Height="8" Background="#1E293B" Foreground="#0284C7" Margin="0,0,0,15"/>
+                        <Grid>
+                            <TextBlock x:Name="StatusText" Text="Bereit" Foreground="#94A3B8" VerticalAlignment="Center"/>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                <Button x:Name="UpdateButton" Content="Prüfen &amp; Updaten" Style="{StaticResource ActionButtonStyle}" Click="UpdateButton_Click" Margin="0,0,10,0"/>
+                                <Button x:Name="BottomUpdateButton" Content="Jetzt Installieren" Style="{StaticResource ActionButtonStyle}" Click="UpdateButton_Click"/>
+                            </StackPanel>
+                        </Grid>
                     </StackPanel>
-                </Grid>
-            </Border>
+
+                    <Border Background="#1E293B" CornerRadius="8" Padding="15">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <TextBlock x:Name="ReleaseNotesText" Text="Lade Release Notes..." TextWrapping="Wrap" Foreground="#CBD5E1"/>
+                        </ScrollViewer>
+                    </Border>
+                </DockPanel>
+            </Grid>
+
+            <!-- ACCOUNT PAGE -->
+            <Grid x:Name="AccountPage" Visibility="Collapsed">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="320">
+                    <TextBlock Text="Anmelden" FontSize="24" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center"/>
+
+                    <TextBlock Text="Benutzername" Foreground="#94A3B8" Margin="0,0,0,5"/>
+                    <TextBox x:Name="AccountUsernameTextBox" Height="40" Background="#1E293B" Foreground="#F8FAFC" BorderThickness="0" Padding="10,0,10,0" Margin="0,0,0,15" VerticalContentAlignment="Center"/>
+
+                    <TextBlock Text="Passwort" Foreground="#94A3B8" Margin="0,0,0,5"/>
+                    <PasswordBox x:Name="AccountPasswordBox" Height="40" Background="#1E293B" Foreground="#F8FAFC" BorderThickness="0" Padding="10,0,10,0" Margin="0,0,0,20" VerticalContentAlignment="Center"/>
+
+                    <Button x:Name="AccountLoginButton" Content="Einloggen" Style="{StaticResource ActionButtonStyle}" Click="LoginAccountButton_Click" Margin="0,0,0,15"/>
+
+                    <TextBlock x:Name="AccountStatusText" Text="" Foreground="#E11D48" TextWrapping="Wrap" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- CHANGE PASSWORD PAGE -->
+            <Grid x:Name="ChangePasswordPage" Visibility="Collapsed">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="320">
+                    <TextBlock Text="Passwort ändern" FontSize="24" FontWeight="Bold" Margin="0,0,0,10" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Bitte vergebe ein neues Passwort für deinen Account." Foreground="#94A3B8" TextWrapping="Wrap" Margin="0,0,0,20" HorizontalAlignment="Center"/>
+
+                    <TextBlock Text="Neues Passwort" Foreground="#94A3B8" Margin="0,0,0,5"/>
+                    <PasswordBox x:Name="NewPasswordBox" Height="40" Background="#1E293B" Foreground="#F8FAFC" BorderThickness="0" Padding="10,0,10,0" Margin="0,0,0,15" VerticalContentAlignment="Center"/>
+
+                    <TextBlock Text="Passwort bestätigen" Foreground="#94A3B8" Margin="0,0,0,5"/>
+                    <PasswordBox x:Name="ConfirmPasswordBox" Height="40" Background="#1E293B" Foreground="#F8FAFC" BorderThickness="0" Padding="10,0,10,0" Margin="0,0,0,20" VerticalContentAlignment="Center"/>
+
+                    <Button Content="Speichern" Style="{StaticResource ActionButtonStyle}" Click="SaveNewPasswordButton_Click" Margin="0,0,0,15"/>
+
+                    <TextBlock x:Name="ChangePasswordStatusText" Text="" Foreground="#E11D48" TextWrapping="Wrap" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- ADMIN PAGE -->
+            <Grid x:Name="AdminPage" Visibility="Collapsed">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" Text="Admin Panel" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
+
+                    <!-- User Creation Form -->
+                    <Border DockPanel.Dock="Top" Background="#1E293B" CornerRadius="8" Padding="15" Margin="0,0,0,20">
+                        <StackPanel Orientation="Horizontal">
+                            <StackPanel Margin="0,0,15,0">
+                                <TextBlock Text="Benutzername" Foreground="#94A3B8" FontSize="12"/>
+                                <TextBox x:Name="AdminNewUsernameBox" Width="150" Height="35" Background="#0F172A" Foreground="#F8FAFC" BorderThickness="0" Padding="8,0,8,0" VerticalContentAlignment="Center"/>
+                            </StackPanel>
+
+                            <StackPanel Margin="0,0,15,0">
+                                <TextBlock Text="Temp-Passwort" Foreground="#94A3B8" FontSize="12"/>
+                                <TextBox x:Name="AdminNewTempPassBox" Width="150" Height="35" Background="#0F172A" Foreground="#F8FAFC" BorderThickness="0" Padding="8,0,8,0" VerticalContentAlignment="Center"/>
+                            </StackPanel>
+
+                            <StackPanel Margin="0,0,15,0">
+                                <TextBlock Text="Rolle" Foreground="#94A3B8" FontSize="12"/>
+                                <ComboBox x:Name="AdminRoleComboBox" Width="100" Height="35" Background="#0F172A" Foreground="#F8FAFC" SelectedIndex="0">
+                                    <ComboBoxItem Content="User"/>
+                                    <ComboBoxItem Content="Admin"/>
+                                </ComboBox>
+                            </StackPanel>
+
+                            <Button Content="Erstellen" Style="{StaticResource ActionButtonStyle}" Height="35" VerticalAlignment="Bottom" Click="AdminCreateUser_Click"/>
+                        </StackPanel>
+                    </Border>
+
+                    <TextBlock x:Name="AdminActionStatus" DockPanel.Dock="Bottom" Text="" Foreground="#38BDF8" Margin="0,10,0,0"/>
+
+                    <DataGrid x:Name="UsersDataGrid" AutoGenerateColumns="False" Background="#1E293B" RowBackground="#0F172A" AlternateRowBackground="#1E293B" Foreground="#F8FAFC" BorderThickness="0" HeadersVisibility="Column">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Name" Binding="{Binding Username}" Width="*"/>
+                            <DataGridTextColumn Header="Rolle" Binding="{Binding Role}" Width="80"/>
+                            <DataGridCheckBoxColumn Header="Beta" Binding="{Binding HasBetaAccess}" Width="50"/>
+                            <DataGridCheckBoxColumn Header="Gesperrt" Binding="{Binding IsLocked}" Width="60"/>
+                            <DataGridTemplateColumn Width="220">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button Content="Beta" Click="AdminToggleBeta_Click" Margin="2" Padding="5,2,5,2"/>
+                                            <Button Content="Reset" Click="AdminResetPw_Click" Margin="2" Padding="5,2,5,2"/>
+                                            <Button Content="Sperren" Click="AdminToggleLock_Click" Margin="2" Padding="5,2,5,2"/>
+                                            <Button Content="Löschen" Click="AdminDeleteUser_Click" Foreground="#E11D48" Margin="2" Padding="5,2,5,2"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </Grid>
+
+            <!-- PERFORMANCE PAGE -->
+            <Grid x:Name="PerformancePage" Visibility="Collapsed">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock Text="System Auslastung" FontSize="24" FontWeight="Bold" Margin="0,0,0,30" HorizontalAlignment="Center"/>
+
+                    <Border Background="#1E293B" CornerRadius="12" Padding="30" Width="300">
+                        <StackPanel>
+                            <TextBlock x:Name="CpuText" Text="CPU: --%" FontSize="20" FontWeight="Bold" Foreground="#38BDF8" Margin="0,0,0,15"/>
+                            <TextBlock x:Name="RamText" Text="RAM: --%" FontSize="20" FontWeight="Bold" Foreground="#10B981"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
+
+            <!-- CREDITS PAGE -->
+            <Grid x:Name="CreditsPage" Visibility="Collapsed">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock Text="Credits &amp; Social Media" FontSize="24" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Realistic Funfair Games" FontSize="16" Foreground="#94A3B8" Margin="0,0,0,30" HorizontalAlignment="Center"/>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Button Content="Discord" Style="{StaticResource ActionButtonStyle}" Click="DiscordButton_Click" Margin="5"/>
+                        <Button Content="Twitch" Style="{StaticResource ActionButtonStyle}" Click="TwitchButton_Click" Margin="5"/>
+                        <Button Content="Instagram" Style="{StaticResource ActionButtonStyle}" Click="InstagramButton_Click" Margin="5"/>
+                        <Button Content="TikTok" Style="{StaticResource ActionButtonStyle}" Click="TikTokButton_Click" Margin="5"/>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+
+            <!-- SETTINGS PAGE -->
+            <Grid x:Name="SettingsPage" Visibility="Collapsed">
+                <StackPanel Margin="20">
+                    <TextBlock Text="Launcher Einstellungen" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
+
+                    <Border Background="#1E293B" CornerRadius="8" Padding="20" Margin="0,0,0,20">
+                        <StackPanel>
+                            <TextBlock Text="Launcher Updates" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+                            <TextBlock x:Name="LauncherUpdateStatusText" Text="Suche nach Updates..." Foreground="#94A3B8" Margin="0,0,0,15"/>
+                            <Button x:Name="CheckLauncherUpdateButton" Content="Nach Launcher-Updates suchen" Style="{StaticResource ActionButtonStyle}" HorizontalAlignment="Left" Click="CheckLauncherUpdateButton_Click"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
+
         </Grid>
     </Grid>
 </Window>
