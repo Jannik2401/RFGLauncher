@@ -88,10 +88,6 @@ public partial class MainWindow : Window
         Http.Dispose();
     }
 
-    // ============================================================
-    // PFAD EINSTELLUNGEN
-    // ============================================================
-
     private void SelectGamePathButton_Click(object sender, RoutedEventArgs e)
     {
         var dialog = new Microsoft.Win32.OpenFolderDialog
@@ -108,10 +104,6 @@ public partial class MainWindow : Window
             _ = CheckForUpdatesAsync();
         }
     }
-
-    // ============================================================
-    // LAUNCHER AUTO-UPDATE SYSTEM
-    // ============================================================
 
     private async Task SilentCheckLauncherUpdateAsync()
     {
@@ -254,10 +246,6 @@ del ""%~f0""
         }
     }
 
-    // ============================================================
-    // NAVIGATION & SEITEN
-    // ============================================================
-
     private void ShowPage(UIElement page)
     {
         HomePage.Visibility = Visibility.Collapsed;
@@ -288,10 +276,6 @@ del ""%~f0""
     private void PerformanceButton_Click(object sender, RoutedEventArgs e) => ShowPage(PerformancePage);
     private void CreditsButton_Click(object sender, RoutedEventArgs e) => ShowPage(CreditsPage);
     private void ExitButton_Click(object sender, RoutedEventArgs e) => Close();
-
-    // ============================================================
-    // GAME LOGIC & UPDATES
-    // ============================================================
 
     private void UpdateHomeInformation()
     {
@@ -587,10 +571,6 @@ del ""%~f0""
         ReleaseNotesText.Text = string.IsNullOrWhiteSpace(release.Body) ? "Keine Release Notes vorhanden." : release.Body.Trim();
     }
 
-    // ============================================================
-    // ACCOUNT & PASSWORT SYSTEM
-    // ============================================================
-
     private async void LoginAccountButton_Click(object sender, RoutedEventArgs e)
     {
         string username = AccountUsernameTextBox.Text.Trim();
@@ -696,10 +676,6 @@ del ""%~f0""
             ChangePasswordStatusText.Text = "Server nicht erreichbar.";
         }
     }
-
-    // ============================================================
-    // ADMIN FUNCTIONS
-    // ============================================================
 
     private async Task LoadAdminUserListAsync()
     {
@@ -875,10 +851,6 @@ del ""%~f0""
         }
     }
 
-    // ============================================================
-    // PERFORMANCE
-    // ============================================================
-
     private PerformanceCounterWrapper? PerformanceCounter;
 
     private void StartPerformanceMonitor()
@@ -919,10 +891,6 @@ del ""%~f0""
         StartButton.IsEnabled = !busy && IsGameInstalled();
         if (busy) Progress.Value = 0;
     }
-
-    // ============================================================
-    // MODELL-KLASSEN
-    // ============================================================
 
     private sealed class LauncherVersionInfo
     {
