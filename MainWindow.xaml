@@ -134,8 +134,7 @@
                         <Grid>
                             <TextBlock x:Name="StatusText" Text="Bereit" Foreground="#94A3B8" VerticalAlignment="Center"/>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                                <Button x:Name="UpdateButton" Content="Prüfen &amp; Updaten" Style="{StaticResource ActionButtonStyle}" Click="UpdateButton_Click" Margin="0,0,10,0"/>
-                                <Button x:Name="BottomUpdateButton" Content="Jetzt Installieren" Style="{StaticResource ActionButtonStyle}" Click="UpdateButton_Click"/>
+                                <Button x:Name="UpdateButton" Content="Prüfen &amp; Updaten" Style="{StaticResource ActionButtonStyle}" Click="UpdateButton_Click"/>
                             </StackPanel>
                         </Grid>
                     </StackPanel>
