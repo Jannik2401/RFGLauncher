@@ -149,19 +149,21 @@
 
             <!-- ACCOUNT PAGE -->
             <Grid x:Name="AccountPage" Visibility="Collapsed">
-                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="320">
-                    <TextBlock Text="Anmelden" FontSize="24" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center"/>
+                <Border Background="#1E293B" CornerRadius="12" Padding="30" VerticalAlignment="Center" HorizontalAlignment="Center" Width="360">
+                    <StackPanel>
+                        <TextBlock Text="Anmelden" FontSize="24" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,0,0,20" HorizontalAlignment="Center"/>
 
-                    <TextBlock Text="Benutzername" Foreground="#94A3B8" Margin="0,0,0,5"/>
-                    <TextBox x:Name="AccountUsernameTextBox" Height="40" Background="#1E293B" Foreground="#F8FAFC" BorderThickness="0" Padding="10,0,10,0" Margin="0,0,0,15" VerticalContentAlignment="Center"/>
+                        <TextBlock Text="Benutzername" Foreground="#94A3B8" FontSize="13" Margin="0,0,0,5"/>
+                        <TextBox x:Name="AccountUsernameTextBox" Height="40" Background="#0F172A" Foreground="#F8FAFC" BorderThickness="0" Padding="12,0,12,0" Margin="0,0,0,15" VerticalContentAlignment="Center"/>
 
-                    <TextBlock Text="Passwort" Foreground="#94A3B8" Margin="0,0,0,5"/>
-                    <PasswordBox x:Name="AccountPasswordBox" Height="40" Background="#1E293B" Foreground="#F8FAFC" BorderThickness="0" Padding="10,0,10,0" Margin="0,0,0,20" VerticalContentAlignment="Center"/>
+                        <TextBlock Text="Passwort" Foreground="#94A3B8" FontSize="13" Margin="0,0,0,5"/>
+                        <PasswordBox x:Name="AccountPasswordBox" Height="40" Background="#0F172A" Foreground="#F8FAFC" BorderThickness="0" Padding="12,0,12,0" Margin="0,0,0,20" VerticalContentAlignment="Center"/>
 
-                    <Button x:Name="AccountLoginButton" Content="Einloggen" Style="{StaticResource ActionButtonStyle}" Click="LoginAccountButton_Click" Margin="0,0,0,15"/>
+                        <Button x:Name="AccountLoginButton" Content="Einloggen" Style="{StaticResource ActionButtonStyle}" Height="42" Click="LoginAccountButton_Click" Margin="0,0,0,15"/>
 
-                    <TextBlock x:Name="AccountStatusText" Text="" Foreground="#E11D48" TextWrapping="Wrap" HorizontalAlignment="Center"/>
-                </StackPanel>
+                        <TextBlock x:Name="AccountStatusText" Text="" Foreground="#E11D48" TextWrapping="Wrap" HorizontalAlignment="Center" TextAlignment="Center"/>
+                    </StackPanel>
+                </Border>
             </Grid>
 
             <!-- CHANGE PASSWORD PAGE -->
