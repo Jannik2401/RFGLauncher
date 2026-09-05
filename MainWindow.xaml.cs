@@ -20,7 +20,7 @@ namespace BetaLauncher;
 public partial class MainWindow : Window
 {
     private static readonly string CurrentLauncherVersion = 
-        Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.0.0";
+        Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.0.45";
 
     private const string LauncherVersionUrl = "https://raw.githubusercontent.com/Jannik2401/RFGLauncher/main/version.json";
 
@@ -48,6 +48,7 @@ public partial class MainWindow : Window
 
     private readonly HttpClient Http = new();
     private DispatcherTimer? PerformanceTimer;
+    private DispatcherTimer? AccountStatusTimer;
 
     private string? LoggedInUsername;
     private string? LoggedInPassword;
@@ -75,6 +76,7 @@ public partial class MainWindow : Window
             ShowPage(HomePage);
             UpdateHomeInformation();
             StartPerformanceMonitor();
+            StartAccountStatusMonitor();
 
             LauncherVersionText.Text = $"Installierte Version: {CurrentLauncherVersion}";
 
@@ -90,6 +92,7 @@ public partial class MainWindow : Window
     private void MainWindow_Closed(object? sender, EventArgs e)
     {
         PerformanceTimer?.Stop();
+        AccountStatusTimer?.Stop();
         Http.Dispose();
     }
 
@@ -599,6 +602,41 @@ public partial class MainWindow : Window
         finally
         {
             AccountLoginButton.IsEnabled = true;
+        }
+    }
+
+    private void StartAccountStatusMonitor()
+    {
+        AccountStatusTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
+        AccountStatusTimer.Tick += AccountStatusTimer_Tick;
+        AccountStatusTimer.Start();
+    }
+
+    private async void AccountStatusTimer_Tick(object? sender, EventArgs e)
+    {
+        if (string.IsNullOrEmpty(LoggedInUsername) || string.IsNullOrEmpty(LoggedInPassword)) return;
+
+        try
+        {
+            using HttpClient client = new();
+            var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/login", new { username = LoggedInUsername, password = LoggedInPassword });
+            var result = await response.Content.ReadFromJsonAsync<AccountResponse>();
+
+            if (result != null && result.success)
+            {
+                bool previousAccess = HasBetaAccess;
+                HasBetaAccess = result.hasBetaAccess;
+                LoggedInRole = result.role ?? "user";
+
+                if (previousAccess != HasBetaAccess)
+                {
+                    UpdateHomeInformation();
+                }
+            }
+        }
+        catch
+        {
+            // Background check silent fail to avoid UI disruptions
         }
     }
 
