@@ -961,12 +961,25 @@ public partial class MainWindow : Window
 
     public sealed class UserItem
     {
+        [JsonPropertyName("username")]
         public string Username { get; set; } = "";
+
+        [JsonPropertyName("role")]
         public string Role { get; set; } = "";
+
+        [JsonPropertyName("hasBetaAccess")]
         public bool HasBetaAccess { get; set; }
+
+        [JsonPropertyName("remainingLaunches")]
         public int RemainingLaunches { get; set; }
+
+        [JsonPropertyName("mustChangePassword")]
         public bool MustChangePassword { get; set; }
+
+        [JsonPropertyName("isLocked")]
         public bool IsLocked { get; set; }
+
+        [JsonPropertyName("createdAt")]
         public string CreatedAt { get; set; } = "";
     }
 }
