@@ -212,7 +212,6 @@ public partial class MainWindow : Window
             string currentExe = Process.GetCurrentProcess().MainModule?.FileName 
                                 ?? Path.Combine(AppContext.BaseDirectory, "BetaLauncher.exe");
 
-            // Öffnet das neue Fortschrittsfenster für den sauberen Download mit Balken
             UpdateWindow updateWindow = new UpdateWindow(downloadUrl, currentExe);
             updateWindow.ShowDialog();
         }
@@ -361,7 +360,6 @@ public partial class MainWindow : Window
             var release = await GetLatestGameReleaseAsync();
 
             UpdateButton.IsEnabled = true;
-            BottomUpdateButton.IsEnabled = true;
 
             if (release == null)
             {
@@ -395,7 +393,6 @@ public partial class MainWindow : Window
         {
             StatusText.Text = "Update-Prüfung fehlgeschlagen: " + ex.Message;
             UpdateButton.IsEnabled = true;
-            BottomUpdateButton.IsEnabled = true;
         }
     }
 
@@ -460,7 +457,6 @@ public partial class MainWindow : Window
         }
     }
 
-    // Verbesserte Methode, die absolut sicherstellt, dass immer die höchste Versionsnummer genommen wird
     private async Task<GitHubRelease?> GetLatestGameReleaseAsync()
     {
         string url = $"https://api.github.com/repos/{GitHubOwner}/{GitHubRepo}/releases?per_page=50";
@@ -861,7 +857,6 @@ public partial class MainWindow : Window
     private void SetBusy(bool busy)
     {
         UpdateButton.IsEnabled = !busy;
-        BottomUpdateButton.IsEnabled = !busy;
         StartButton.IsEnabled = !busy && IsGameInstalled();
         if (busy) Progress.Value = 0;
     }
