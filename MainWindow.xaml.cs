@@ -211,51 +211,10 @@ public partial class MainWindow : Window
         {
             string currentExe = Process.GetCurrentProcess().MainModule?.FileName 
                                 ?? Path.Combine(AppContext.BaseDirectory, "BetaLauncher.exe");
-            string batchPath = Path.Combine(Path.GetTempPath(), "update_rfg_launcher.bat");
-            string tempDownloadPath = Path.Combine(Path.GetTempPath(), "rfg_launcher_update.tmp");
-            string tempExtractPath = Path.Combine(Path.GetTempPath(), "rfg_launcher_extract");
 
-            bool isZip = downloadUrl.EndsWith(".zip", StringComparison.OrdinalIgnoreCase);
-
-            string batchContent;
-
-            if (isZip)
-            {
-                batchContent = $@"
-@echo off
-timeout /t 2 /nobreak > nul
-powershell -Command ""[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri '{downloadUrl}' -OutFile '{tempDownloadPath}'""
-if exist ""{tempExtractPath}"" rd /s /q ""{tempExtractPath}""
-powershell -Command ""Expand-Archive -Path '{tempDownloadPath}' -DestinationPath '{tempExtractPath}' -Force""
-xcopy /s /y /i ""{tempExtractPath}\*"" ""{AppContext.BaseDirectory.TrimEnd('\\', '/')}""
-del /f /q ""{tempDownloadPath}""
-rd /s /q ""{tempExtractPath}""
-start """" ""{currentExe}""
-del ""%~f0""
-";
-            }
-            else
-            {
-                batchContent = $@"
-@echo off
-timeout /t 2 /nobreak > nul
-powershell -Command ""[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri '{downloadUrl}' -OutFile '{tempDownloadPath}'""
-move /y ""{tempDownloadPath}"" ""{currentExe}""
-start """" ""{currentExe}""
-del ""%~f0""
-";
-            }
-
-            File.WriteAllText(batchPath, batchContent);
-
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = batchPath,
-                CreateNoWindow = true,
-                UseShellExecute = false
-            });
-
-            Application.Current.Shutdown();
+            // Öffnet das neue Fortschrittsfenster für den sauberen Download mit Balken
+            UpdateWindow updateWindow = new UpdateWindow(downloadUrl, currentExe);
+            updateWindow.ShowDialog();
         }
         catch (Exception ex)
         {
@@ -501,6 +460,7 @@ del ""%~f0""
         }
     }
 
+    // Verbesserte Methode, die absolut sicherstellt, dass immer die höchste Versionsnummer genommen wird
     private async Task<GitHubRelease?> GetLatestGameReleaseAsync()
     {
         string url = $"https://api.github.com/repos/{GitHubOwner}/{GitHubRepo}/releases?per_page=50";
@@ -512,8 +472,9 @@ del ""%~f0""
 
         if (releases == null || releases.Length == 0) return null;
 
-        return releases.Where(r => !r.Draft && !r.Prerelease)
-                       .FirstOrDefault(r => r.Assets.Any(a => string.Equals(a.Name, "game.zip", StringComparison.OrdinalIgnoreCase)));
+        return releases.Where(r => !r.Draft && !r.Prerelease && r.Assets.Any(a => string.Equals(a.Name, "game.zip", StringComparison.OrdinalIgnoreCase)))
+                       .OrderByDescending(r => ParseVersion(r.TagName))
+                       .FirstOrDefault();
     }
 
     private async Task DownloadFileWithClientAsync(HttpClient client, string url, string destination)
