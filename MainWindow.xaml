@@ -65,6 +65,16 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
+
+        <!-- DataGrid Header Style (Dunkel) -->
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#1E293B"/>
+            <Setter Property="Foreground" Value="#F8FAFC"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="BorderBrush" Value="#334155"/>
+            <Setter Property="BorderThickness" Value="0,0,1,1"/>
+        </Style>
     </Window.Resources>
 
     <Grid>
@@ -77,7 +87,15 @@
         <Border Grid.Column="0" Background="#020617" BorderBrush="#1E293B" BorderThickness="0,0,1,0">
             <DockPanel Margin="10,20,10,20">
                 <StackPanel DockPanel.Dock="Top">
-                    <TextBlock Text="RFG LAUNCHER" FontSize="18" FontWeight="Bold" Foreground="#38BDF8" Margin="10,0,0,20"/>
+                    <!-- Titel mit Farbverlauf Rot zu Blau -->
+                    <TextBlock Text="RFG LAUNCHER" FontSize="18" FontWeight="Bold" Margin="10,0,0,20">
+                        <TextBlock.Foreground>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                <GradientStop Color="#EF4444" Offset="0.0"/>
+                                <GradientStop Color="#38BDF8" Offset="1.0"/>
+                            </LinearGradientBrush>
+                        </TextBlock.Foreground>
+                    </TextBlock>
 
                     <Button Content="Home" Style="{StaticResource NavButtonStyle}" Click="HomeButton_Click"/>
                     <Button Content="Updates" Style="{StaticResource NavButtonStyle}" Click="UpdatesButton_Click"/>
