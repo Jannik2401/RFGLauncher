@@ -275,7 +275,7 @@ public partial class MainWindow : Window
         }
         else if (HasBetaAccess)
         {
-            HomeBetaAccessText.Text = $"FREIGESCHALTET (Verbleibende Starts: {RemainingLaunches})";
+            HomeBetaAccessText.Text = "BETA-ZUGANG FREIGESCHALTET";
             HomeBetaAccessText.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#38BDF8")!;
         }
         else
@@ -825,63 +825,6 @@ public partial class MainWindow : Window
             {
                 AdminActionStatus.Text = "Fehler beim Verbinden zum Server.";
                 MessageBox.Show("Fehler beim Ändern des Beta-Zugangs:\n" + ex.Message, "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-    }
-
-    private async void AdminSetLaunches_Click(object sender, RoutedEventArgs e)
-    {
-        if ((sender as Button)?.DataContext is UserItem user)
-        {
-            string input = Microsoft.VisualBasic.Interaction.InputBox(
-                $"Gib die max. verbleibenden Starts für '{user.Username}' ein:",
-                "Starts festlegen",
-                "0"
-            );
-
-            if (string.IsNullOrEmpty(input)) return;
-
-            if (int.TryParse(input, out int newLaunches))
-            {
-                try
-                {
-                    AdminActionStatus.Text = $"Setze Starts für {user.Username} auf {newLaunches}...";
-
-                    using HttpClient client = new();
-                    string encodedPass = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(LoggedInPassword ?? ""));
-                    client.DefaultRequestHeaders.Remove("X-Admin-User");
-                    client.DefaultRequestHeaders.Remove("X-Admin-Pass");
-                    client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
-                    client.DefaultRequestHeaders.Add("X-Admin-Pass", encodedPass);
-
-                    var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/admin/set-launches", new 
-                    { 
-                        username = user.Username, 
-                        remainingLaunches = newLaunches 
-                    });
-
-                    var result = await response.Content.ReadFromJsonAsync<AccountResponse>();
-
-                    if (result != null && result.success)
-                    {
-                        AdminActionStatus.Text = $"Starts für {user.Username} erfolgreich auf {newLaunches} gesetzt.";
-                    }
-                    else
-                    {
-                        AdminActionStatus.Text = result?.message ?? "Fehler beim Speichern.";
-                    }
-
-                    await LoadAdminUserListAsync();
-                }
-                catch (Exception ex)
-                {
-                    AdminActionStatus.Text = "Fehler beim Verbinden zum Server.";
-                    MessageBox.Show("Fehler beim Aktualisieren der Starts:\n" + ex.Message, "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
-            else
-            {
-                MessageBox.Show("Bitte gib eine gültige Zahl ein.", "Ungültige Eingabe", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
     }
