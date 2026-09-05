@@ -310,7 +310,7 @@ public partial class MainWindow : Window
             }
 
             HasBetaAccess = result.hasBetaAccess;
-            RemainingLaunches = result.remainingLaunches;
+            RemainingLaunches = result.remainingLaunches ?? 0;
             UpdateHomeInformation();
 
             if (IsGameRunning())
@@ -580,7 +580,7 @@ public partial class MainWindow : Window
                 LoggedInPassword = password;
                 LoggedInRole = result.role ?? "user";
                 HasBetaAccess = result.hasBetaAccess;
-                RemainingLaunches = result.remainingLaunches;
+                RemainingLaunches = result.remainingLaunches ?? 0;
 
                 AccountStatusText.Text = $"✅ Willkommen zurück, {LoggedInUsername}!";
                 AccountPasswordBox.Clear();
@@ -639,7 +639,7 @@ public partial class MainWindow : Window
                 int previousLaunches = RemainingLaunches;
                 
                 HasBetaAccess = result.hasBetaAccess;
-                RemainingLaunches = result.remainingLaunches;
+                RemainingLaunches = result.remainingLaunches ?? 0;
                 LoggedInRole = result.role ?? "user";
 
                 if (previousAccess != HasBetaAccess || previousLaunches != RemainingLaunches)
@@ -984,7 +984,7 @@ public partial class MainWindow : Window
         public string? username { get; set; }
         public string? role { get; set; }
         public bool hasBetaAccess { get; set; }
-        public int remainingLaunches { get; set; }
+        public int? remainingLaunches { get; set; }
         public bool mustChangePassword { get; set; }
         public string? message { get; set; }
     }
