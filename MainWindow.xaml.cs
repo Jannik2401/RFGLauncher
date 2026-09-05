@@ -20,7 +20,7 @@ namespace BetaLauncher;
 public partial class MainWindow : Window
 {
     private static readonly string CurrentLauncherVersion = 
-        Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.0.45";
+        Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.0.0";
 
     private const string LauncherVersionUrl = "https://raw.githubusercontent.com/Jannik2401/RFGLauncher/main/version.json";
 
@@ -48,13 +48,11 @@ public partial class MainWindow : Window
 
     private readonly HttpClient Http = new();
     private DispatcherTimer? PerformanceTimer;
-    private DispatcherTimer? AccountStatusTimer;
 
     private string? LoggedInUsername;
     private string? LoggedInPassword;
     private string? LoggedInRole;
     private bool HasBetaAccess;
-    private int RemainingLaunches = 0;
 
     public MainWindow()
     {
@@ -77,7 +75,6 @@ public partial class MainWindow : Window
             ShowPage(HomePage);
             UpdateHomeInformation();
             StartPerformanceMonitor();
-            StartAccountStatusMonitor();
 
             LauncherVersionText.Text = $"Installierte Version: {CurrentLauncherVersion}";
 
@@ -93,7 +90,6 @@ public partial class MainWindow : Window
     private void MainWindow_Closed(object? sender, EventArgs e)
     {
         PerformanceTimer?.Stop();
-        AccountStatusTimer?.Stop();
         Http.Dispose();
     }
 
@@ -275,19 +271,19 @@ public partial class MainWindow : Window
         }
         else if (HasBetaAccess)
         {
-            HomeBetaAccessText.Text = "BETA-ZUGANG FREIGESCHALTET";
+            HomeBetaAccessText.Text = "FREIGESCHALTET";
             HomeBetaAccessText.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#38BDF8")!;
         }
         else
         {
-            HomeBetaAccessText.Text = "KEIN BETA-ZUGANG / GESPERRT";
+            HomeBetaAccessText.Text = "KEIN BETA-ZUGANG";
             HomeBetaAccessText.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#E11D48")!;
         }
 
         StartButton.IsEnabled = IsGameInstalled();
     }
 
-    private async void StartButton_Click(object sender, RoutedEventArgs e)
+    private void StartButton_Click(object sender, RoutedEventArgs e)
     {
         try
         {
@@ -298,20 +294,11 @@ public partial class MainWindow : Window
                 return;
             }
 
-            using HttpClient client = new();
-            var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/start-game", new { username = LoggedInUsername, password = LoggedInPassword });
-            var result = await response.Content.ReadFromJsonAsync<AccountResponse>();
-
-            if (result == null || !result.success)
+            if (!HasBetaAccess)
             {
-                MessageBox.Show(result?.message ?? "Start verweigert (Limit erreicht oder Account gesperrt).", "Zugriff verweigert", MessageBoxButton.OK, MessageBoxImage.Warning);
-                UpdateHomeInformation();
+                MessageBox.Show("Dein Account hat aktuell keinen Beta-Zugang. Bitte wende dich an einen Admin, um den Zugang freischalten zu lassen.", "Kein Beta-Zugang", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-
-            HasBetaAccess = result.hasBetaAccess;
-            RemainingLaunches = result.remainingLaunches ?? 0;
-            UpdateHomeInformation();
 
             if (IsGameRunning())
             {
@@ -580,7 +567,6 @@ public partial class MainWindow : Window
                 LoggedInPassword = password;
                 LoggedInRole = result.role ?? "user";
                 HasBetaAccess = result.hasBetaAccess;
-                RemainingLaunches = result.remainingLaunches ?? 0;
 
                 AccountStatusText.Text = $"✅ Willkommen zurück, {LoggedInUsername}!";
                 AccountPasswordBox.Clear();
@@ -613,44 +599,6 @@ public partial class MainWindow : Window
         finally
         {
             AccountLoginButton.IsEnabled = true;
-        }
-    }
-
-    private void StartAccountStatusMonitor()
-    {
-        AccountStatusTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
-        AccountStatusTimer.Tick += AccountStatusTimer_Tick;
-        AccountStatusTimer.Start();
-    }
-
-    private async void AccountStatusTimer_Tick(object? sender, EventArgs e)
-    {
-        if (string.IsNullOrEmpty(LoggedInUsername) || string.IsNullOrEmpty(LoggedInPassword)) return;
-
-        try
-        {
-            using HttpClient client = new();
-            var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/login", new { username = LoggedInUsername, password = LoggedInPassword });
-            var result = await response.Content.ReadFromJsonAsync<AccountResponse>();
-
-            if (result != null && result.success)
-            {
-                bool previousAccess = HasBetaAccess;
-                int previousLaunches = RemainingLaunches;
-                
-                HasBetaAccess = result.hasBetaAccess;
-                RemainingLaunches = result.remainingLaunches ?? 0;
-                LoggedInRole = result.role ?? "user";
-
-                if (previousAccess != HasBetaAccess || previousLaunches != RemainingLaunches)
-                {
-                    UpdateHomeInformation();
-                }
-            }
-        }
-        catch
-        {
-            // Background check silent fail
         }
     }
 
@@ -703,48 +651,21 @@ public partial class MainWindow : Window
     {
         try
         {
-            AdminActionStatus.Text = "Lade Benutzerliste...";
-
             using HttpClient client = new();
-            string encodedPass = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(LoggedInPassword ?? ""));
-            
-            client.DefaultRequestHeaders.Remove("X-Admin-User");
-            client.DefaultRequestHeaders.Remove("X-Admin-Pass");
             client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
-            client.DefaultRequestHeaders.Add("X-Admin-Pass", encodedPass);
+            client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
 
             var response = await client.GetAsync($"{AccountServerUrl}/api/admin/users");
-            
-            if (!response.IsSuccessStatusCode)
-            {
-                string errorContent = await response.Content.ReadAsStringAsync();
-                AdminActionStatus.Text = $"Server-Fehler: {(int)response.StatusCode}";
-                MessageBox.Show($"Server hat den Zugriff verweigert:\n{errorContent}", "Admin-Fehler", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            var jsonString = await response.Content.ReadAsStringAsync();
-            var options = new JsonSerializerOptions 
-            { 
-                PropertyNameCaseInsensitive = true,
-                NumberHandling = JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.AllowNamedFloatingPointLiterals
-            };
-            var result = JsonSerializer.Deserialize<AdminUserListResponse>(jsonString, options);
+            var result = await response.Content.ReadFromJsonAsync<AdminUserListResponse>();
 
             if (result != null && result.success)
             {
                 UsersDataGrid.ItemsSource = result.users;
-                AdminActionStatus.Text = $"Benutzerliste erfolgreich geladen ({result.users.Count} Benutzer).";
-            }
-            else
-            {
-                AdminActionStatus.Text = "Server meldete Erfolg = false.";
             }
         }
-        catch (Exception ex)
+        catch
         {
             AdminActionStatus.Text = "Fehler beim Laden der Benutzerliste.";
-            MessageBox.Show("Exception beim Laden der Benutzer:\n" + ex.Message, "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -763,11 +684,8 @@ public partial class MainWindow : Window
         try
         {
             using HttpClient client = new();
-            string encodedPass = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(LoggedInPassword ?? ""));
-            client.DefaultRequestHeaders.Remove("X-Admin-User");
-            client.DefaultRequestHeaders.Remove("X-Admin-Pass");
             client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
-            client.DefaultRequestHeaders.Add("X-Admin-Pass", encodedPass);
+            client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
 
             var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/admin/create-user", new
             {
@@ -801,11 +719,8 @@ public partial class MainWindow : Window
                 AdminActionStatus.Text = $"Ändere Beta-Zugang für {user.Username}...";
 
                 using HttpClient client = new();
-                string encodedPass = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(LoggedInPassword ?? ""));
-                client.DefaultRequestHeaders.Remove("X-Admin-User");
-                client.DefaultRequestHeaders.Remove("X-Admin-Pass");
                 client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
-                client.DefaultRequestHeaders.Add("X-Admin-Pass", encodedPass);
+                client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
 
                 var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/admin/toggle-beta", new { username = user.Username });
                 var result = await response.Content.ReadFromJsonAsync<AccountResponse>();
@@ -837,11 +752,8 @@ public partial class MainWindow : Window
             try
             {
                 using HttpClient client = new();
-                string encodedPass = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(LoggedInPassword ?? ""));
-                client.DefaultRequestHeaders.Remove("X-Admin-User");
-                client.DefaultRequestHeaders.Remove("X-Admin-Pass");
                 client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
-                client.DefaultRequestHeaders.Add("X-Admin-Pass", encodedPass);
+                client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
 
                 var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/admin/reset-password", new
                 {
@@ -867,11 +779,8 @@ public partial class MainWindow : Window
             try
             {
                 using HttpClient client = new();
-                string encodedPass = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(LoggedInPassword ?? ""));
-                client.DefaultRequestHeaders.Remove("X-Admin-User");
-                client.DefaultRequestHeaders.Remove("X-Admin-Pass");
                 client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
-                client.DefaultRequestHeaders.Add("X-Admin-Pass", encodedPass);
+                client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
 
                 var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/admin/toggle-lock", new { username = user.Username });
                 await LoadAdminUserListAsync();
@@ -898,11 +807,8 @@ public partial class MainWindow : Window
                 try
                 {
                     using HttpClient client = new();
-                    string encodedPass = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(LoggedInPassword ?? ""));
-                    client.DefaultRequestHeaders.Remove("X-Admin-User");
-                    client.DefaultRequestHeaders.Remove("X-Admin-Pass");
                     client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
-                    client.DefaultRequestHeaders.Add("X-Admin-Pass", encodedPass);
+                    client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
 
                     var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/admin/delete-user", new { username = user.Username });
                     await LoadAdminUserListAsync();
@@ -984,7 +890,6 @@ public partial class MainWindow : Window
         public string? username { get; set; }
         public string? role { get; set; }
         public bool hasBetaAccess { get; set; }
-        public int? remainingLaunches { get; set; }
         public bool mustChangePassword { get; set; }
         public string? message { get; set; }
     }
@@ -997,25 +902,11 @@ public partial class MainWindow : Window
 
     public sealed class UserItem
     {
-        [JsonPropertyName("username")]
         public string Username { get; set; } = "";
-
-        [JsonPropertyName("role")]
         public string Role { get; set; } = "";
-
-        [JsonPropertyName("hasBetaAccess")]
         public bool HasBetaAccess { get; set; }
-
-        [JsonPropertyName("remainingLaunches")]
-        public int? RemainingLaunches { get; set; }
-
-        [JsonPropertyName("mustChangePassword")]
         public bool MustChangePassword { get; set; }
-
-        [JsonPropertyName("isLocked")]
         public bool IsLocked { get; set; }
-
-        [JsonPropertyName("createdAt")]
         public string CreatedAt { get; set; } = "";
     }
 }

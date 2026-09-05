@@ -1,0 +1,70 @@
+name: Build and Release BetaLauncher
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'version.json'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: .NET installieren
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Version in .csproj eintragen
+        run: |
+          $ver = "1.0.${{ github.run_number }}"
+          Write-Host "Setze Projekt-Version auf: $ver"
+          
+          [xml]$csproj = Get-Content BetaLauncher.csproj
+          $csproj.Project.PropertyGroup.Version = $ver
+          $csproj.Project.PropertyGroup.AssemblyVersion = "$ver.0"
+          $csproj.Project.PropertyGroup.FileVersion = "$ver.0"
+          $csproj.Save("$PWD/BetaLauncher.csproj")
+
+      - name: Launcher bauen
+        run: dotnet publish BetaLauncher.csproj -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:EnableCompressionInSingleFile=false -o ./publish
+
+      - name: Release erstellen oder aktualisieren & EXE hochladen
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: BetaLauncher (Version 1.0.${{ github.run_number }})
+          body: "Automatisch aktualisiertes Release für den Launcher (Version 1.0.${{ github.run_number }})."
+          files: ./publish/BetaLauncher.exe
+          overwrite_files: true
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: version.json automatisch aktualisieren
+        run: |
+          $ver = "1.0.${{ github.run_number }}"
+          $json = @{
+              version = "$ver"
+              downloadUrl = "https://github.com/${{ github.repository }}/releases/download/latest/BetaLauncher.exe"
+          } | ConvertTo-Json
+          Set-Content -Path version.json -Value $json
+          
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          git add version.json
+          git commit -m "Auto-update version.json to $ver [skip ci]" || exit 0
+          git pull origin main --rebase
+          git push origin HEAD:main
