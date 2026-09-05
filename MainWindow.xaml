@@ -6,8 +6,8 @@
     
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnWidth Width="220"/>
-            <ColumnWidth Width="*"/>
+            <ColumnDefinition Width="220"/>
+            <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
         <!-- Sidebar / Navigation -->
