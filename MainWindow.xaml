@@ -76,7 +76,7 @@
             <Setter Property="BorderThickness" Value="0,0,1,1"/>
         </Style>
 
-        <!-- ComboBox / Dropdown dunkles Design (gegen das weiße Problem) -->
+        <!-- ComboBox / Dropdown dunkles Design -->
         <Style TargetType="ComboBox">
             <Setter Property="Background" Value="#1E293B"/>
             <Setter Property="Foreground" Value="#F8FAFC"/>
@@ -99,14 +99,15 @@
         <Border Grid.Column="0" Background="#020617" BorderBrush="#1E293B" BorderThickness="0,0,1,0">
             <DockPanel Margin="10,20,10,20">
                 <StackPanel DockPanel.Dock="Top">
-                    <!-- Titel mit Farbverlauf Rot zu Blau -->
-                    <TextBlock Text="RFG LAUNCHER" FontSize="18" FontWeight="Bold" Margin="10,0,0,20">
+                    <!-- Titel mit echtem fließenden Farbverlauf Rot zu Blau -->
+                    <TextBlock FontSize="18" FontWeight="Bold" Margin="10,0,0,20">
                         <TextBlock.Foreground>
-                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0" MappingMode="RelativeToBoundingBox">
                                 <GradientStop Color="#EF4444" Offset="0.0"/>
                                 <GradientStop Color="#38BDF8" Offset="1.0"/>
                             </LinearGradientBrush>
                         </TextBlock.Foreground>
+                        <Run Text="RFG LAUNCHER"/>
                     </TextBlock>
 
                     <Button Content="Home" Style="{StaticResource NavButtonStyle}" Click="HomeButton_Click"/>
@@ -131,13 +132,14 @@
             <!-- HOME PAGE -->
             <Grid x:Name="HomePage" Visibility="Visible">
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                    <TextBlock Text="Realistic Funfair Games" FontSize="32" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,10">
+                    <TextBlock FontSize="32" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,10">
                         <TextBlock.Foreground>
-                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0" MappingMode="RelativeToBoundingBox">
                                 <GradientStop Color="#EF4444" Offset="0.0"/>
                                 <GradientStop Color="#38BDF8" Offset="1.0"/>
                             </LinearGradientBrush>
                         </TextBlock.Foreground>
+                        <Run Text="Realistic Funfair Games"/>
                     </TextBlock>
                     <TextBlock x:Name="HomeVersionText" Text="Version 1.0.0" FontSize="16" Foreground="#94A3B8" HorizontalAlignment="Center" Margin="0,0,0,30"/>
 
