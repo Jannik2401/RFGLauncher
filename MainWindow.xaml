@@ -258,6 +258,9 @@
 
                     <Border Background="#1E293B" CornerRadius="12" Padding="20" Margin="0,0,0,20">
                         <StackPanel>
+                            <TextBlock Text="Oberchef" FontSize="14" Foreground="#38BDF8" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                            <TextBlock Text="Greentiger" FontSize="16" Foreground="#F8FAFC" HorizontalAlignment="Center" Margin="0,0,0,15"/>
+
                             <TextBlock Text="Idee &amp; Inspiration" FontSize="14" Foreground="#38BDF8" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,2"/>
                             <TextBlock Text="Dennys" FontSize="16" Foreground="#F8FAFC" HorizontalAlignment="Center" Margin="0,0,0,15"/>
 
