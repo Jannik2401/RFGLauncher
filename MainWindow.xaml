@@ -314,8 +314,8 @@
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                         <Button Content="Discord" Style="{StaticResource ActionButtonStyle}" Click="DiscordButton_Click" Margin="5"/>
                         <Button Content="Twitch" Style="{StaticResource ActionButtonStyle}" Click="TwitchButton_Click" Margin="5"/>
-                        <Button Content="Instagram" Style="{StaticResponse ActionButtonStyle}" Click="InstagramButton_Click" Margin="5"/>
-                        <Button Content="TikTok" Style="{StaticResponse ActionButtonStyle}" Click="TikTokButton_Click" Margin="5"/>
+                        <Button Content="Instagram" Style="{StaticResource ActionButtonStyle}" Click="InstagramButton_Click" Margin="5"/>
+                        <Button Content="TikTok" Style="{StaticResource ActionButtonStyle}" Click="TikTokButton_Click" Margin="5"/>
                     </StackPanel>
                 </StackPanel>
             </Grid>
