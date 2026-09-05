@@ -75,6 +75,18 @@
             <Setter Property="BorderBrush" Value="#334155"/>
             <Setter Property="BorderThickness" Value="0,0,1,1"/>
         </Style>
+
+        <!-- ComboBox / Dropdown dunkles Design (gegen das weiße Problem) -->
+        <Style TargetType="ComboBox">
+            <Setter Property="Background" Value="#1E293B"/>
+            <Setter Property="Foreground" Value="#F8FAFC"/>
+            <Setter Property="BorderBrush" Value="#334155"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="Background" Value="#1E293B"/>
+            <Setter Property="Foreground" Value="#F8FAFC"/>
+        </Style>
     </Window.Resources>
 
     <Grid>
@@ -119,7 +131,14 @@
             <!-- HOME PAGE -->
             <Grid x:Name="HomePage" Visibility="Visible">
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                    <TextBlock Text="Realistic Funfair Games" FontSize="32" FontWeight="Bold" Foreground="#F8FAFC" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                    <TextBlock Text="Realistic Funfair Games" FontSize="32" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,10">
+                        <TextBlock.Foreground>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                <GradientStop Color="#EF4444" Offset="0.0"/>
+                                <GradientStop Color="#38BDF8" Offset="1.0"/>
+                            </LinearGradientBrush>
+                        </TextBlock.Foreground>
+                    </TextBlock>
                     <TextBlock x:Name="HomeVersionText" Text="Version 1.0.0" FontSize="16" Foreground="#94A3B8" HorizontalAlignment="Center" Margin="0,0,0,30"/>
 
                     <Border Background="#1E293B" CornerRadius="12" Padding="25" Width="400" Margin="0,0,0,30">
@@ -220,7 +239,7 @@
 
                             <StackPanel Margin="0,0,15,0">
                                 <TextBlock Text="Rolle" Foreground="#94A3B8" FontSize="12"/>
-                                <ComboBox x:Name="AdminRoleComboBox" Width="100" Height="35" Background="#0F172A" Foreground="#F8FAFC" SelectedIndex="0">
+                                <ComboBox x:Name="AdminRoleComboBox" Width="100" Height="35" Background="#1E293B" Foreground="#F8FAFC" SelectedIndex="0">
                                     <ComboBoxItem Content="User"/>
                                     <ComboBoxItem Content="Admin"/>
                                 </ComboBox>
@@ -295,8 +314,8 @@
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                         <Button Content="Discord" Style="{StaticResource ActionButtonStyle}" Click="DiscordButton_Click" Margin="5"/>
                         <Button Content="Twitch" Style="{StaticResource ActionButtonStyle}" Click="TwitchButton_Click" Margin="5"/>
-                        <Button Content="Instagram" Style="{StaticResource ActionButtonStyle}" Click="InstagramButton_Click" Margin="5"/>
-                        <Button Content="TikTok" Style="{StaticResource ActionButtonStyle}" Click="TikTokButton_Click" Margin="5"/>
+                        <Button Content="Instagram" Style="{StaticResponse ActionButtonStyle}" Click="InstagramButton_Click" Margin="5"/>
+                        <Button Content="TikTok" Style="{StaticResponse ActionButtonStyle}" Click="TikTokButton_Click" Margin="5"/>
                     </StackPanel>
                 </StackPanel>
             </Grid>
