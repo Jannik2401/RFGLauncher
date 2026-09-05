@@ -613,6 +613,8 @@ public partial class MainWindow : Window
     {
         [JsonPropertyName("tag_name")] public string TagName { get; set; } = "";
         [JsonPropertyName("body")] public string? Body { get; set; }
+        [JsonPropertyName("draft")] public bool Draft { get; set; }
+        [JsonPropertyName("prerelease")] public bool Prerelease { get; set; }
         [JsonPropertyName("assets")] public GitHubAsset[] Assets { get; set; } = Array.Empty<GitHubAsset>();
     }
 
