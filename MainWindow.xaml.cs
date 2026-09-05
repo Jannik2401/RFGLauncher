@@ -724,7 +724,11 @@ public partial class MainWindow : Window
             }
 
             var jsonString = await response.Content.ReadAsStringAsync();
-            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var options = new JsonSerializerOptions 
+            { 
+                PropertyNameCaseInsensitive = true,
+                NumberHandling = JsonNumberHandling.AllowReadingFromString
+            };
             var result = JsonSerializer.Deserialize<AdminUserListResponse>(jsonString, options);
 
             if (result != null && result.success)
