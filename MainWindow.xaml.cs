@@ -703,22 +703,44 @@ public partial class MainWindow : Window
     {
         try
         {
+            AdminActionStatus.Text = "Lade Benutzerliste...";
+
             using HttpClient client = new();
             string encodedPass = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(LoggedInPassword ?? ""));
+            
+            client.DefaultRequestHeaders.Remove("X-Admin-User");
+            client.DefaultRequestHeaders.Remove("X-Admin-Pass");
             client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
             client.DefaultRequestHeaders.Add("X-Admin-Pass", encodedPass);
 
             var response = await client.GetAsync($"{AccountServerUrl}/api/admin/users");
-            var result = await response.Content.ReadFromJsonAsync<AdminUserListResponse>();
+            
+            if (!response.IsSuccessStatusCode)
+            {
+                string errorContent = await response.Content.ReadAsStringAsync();
+                AdminActionStatus.Text = $"Server-Fehler: {(int)response.StatusCode}";
+                MessageBox.Show($"Server hat den Zugriff verweigert:\n{errorContent}", "Admin-Fehler", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var jsonString = await response.Content.ReadAsStringAsync();
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var result = JsonSerializer.Deserialize<AdminUserListResponse>(jsonString, options);
 
             if (result != null && result.success)
             {
                 UsersDataGrid.ItemsSource = result.users;
+                AdminActionStatus.Text = $"Benutzerliste erfolgreich geladen ({result.users.Count} Benutzer).";
+            }
+            else
+            {
+                AdminActionStatus.Text = "Server meldete Erfolg = false.";
             }
         }
-        catch
+        catch (Exception ex)
         {
             AdminActionStatus.Text = "Fehler beim Laden der Benutzerliste.";
+            MessageBox.Show("Exception beim Laden der Benutzer:\n" + ex.Message, "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -738,6 +760,8 @@ public partial class MainWindow : Window
         {
             using HttpClient client = new();
             string encodedPass = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(LoggedInPassword ?? ""));
+            client.DefaultRequestHeaders.Remove("X-Admin-User");
+            client.DefaultRequestHeaders.Remove("X-Admin-Pass");
             client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
             client.DefaultRequestHeaders.Add("X-Admin-Pass", encodedPass);
 
@@ -774,6 +798,8 @@ public partial class MainWindow : Window
 
                 using HttpClient client = new();
                 string encodedPass = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(LoggedInPassword ?? ""));
+                client.DefaultRequestHeaders.Remove("X-Admin-User");
+                client.DefaultRequestHeaders.Remove("X-Admin-Pass");
                 client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
                 client.DefaultRequestHeaders.Add("X-Admin-Pass", encodedPass);
 
@@ -808,6 +834,8 @@ public partial class MainWindow : Window
             {
                 using HttpClient client = new();
                 string encodedPass = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(LoggedInPassword ?? ""));
+                client.DefaultRequestHeaders.Remove("X-Admin-User");
+                client.DefaultRequestHeaders.Remove("X-Admin-Pass");
                 client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
                 client.DefaultRequestHeaders.Add("X-Admin-Pass", encodedPass);
 
@@ -836,6 +864,8 @@ public partial class MainWindow : Window
             {
                 using HttpClient client = new();
                 string encodedPass = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(LoggedInPassword ?? ""));
+                client.DefaultRequestHeaders.Remove("X-Admin-User");
+                client.DefaultRequestHeaders.Remove("X-Admin-Pass");
                 client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
                 client.DefaultRequestHeaders.Add("X-Admin-Pass", encodedPass);
 
@@ -865,6 +895,8 @@ public partial class MainWindow : Window
                 {
                     using HttpClient client = new();
                     string encodedPass = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(LoggedInPassword ?? ""));
+                    client.DefaultRequestHeaders.Remove("X-Admin-User");
+                    client.DefaultRequestHeaders.Remove("X-Admin-Pass");
                     client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
                     client.DefaultRequestHeaders.Add("X-Admin-Pass", encodedPass);
 
