@@ -257,19 +257,21 @@
                     <TextBlock Text="Credits &amp; Social Media" FontSize="24" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center"/>
 
                     <Border Background="#1E293B" CornerRadius="12" Padding="20" Margin="0,0,0,20">
-                        <StackPanel>
-                            <TextBlock Text="Oberchef" FontSize="14" Foreground="#38BDF8" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,2"/>
-                            <TextBlock Text="Greentiger" FontSize="16" Foreground="#F8FAFC" HorizontalAlignment="Center" Margin="0,0,0,15"/>
+                        <ScrollViewer MaxHeight="300" VerticalScrollBarVisibility="Auto">
+                            <StackPanel>
+                                <TextBlock Text="Scripter" FontSize="14" Foreground="#38BDF8" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                                <TextBlock Text="Crazyfunworld Jannik, Blaubeerteilchen" FontSize="16" Foreground="#F8FAFC" HorizontalAlignment="Center" Margin="0,0,0,15" TextAlignment="Center" TextWrapping="Wrap"/>
 
-                            <TextBlock Text="Idee &amp; Inspiration" FontSize="14" Foreground="#38BDF8" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,2"/>
-                            <TextBlock Text="Dennys" FontSize="16" Foreground="#F8FAFC" HorizontalAlignment="Center" Margin="0,0,0,15"/>
+                                <TextBlock Text="Modellierer" FontSize="14" Foreground="#38BDF8" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                                <TextBlock Text="Greentiger, Blaubeerteilchen, Felixgame21" FontSize="16" Foreground="#F8FAFC" HorizontalAlignment="Center" Margin="0,0,0,15" TextAlignment="Center" TextWrapping="Wrap"/>
 
-                            <TextBlock Text="Entwicklung" FontSize="14" Foreground="#38BDF8" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,2"/>
-                            <TextBlock Text="Realistic Funfair Games Team" FontSize="16" Foreground="#F8FAFC" HorizontalAlignment="Center" Margin="0,0,0,15"/>
+                                <TextBlock Text="Discord Beauftragter" FontSize="14" Foreground="#38BDF8" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                                <TextBlock Text="Elias_2x9" FontSize="16" Foreground="#F8FAFC" HorizontalAlignment="Center" Margin="0,0,0,15" TextAlignment="Center" TextWrapping="Wrap"/>
 
-                            <TextBlock Text="Besonderer Dank" FontSize="14" Foreground="#38BDF8" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,2"/>
-                            <TextBlock Text="Alle Beta-Tester" FontSize="16" Foreground="#F8FAFC" HorizontalAlignment="Center"/>
-                        </StackPanel>
+                                <TextBlock Text="Special Thank" FontSize="14" Foreground="#38BDF8" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                                <TextBlock Text="DomeHD" FontSize="16" Foreground="#F8FAFC" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </ScrollViewer>
                     </Border>
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
