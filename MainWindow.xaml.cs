@@ -54,6 +54,7 @@ public partial class MainWindow : Window
     private string? LoggedInPassword;
     private string? LoggedInRole;
     private bool HasBetaAccess;
+    private int RemainingLaunches = 0;
 
     public MainWindow()
     {
@@ -274,19 +275,19 @@ public partial class MainWindow : Window
         }
         else if (HasBetaAccess)
         {
-            HomeBetaAccessText.Text = "FREIGESCHALTET";
+            HomeBetaAccessText.Text = $"FREIGESCHALTET (Verbleibende Starts: {RemainingLaunches})";
             HomeBetaAccessText.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#38BDF8")!;
         }
         else
         {
-            HomeBetaAccessText.Text = "KEIN BETA-ZUGANG";
+            HomeBetaAccessText.Text = "KEIN BETA-ZUGANG / GESPERRT";
             HomeBetaAccessText.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#E11D48")!;
         }
 
         StartButton.IsEnabled = IsGameInstalled();
     }
 
-    private void StartButton_Click(object sender, RoutedEventArgs e)
+    private async void StartButton_Click(object sender, RoutedEventArgs e)
     {
         try
         {
@@ -297,11 +298,22 @@ public partial class MainWindow : Window
                 return;
             }
 
-            if (!HasBetaAccess)
+            // Vor dem Starten prüfen wir direkt beim Server, ob ein Start erlaubt ist (Zusatzsicherheit für Limits & Sperren)
+            using HttpClient client = new();
+            var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/start-game", new { username = LoggedInUsername, password = LoggedInPassword });
+            var result = await response.Content.ReadFromJsonAsync<AccountResponse>();
+
+            if (result == null || !result.success)
             {
-                MessageBox.Show("Dein Account hat aktuell keinen Beta-Zugang. Bitte wende dich an einen Admin, um den Zugang freischalten zu lassen.", "Kein Beta-Zugang", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(result?.message ?? "Start verweigert (Limit erreicht oder Account gesperrt).", "Zugriff verweigert", MessageBoxButton.OK, MessageBoxImage.Warning);
+                UpdateHomeInformation();
                 return;
             }
+
+            // Werte direkt aktualisieren
+            HasBetaAccess = result.hasBetaAccess;
+            RemainingLaunches = result.remainingLaunches;
+            UpdateHomeInformation();
 
             if (IsGameRunning())
             {
@@ -570,6 +582,7 @@ public partial class MainWindow : Window
                 LoggedInPassword = password;
                 LoggedInRole = result.role ?? "user";
                 HasBetaAccess = result.hasBetaAccess;
+                RemainingLaunches = result.remainingLaunches;
 
                 AccountStatusText.Text = $"✅ Willkommen zurück, {LoggedInUsername}!";
                 AccountPasswordBox.Clear();
@@ -625,10 +638,13 @@ public partial class MainWindow : Window
             if (result != null && result.success)
             {
                 bool previousAccess = HasBetaAccess;
+                int previousLaunches = RemainingLaunches;
+                
                 HasBetaAccess = result.hasBetaAccess;
+                RemainingLaunches = result.remainingLaunches;
                 LoggedInRole = result.role ?? "user";
 
-                if (previousAccess != HasBetaAccess)
+                if (previousAccess != HasBetaAccess || previousLaunches != RemainingLaunches)
                 {
                     UpdateHomeInformation();
                 }
@@ -636,7 +652,7 @@ public partial class MainWindow : Window
         }
         catch
         {
-            // Background check silent fail to avoid UI disruptions
+            // Background check silent fail
         }
     }
 
@@ -928,6 +944,7 @@ public partial class MainWindow : Window
         public string? username { get; set; }
         public string? role { get; set; }
         public bool hasBetaAccess { get; set; }
+        public int remainingLaunches { get; set; } // Hier wird die Anzahl der Starts übergeben
         public bool mustChangePassword { get; set; }
         public string? message { get; set; }
     }
@@ -943,6 +960,7 @@ public partial class MainWindow : Window
         public string Username { get; set; } = "";
         public string Role { get; set; } = "";
         public bool HasBetaAccess { get; set; }
+        public int RemainingLaunches { get; set; }
         public bool MustChangePassword { get; set; }
         public bool IsLocked { get; set; }
         public string CreatedAt { get; set; } = "";
