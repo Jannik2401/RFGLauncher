@@ -65,6 +65,18 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
+
+        <!-- Fix für ComboBox Item Textfarbe -->
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="Background" Value="#0F172A"/>
+            <Setter Property="Foreground" Value="#F8FAFC"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#1E293B"/>
+                    <Setter Property="Foreground" Value="#38BDF8"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
 
     <Grid>
@@ -263,7 +275,7 @@
                             <TextBlock Text="Idee &amp; Inspiration" FontSize="14" Foreground="#38BDF8" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,2"/>
                             <TextBlock Text="Dennys" FontSize="16" Foreground="#F8FAFC" HorizontalAlignment="Center" Margin="0,0,0,15"/>
 
-                            <TextBlock Text="Entwicklung" FontSize="14" Foreground="#38BDF8" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                            <TextBlock Text="Entwicklung" FontSize="14"Foreground="#38BDF8" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,2"/>
                             <TextBlock Text="Realistic Funfair Games Team" FontSize="16" Foreground="#F8FAFC" HorizontalAlignment="Center" Margin="0,0,0,15"/>
 
                             <TextBlock Text="Besonderer Dank" FontSize="14" Foreground="#38BDF8" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,2"/>
