@@ -131,8 +131,7 @@
                 <!-- Benutzer-Tabelle -->
                 <DataGrid x:Name="UsersDataGrid" Grid.Row="1" AutoGenerateColumns="False" CanUserAddRows="False" 
                           Background="#1E293B" Foreground="White" BorderBrush="#334155"
-                          RowBackground="#1E293B" AlternatingRowBackground="#0F172A"
-                          ColumnHeaderStyle="{StaticResource {x:Static DataGridColumnHeader.ButtonStyleKey}}">
+                          RowBackground="#1E293B" AlternatingRowBackground="#0F172A">
                     <DataGrid.Resources>
                         <Style TargetType="{x:Type DataGridColumnHeader}">
                             <Setter Property="Background" Value="#0F172A"/>
