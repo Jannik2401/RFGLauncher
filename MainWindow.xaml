@@ -77,13 +77,9 @@
                 <Button Content="Einstellungen" Click="SettingsButton_Click" Margin="0,5" Height="35" Foreground="White" Background="Transparent" HorizontalContentAlignment="Left" Padding="10,0"/>
                 <Button Content="Credits" Click="CreditsButton_Click" Margin="0,5" Height="35" Foreground="White" Background="Transparent" HorizontalContentAlignment="Left" Padding="10,0"/>
 
-                <Separator Background="#334155" Margin="0,20"/>
+                <Separator Background="#334155" Margin="0,30"/>
 
-                <!-- Performance Stats im Sidebar Footer -->
-                <TextBlock x:Name="CpuText" Text="CPU: --%" Foreground="#94A3B8" FontSize="12" Margin="5,2"/>
-                <TextBlock x:Name="RamText" Text="RAM: --%" Foreground="#94A3B8" FontSize="12" Margin="5,2"/>
-
-                <Button Content="Beenden" Click="ExitButton_Click" Margin="0,40,0,0" Height="30" Background="#E11D48" Foreground="White"/>
+                <Button Content="Beenden" Click="ExitButton_Click" Margin="0,10,0,0" Height="30" Background="#E11D48" Foreground="White"/>
             </StackPanel>
         </Border>
 
@@ -211,19 +207,17 @@
                             </Style>
                         </DataGrid.Resources>
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Benutzername" Binding="{Binding Username}" Width="120"/>
-                            <DataGridTextColumn Header="Rolle" Binding="{Binding Role}" Width="80"/>
-                            <DataGridCheckBoxColumn Header="Beta" Binding="{Binding HasBetaAccess}" Width="50"/>
-                            <DataGridTextColumn Header="Starts" Binding="{Binding RemainingLaunches}" Width="60"/>
-                            <DataGridCheckBoxColumn Header="Gesperrt" Binding="{Binding IsLocked}" Width="60"/>
+                            <DataGridTextColumn Header="Benutzername" Binding="{Binding Username}" Width="140"/>
+                            <DataGridTextColumn Header="Rolle" Binding="{Binding Role}" Width="90"/>
+                            <DataGridCheckBoxColumn Header="Beta" Binding="{Binding HasBetaAccess}" Width="70"/>
+                            <DataGridCheckBoxColumn Header="Gesperrt" Binding="{Binding IsLocked}" Width="80"/>
                             
                             <!-- Aktionen Template Spalte -->
-                            <DataGridTemplateColumn Width="280">
+                            <DataGridTemplateColumn Width="240">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal">
                                             <Button Content="Beta" Click="AdminToggleBeta_Click" Margin="2" Padding="6,3"/>
-                                            <Button Content="Starts" Click="AdminSetLaunches_Click" Margin="2" Padding="6,3" ToolTip="Verbleibende Starts festlegen"/>
                                             <Button Content="Reset" Click="AdminResetPw_Click" Margin="2" Padding="6,3"/>
                                             <Button Content="Sperren" Click="AdminToggleLock_Click" Margin="2" Padding="6,3"/>
                                             <Button Content="Löschen" Click="AdminDeleteUser_Click" Foreground="#E11D48" Margin="2" Padding="6,3"/>
@@ -258,8 +252,14 @@
             <!-- 6. Performance Page -->
             <Grid x:Name="PerformancePage" Visibility="Collapsed">
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                    <TextBlock Text="System Überwachung" FontSize="22" FontWeight="Bold" Foreground="White" Margin="0,0,0,20"/>
-                    <TextBlock Text="Die Live-Werte deiner Hardware werden in der Sidebar angezeigt." Foreground="#94A3B8"/>
+                    <TextBlock Text="System Überwachung" FontSize="22" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,0,0,25"/>
+                    
+                    <Border Background="#1E293B" CornerRadius="12" Padding="25" Width="320">
+                        <StackPanel>
+                            <TextBlock x:Name="CpuText" Text="CPU: --%" FontSize="16" Foreground="#38BDF8" FontWeight="Bold" Margin="0,0,0,15" HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="RamText" Text="RAM: --%" FontSize="16" Foreground="#38BDF8" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
             </Grid>
 
