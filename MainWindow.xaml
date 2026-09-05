@@ -129,7 +129,28 @@
                 <TextBlock Grid.Row="0" Text="Administrator-Verwaltung" FontSize="20" FontWeight="Bold" Foreground="#F43F5E" Margin="0,0,0,15"/>
 
                 <!-- Benutzer-Tabelle -->
-                <DataGrid x:Name="UsersDataGrid" Grid.Row="1" AutoGenerateColumns="False" CanUserAddRows="False" Background="#1E293B" Foreground="White" BorderBrush="#334155">
+                <DataGrid x:Name="UsersDataGrid" Grid.Row="1" AutoGenerateColumns="False" CanUserAddRows="False" 
+                          Background="#1E293B" Foreground="White" BorderBrush="#334155"
+                          RowBackground="#1E293B" AlternatingRowBackground="#0F172A"
+                          ColumnHeaderStyle="{StaticResource {x:Static DataGridColumnHeader.ButtonStyleKey}}">
+                    <DataGrid.Resources>
+                        <Style TargetType="{x:Type DataGridColumnHeader}">
+                            <Setter Property="Background" Value="#0F172A"/>
+                            <Setter Property="Foreground" Value="#94A3B8"/>
+                            <Setter Property="Padding" Value="8,5"/>
+                            <Setter Property="FontWeight" Value="Bold"/>
+                            <Setter Property="BorderBrush" Value="#334155"/>
+                            <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                        </Style>
+                        <Style TargetType="{x:Type DataGridRow}">
+                            <Style.Triggers>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="#334155"/>
+                                    <Setter Property="Foreground" Value="White"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.Resources>
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Benutzername" Binding="{Binding Username}" Width="120"/>
                         <DataGridTextColumn Header="Rolle" Binding="{Binding Role}" Width="80"/>
