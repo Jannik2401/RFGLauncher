@@ -253,9 +253,21 @@
 
             <!-- CREDITS PAGE -->
             <Grid x:Name="CreditsPage" Visibility="Collapsed">
-                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="450">
                     <TextBlock Text="Credits &amp; Social Media" FontSize="24" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center"/>
-                    <TextBlock Text="Realistic Funfair Games" FontSize="16" Foreground="#94A3B8" Margin="0,0,0,30" HorizontalAlignment="Center"/>
+
+                    <Border Background="#1E293B" CornerRadius="12" Padding="20" Margin="0,0,0,20">
+                        <StackPanel>
+                            <TextBlock Text="Idee &amp; Inspiration" FontSize="14" Foreground="#38BDF8" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                            <TextBlock Text="Dennys" FontSize="16" Foreground="#F8FAFC" HorizontalAlignment="Center" Margin="0,0,0,15"/>
+
+                            <TextBlock Text="Entwicklung" FontSize="14" Foreground="#38BDF8" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                            <TextBlock Text="Realistic Funfair Games Team" FontSize="16" Foreground="#F8FAFC" HorizontalAlignment="Center" Margin="0,0,0,15"/>
+
+                            <TextBlock Text="Besonderer Dank" FontSize="14" Foreground="#38BDF8" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                            <TextBlock Text="Alle Beta-Tester" FontSize="16" Foreground="#F8FAFC" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                         <Button Content="Discord" Style="{StaticResource ActionButtonStyle}" Click="DiscordButton_Click" Margin="5"/>
