@@ -298,7 +298,6 @@ public partial class MainWindow : Window
                 return;
             }
 
-            // Vor dem Starten prüfen wir direkt beim Server, ob ein Start erlaubt ist (Zusatzsicherheit für Limits & Sperren)
             using HttpClient client = new();
             var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/start-game", new { username = LoggedInUsername, password = LoggedInPassword });
             var result = await response.Content.ReadFromJsonAsync<AccountResponse>();
@@ -310,7 +309,6 @@ public partial class MainWindow : Window
                 return;
             }
 
-            // Werte direkt aktualisieren
             HasBetaAccess = result.hasBetaAccess;
             RemainingLaunches = result.remainingLaunches;
             UpdateHomeInformation();
@@ -706,8 +704,9 @@ public partial class MainWindow : Window
         try
         {
             using HttpClient client = new();
+            string encodedPass = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(LoggedInPassword ?? ""));
             client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
-            client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
+            client.DefaultRequestHeaders.Add("X-Admin-Pass", encodedPass);
 
             var response = await client.GetAsync($"{AccountServerUrl}/api/admin/users");
             var result = await response.Content.ReadFromJsonAsync<AdminUserListResponse>();
@@ -738,8 +737,9 @@ public partial class MainWindow : Window
         try
         {
             using HttpClient client = new();
+            string encodedPass = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(LoggedInPassword ?? ""));
             client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
-            client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
+            client.DefaultRequestHeaders.Add("X-Admin-Pass", encodedPass);
 
             var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/admin/create-user", new
             {
@@ -773,8 +773,9 @@ public partial class MainWindow : Window
                 AdminActionStatus.Text = $"Ändere Beta-Zugang für {user.Username}...";
 
                 using HttpClient client = new();
+                string encodedPass = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(LoggedInPassword ?? ""));
                 client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
-                client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
+                client.DefaultRequestHeaders.Add("X-Admin-Pass", encodedPass);
 
                 var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/admin/toggle-beta", new { username = user.Username });
                 var result = await response.Content.ReadFromJsonAsync<AccountResponse>();
@@ -806,8 +807,9 @@ public partial class MainWindow : Window
             try
             {
                 using HttpClient client = new();
+                string encodedPass = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(LoggedInPassword ?? ""));
                 client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
-                client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
+                client.DefaultRequestHeaders.Add("X-Admin-Pass", encodedPass);
 
                 var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/admin/reset-password", new
                 {
@@ -833,8 +835,9 @@ public partial class MainWindow : Window
             try
             {
                 using HttpClient client = new();
+                string encodedPass = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(LoggedInPassword ?? ""));
                 client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
-                client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
+                client.DefaultRequestHeaders.Add("X-Admin-Pass", encodedPass);
 
                 var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/admin/toggle-lock", new { username = user.Username });
                 await LoadAdminUserListAsync();
@@ -861,8 +864,9 @@ public partial class MainWindow : Window
                 try
                 {
                     using HttpClient client = new();
+                    string encodedPass = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(LoggedInPassword ?? ""));
                     client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
-                    client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
+                    client.DefaultRequestHeaders.Add("X-Admin-Pass", encodedPass);
 
                     var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/admin/delete-user", new { username = user.Username });
                     await LoadAdminUserListAsync();
@@ -944,7 +948,7 @@ public partial class MainWindow : Window
         public string? username { get; set; }
         public string? role { get; set; }
         public bool hasBetaAccess { get; set; }
-        public int remainingLaunches { get; set; } // Hier wird die Anzahl der Starts übergeben
+        public int remainingLaunches { get; set; }
         public bool mustChangePassword { get; set; }
         public string? message { get; set; }
     }
