@@ -3,6 +3,60 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="RFG Beta Launcher" Height="680" Width="1050"
         Background="#0F172A" Foreground="White" WindowStartupLocation="CenterScreen">
+
+    <Window.Resources>
+        <!-- Globaler Liquid Style für Buttons mit abgerundeten Ecken und weichem Hover -->
+        <Style TargetType="Button">
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                CornerRadius="8" 
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Globaler Liquid Style für Textboxen und Passwortfelder -->
+        <Style TargetType="TextBox">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                CornerRadius="6" 
+                                Padding="4">
+                            <ScrollViewer x:Name="PART_ContentHost"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="PasswordBox">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="PasswordBox">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                CornerRadius="6" 
+                                Padding="4">
+                            <ScrollContentPresenter x:Name="PART_ContentHost"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
     
     <Grid>
         <Grid.ColumnDefinitions>
@@ -10,12 +64,12 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Sidebar / Navigation -->
+        <!-- Sidebar / Navigation im Liquid Style -->
         <Border Grid.Column="0" Background="#1E293B" BorderBrush="#334155" BorderThickness="0,0,1,0">
             <StackPanel Margin="15">
                 <TextBlock Text="RFG LAUNCHER" FontSize="18" FontWeight="Bold" Foreground="#38BDF8" Margin="0,0,0,25" HorizontalAlignment="Center"/>
 
-                <Button Content="Startseite" Click="HomeButton_Click" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Margin="0,5" Height="35" Foreground="White" Background="Transparent" HorizontalContentAlignment="Left" Padding="10,0"/>
+                <Button Content="Startseite" Click="HomeButton_Click" Margin="0,5" Height="35" Foreground="White" Background="Transparent" HorizontalContentAlignment="Left" Padding="10,0"/>
                 <Button Content="Updates &amp; News" Click="UpdatesButton_Click" Margin="0,5" Height="35" Foreground="White" Background="Transparent" HorizontalContentAlignment="Left" Padding="10,0"/>
                 <Button Content="Account" Click="AccountButton_Click" Margin="0,5" Height="35" Foreground="White" Background="Transparent" HorizontalContentAlignment="Left" Padding="10,0"/>
                 <Button x:Name="AdminMenuButton" Content="Admin-Bereich" Click="AdminButton_Click" Margin="0,5" Height="35" Foreground="#F43F5E" Background="Transparent" HorizontalContentAlignment="Left" Padding="10,0" Visibility="Collapsed"/>
@@ -44,7 +98,7 @@
                     <TextBlock x:Name="HomeStatusText" Text="Status wird geprüft..." FontSize="14" FontWeight="Bold" Foreground="#38BDF8" HorizontalAlignment="Center" Margin="0,0,0,5"/>
                     <TextBlock x:Name="HomeBetaAccessText" Text="Beta-Zugang wird geprüft..." FontSize="14" FontWeight="Bold" Foreground="#E11D48" HorizontalAlignment="Center" Margin="0,0,0,30"/>
 
-                    <Button x:Name="StartButton" Content="SPIEL STARTEN" Click="StartButton_Click" Width="220" Height="50" FontSize="16" FontWeight="Bold" Background="#10B981" Foreground="White" Cursor="Hand"/>
+                    <Button x:Name="StartButton" Content="SPIEL STARTEN" Click="StartButton_Click" Width="220" Height="50" FontSize="16" FontWeight="Bold" Background="#10B981" Foreground="White"/>
                 </StackPanel>
 
                 <!-- Social Media Buttons unten links -->
@@ -69,7 +123,7 @@
                     <TextBlock x:Name="VersionText" Text="Installiert: Keine" Foreground="#94A3B8" Margin="0,5,0,0"/>
                 </StackPanel>
 
-                <Border Grid.Row="1" Background="#1E293B" CornerRadius="5" Padding="15">
+                <Border Grid.Row="1" Background="#1E293B" CornerRadius="10" Padding="15">
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <TextBlock x:Name="ReleaseNotesText" Text="Lade Release Notes..." TextWrapping="Wrap" Foreground="#E2E8F0"/>
                     </ScrollViewer>
@@ -86,35 +140,39 @@
 
             <!-- 3. Account Page -->
             <Grid x:Name="AccountPage" Visibility="Collapsed">
-                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="300">
-                    <TextBlock Text="Account Login" FontSize="22" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,0,0,20"/>
-                    
-                    <TextBlock Text="Benutzername" Foreground="#94A3B8" Margin="0,0,0,5"/>
-                    <TextBox x:Name="AccountUsernameTextBox" Height="30" Background="#1E293B" Foreground="White" BorderBrush="#334155" Padding="5" Margin="0,0,0,15"/>
+                <Border Background="#1E293B" CornerRadius="12" Padding="25" VerticalAlignment="Center" HorizontalAlignment="Center" Width="340">
+                    <StackPanel>
+                        <TextBlock Text="Account Login" FontSize="22" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+                        
+                        <TextBlock Text="Benutzername" Foreground="#94A3B8" Margin="0,0,0,5"/>
+                        <TextBox x:Name="AccountUsernameTextBox" Height="32" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="5" Margin="0,0,0,15"/>
 
-                    <TextBlock Text="Passwort" Foreground="#94A3B8" Margin="0,0,0,5"/>
-                    <PasswordBox x:Name="AccountPasswordBox" Height="30" Background="#1E293B" Foreground="White" BorderBrush="#334155" Padding="5" Margin="0,0,0,20"/>
+                        <TextBlock Text="Passwort" Foreground="#94A3B8" Margin="0,0,0,5"/>
+                        <PasswordBox x:Name="AccountPasswordBox" Height="32" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="5" Margin="0,0,0,20"/>
 
-                    <Button x:Name="AccountLoginButton" Content="Anmelden" Click="LoginAccountButton_Click" Height="35" Background="#38BDF8" Foreground="#0F172A" FontWeight="Bold" Margin="0,0,0,15"/>
-                    <TextBlock x:Name="AccountStatusText" Text="" Foreground="#E11D48" TextWrapping="Wrap" HorizontalAlignment="Center"/>
-                </StackPanel>
+                        <Button x:Name="AccountLoginButton" Content="Anmelden" Click="LoginAccountButton_Click" Height="38" Background="#38BDF8" Foreground="#0F172A" FontWeight="Bold" Margin="0,0,0,15"/>
+                        <TextBlock x:Name="AccountStatusText" Text="" Foreground="#E11D48" TextWrapping="Wrap" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
             </Grid>
 
             <!-- 4. Change Password Page -->
             <Grid x:Name="ChangePasswordPage" Visibility="Collapsed">
-                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="320">
-                    <TextBlock Text="Passwort ändern erforderlich" FontSize="20" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,0,0,10"/>
-                    <TextBlock Text="Da dies dein erster Login mit einem temporären Passwort ist, musst du dein Passwort nun ändern." TextWrapping="Wrap" Foreground="#94A3B8" Margin="0,0,0,20" TextAlignment="Center"/>
+                <Border Background="#1E293B" CornerRadius="12" Padding="25" VerticalAlignment="Center" HorizontalAlignment="Center" Width="360">
+                    <StackPanel>
+                        <TextBlock Text="Passwort ändern erforderlich" FontSize="20" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                        <TextBlock Text="Da dies dein erster Login mit einem temporären Passwort ist, musst du dein Passwort nun ändern." TextWrapping="Wrap" Foreground="#94A3B8" Margin="0,0,0,20" TextAlignment="Center"/>
 
-                    <TextBlock Text="Neues Passwort (min. 8 Zeichen)" Foreground="#94A3B8" Margin="0,0,0,5"/>
-                    <PasswordBox x:Name="NewPasswordBox" Height="30" Background="#1E293B" Foreground="White" BorderBrush="#334155" Padding="5" Margin="0,0,0,15"/>
+                        <TextBlock Text="Neues Passwort (min. 8 Zeichen)" Foreground="#94A3B8" Margin="0,0,0,5"/>
+                        <PasswordBox x:Name="NewPasswordBox" Height="32" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="5" Margin="0,0,0,15"/>
 
-                    <TextBlock Text="Passwort bestätigen" Foreground="#94A3B8" Margin="0,0,0,5"/>
-                    <PasswordBox x:Name="ConfirmPasswordBox" Height="30" Background="#1E293B" Foreground="White" BorderBrush="#334155" Padding="5" Margin="0,0,0,20"/>
+                        <TextBlock Text="Passwort bestätigen" Foreground="#94A3B8" Margin="0,0,0,5"/>
+                        <PasswordBox x:Name="ConfirmPasswordBox" Height="32" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="5" Margin="0,0,0,20"/>
 
-                    <Button Content="Passwort speichern" Click="SaveNewPasswordButton_Click" Height="35" Background="#10B981" Foreground="White" FontWeight="Bold" Margin="0,0,0,15"/>
-                    <TextBlock x:Name="ChangePasswordStatusText" Text="" Foreground="#E11D48" TextWrapping="Wrap" HorizontalAlignment="Center"/>
-                </StackPanel>
+                        <Button Content="Passwort speichern" Click="SaveNewPasswordButton_Click" Height="38" Background="#10B981" Foreground="White" FontWeight="Bold" Margin="0,0,0,15"/>
+                        <TextBlock x:Name="ChangePasswordStatusText" Text="" Foreground="#E11D48" TextWrapping="Wrap" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
             </Grid>
 
             <!-- 5. Admin Page -->
@@ -128,67 +186,70 @@
 
                 <TextBlock Grid.Row="0" Text="Administrator-Verwaltung" FontSize="20" FontWeight="Bold" Foreground="#F43F5E" Margin="0,0,0,15"/>
 
-                <!-- Benutzer-Tabelle -->
-                <DataGrid x:Name="UsersDataGrid" Grid.Row="1" AutoGenerateColumns="False" CanUserAddRows="False" 
-                          Background="#1E293B" Foreground="White" BorderBrush="#334155"
-                          RowBackground="#1E293B" AlternatingRowBackground="#0F172A">
-                    <DataGrid.Resources>
-                        <Style TargetType="{x:Type DataGridColumnHeader}">
-                            <Setter Property="Background" Value="#0F172A"/>
-                            <Setter Property="Foreground" Value="#94A3B8"/>
-                            <Setter Property="Padding" Value="8,5"/>
-                            <Setter Property="FontWeight" Value="Bold"/>
-                            <Setter Property="BorderBrush" Value="#334155"/>
-                            <Setter Property="BorderThickness" Value="0,0,1,1"/>
-                        </Style>
-                        <Style TargetType="{x:Type DataGridRow}">
-                            <Style.Triggers>
-                                <Trigger Property="IsSelected" Value="True">
-                                    <Setter Property="Background" Value="#334155"/>
-                                    <Setter Property="Foreground" Value="White"/>
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </DataGrid.Resources>
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Benutzername" Binding="{Binding Username}" Width="120"/>
-                        <DataGridTextColumn Header="Rolle" Binding="{Binding Role}" Width="80"/>
-                        <DataGridCheckBoxColumn Header="Beta" Binding="{Binding HasBetaAccess}" Width="50"/>
-                        <DataGridTextColumn Header="Starts" Binding="{Binding RemainingLaunches}" Width="60"/>
-                        <DataGridCheckBoxColumn Header="Gesperrt" Binding="{Binding IsLocked}" Width="60"/>
-                        
-                        <!-- Aktionen Template Spalte -->
-                        <DataGridTemplateColumn Width="280">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <StackPanel Orientation="Horizontal">
-                                        <Button Content="Beta" Click="AdminToggleBeta_Click" Margin="2" Padding="5,2,5,2"/>
-                                        <Button Content="Starts" Click="AdminSetLaunches_Click" Margin="2" Padding="5,2,5,2" ToolTip="Verbleibende Starts festlegen"/>
-                                        <Button Content="Reset" Click="AdminResetPw_Click" Margin="2" Padding="5,2,5,2"/>
-                                        <Button Content="Sperren" Click="AdminToggleLock_Click" Margin="2" Padding="5,2,5,2"/>
-                                        <Button Content="Löschen" Click="AdminDeleteUser_Click" Foreground="#E11D48" Margin="2" Padding="5,2,5,2"/>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                    </DataGrid.Columns>
-                </DataGrid>
+                <!-- Benutzer-Tabelle im runden Liquid-Container -->
+                <Border Grid.Row="1" Background="#1E293B" CornerRadius="10" Padding="5" BorderBrush="#334155" BorderThickness="1">
+                    <DataGrid x:Name="UsersDataGrid" AutoGenerateColumns="False" CanUserAddRows="False" 
+                              Background="Transparent" Foreground="White" BorderBrush="Transparent"
+                              RowBackground="#1E293B" AlternatingRowBackground="#172033" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#334155">
+                        <DataGrid.Resources>
+                            <Style TargetType="{x:Type DataGridColumnHeader}">
+                                <Setter Property="Background" Value="#0F172A"/>
+                                <Setter Property="Foreground" Value="#94A3B8"/>
+                                <Setter Property="Padding" Value="10,8"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                                <Setter Property="BorderBrush" Value="#334155"/>
+                                <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                            </Style>
+                            <Style TargetType="{x:Type DataGridRow}">
+                                <Setter Property="Padding" Value="0,3"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="Background" Value="#334155"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGrid.Resources>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Benutzername" Binding="{Binding Username}" Width="120"/>
+                            <DataGridTextColumn Header="Rolle" Binding="{Binding Role}" Width="80"/>
+                            <DataGridCheckBoxColumn Header="Beta" Binding="{Binding HasBetaAccess}" Width="50"/>
+                            <DataGridTextColumn Header="Starts" Binding="{Binding RemainingLaunches}" Width="60"/>
+                            <DataGridCheckBoxColumn Header="Gesperrt" Binding="{Binding IsLocked}" Width="60"/>
+                            
+                            <!-- Aktionen Template Spalte -->
+                            <DataGridTemplateColumn Width="280">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button Content="Beta" Click="AdminToggleBeta_Click" Margin="2" Padding="6,3"/>
+                                            <Button Content="Starts" Click="AdminSetLaunches_Click" Margin="2" Padding="6,3" ToolTip="Verbleibende Starts festlegen"/>
+                                            <Button Content="Reset" Click="AdminResetPw_Click" Margin="2" Padding="6,3"/>
+                                            <Button Content="Sperren" Click="AdminToggleLock_Click" Margin="2" Padding="6,3"/>
+                                            <Button Content="Löschen" Click="AdminDeleteUser_Click" Foreground="#E11D48" Margin="2" Padding="6,3"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Border>
 
                 <!-- Status unten in der Admin-Ansicht -->
                 <TextBlock x:Name="AdminActionStatus" Grid.Row="2" Text="" Foreground="#94A3B8" Margin="0,10,0,10"/>
 
                 <!-- Benutzer erstellen Sektion -->
-                <Border Grid.Row="3" Background="#1E293B" CornerRadius="5" Padding="10">
+                <Border Grid.Row="3" Background="#1E293B" CornerRadius="10" Padding="15">
                     <StackPanel>
                         <TextBlock Text="Neuen Benutzer anlegen" FontWeight="Bold" Foreground="White" Margin="0,0,0,10"/>
                         <WrapPanel>
-                            <TextBox x:Name="AdminNewUsernameBox" Width="150" Height="25" Margin="0,0,10,0" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="3"/>
-                            <TextBox x:Name="AdminNewTempPassBox" Width="150" Height="25" Margin="0,0,10,0" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="3"/>
-                            <ComboBox x:Name="AdminRoleComboBox" Width="100" Height="25" Margin="0,0,10,0" SelectedIndex="0">
+                            <TextBox x:Name="AdminNewUsernameBox" Width="150" Height="28" Margin="0,0,10,0" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="4"/>
+                            <TextBox x:Name="AdminNewTempPassBox" Width="150" Height="28" Margin="0,0,10,0" Background="#0F172A" Foreground="White" BorderBrush="#334155" Padding="4"/>
+                            <ComboBox x:Name="AdminRoleComboBox" Width="100" Height="28" Margin="0,0,10,0" SelectedIndex="0">
                                 <ComboBoxItem Content="User"/>
                                 <ComboBoxItem Content="Admin"/>
                             </ComboBox>
-                            <Button x:Name="AdminCreateUser" Content="Erstellen" Click="AdminCreateUser_Click" Width="100" Height="25" Background="#10B981" Foreground="White"/>
+                            <Button x:Name="AdminCreateUser" Content="Erstellen" Click="AdminCreateUser_Click" Width="100" Height="28" Background="#10B981" Foreground="White"/>
                         </WrapPanel>
                     </StackPanel>
                 </Border>
@@ -208,7 +269,7 @@
                     <TextBlock Text="Einstellungen" FontSize="22" FontWeight="Bold" Foreground="White" Margin="0,0,0,20"/>
                     <TextBlock x:Name="LauncherVersionText" Text="Installierte Version: 1.0.45" Foreground="#94A3B8" Margin="0,0,0,10"/>
                     <TextBlock x:Name="LauncherUpdateStatusText" Text="" Foreground="#38BDF8" Margin="0,0,0,10"/>
-                    <Button x:Name="CheckLauncherUpdateButton" Content="Nach Launcher-Updates suchen" Click="CheckLauncherUpdateButton_Click" Width="220" Height="30" Background="#38BDF8" Foreground="#0F172A" FontWeight="Bold" HorizontalAlignment="Left"/>
+                    <Button x:Name="CheckLauncherUpdateButton" Content="Nach Launcher-Updates suchen" Click="CheckLauncherUpdateButton_Click" Width="220" Height="32" Background="#38BDF8" Foreground="#0F172A" FontWeight="Bold" HorizontalAlignment="Left"/>
                 </StackPanel>
             </Grid>
 
