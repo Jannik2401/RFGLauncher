@@ -477,11 +477,30 @@ public partial class MainWindow : Window
             using HttpClient client = new();
             client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
             client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
+            
             var response = await client.GetAsync($"{AccountServerUrl}/api/admin/users");
+            
+            if (!response.IsSuccessStatusCode)
+            {
+                AdminActionStatus.Text = $"Server-Fehler: {(int)response.StatusCode} {response.ReasonPhrase}";
+                return;
+            }
+
             var result = await response.Content.ReadFromJsonAsync<AdminUserListResponse>();
-            if (result != null && result.success) UsersDataGrid.ItemsSource = result.users;
+            if (result != null && result.success)
+            {
+                UsersDataGrid.ItemsSource = result.users;
+                AdminActionStatus.Text = $"Benutzer erfolgreich geladen ({result.users.Count}).";
+            }
+            else
+            {
+                AdminActionStatus.Text = "Server meldet Erfolg = false.";
+            }
         }
-        catch { AdminActionStatus.Text = "Fehler beim Laden."; }
+        catch (Exception ex) 
+        { 
+            AdminActionStatus.Text = "Fehler: " + ex.Message; 
+        }
     }
 
     private async void AdminCreateUser_Click(object sender, RoutedEventArgs e)
