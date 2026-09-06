@@ -29,10 +29,8 @@ public partial class MainWindow : Window
     private const string GameExeName = "kirmes.exe";
     private const string AccountServerUrl = "http://node1.waifly.com:25433";
 
-    // Geschützte Admin-Accounts, die nicht gelöscht werden können
     private static readonly string[] ProtectedAdminUsernames = { "admin", "jannik" };
 
-    // Social Media Links
     private const string DiscordUrl = "https://discord.gg/qaxg7UdafU";
     private const string TwitchUrl = "https://www.twitch.tv/realistic_funfair_games";
     private const string InstagramUrl = "https://www.instagram.com/realistic_funfair_games/";
@@ -534,10 +532,24 @@ public partial class MainWindow : Window
                 using HttpClient client = new();
                 client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
                 client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
-                await client.PostAsJsonAsync($"{AccountServerUrl}/api/admin/toggle-beta", new { username = user.Username });
-                await LoadAdminUserListAsync();
+                
+                var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/admin/toggle-beta", new { username = user.Username });
+                var result = await response.Content.ReadFromJsonAsync<AccountResponse>();
+                
+                if (result != null && result.success)
+                {
+                    AdminActionStatus.Text = $"Beta-Zugang für {user.Username} aktualisiert.";
+                    await LoadAdminUserListAsync();
+                }
+                else
+                {
+                    AdminActionStatus.Text = result?.message ?? "Fehler beim Aktualisieren des Beta-Zugangs.";
+                }
             }
-            catch { }
+            catch (Exception ex) 
+            { 
+                AdminActionStatus.Text = "Fehler: " + ex.Message; 
+            }
         }
     }
 
