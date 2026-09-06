@@ -229,6 +229,16 @@
                     <TextBlock x:Name="AdminActionStatus" DockPanel.Dock="Bottom" Text="" Foreground="#38BDF8" Margin="0,10,0,0"/>
 
                     <DataGrid x:Name="UsersDataGrid" AutoGenerateColumns="False" Background="#1E293B" RowBackground="#0F172A" AlternatingRowBackground="#1E293B" Foreground="#F8FAFC" BorderThickness="0" HeadersVisibility="Column">
+                        <DataGrid.ColumnHeaderStyle>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="Background" Value="#0F172A"/>
+                                <Setter Property="Foreground" Value="#F8FAFC"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                                <Setter Property="Padding" Value="10,6"/>
+                                <Setter Property="BorderBrush" Value="#334155"/>
+                                <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                            </Style>
+                        </DataGrid.ColumnHeaderStyle>
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Name" Binding="{Binding Username}" Width="*"/>
                             <DataGridTextColumn Header="Rolle" Binding="{Binding Role}" Width="80"/>
