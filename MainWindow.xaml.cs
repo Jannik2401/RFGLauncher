@@ -29,7 +29,8 @@ public partial class MainWindow : Window
     private const string GameExeName = "kirmes.exe";
     private const string AccountServerUrl = "http://node1.waifly.com:25433";
 
-    private const string ProtectedAdminUsername = "admin";
+    // Geschützte Admin-Accounts, die nicht gelöscht werden können
+    private static readonly string[] ProtectedAdminUsernames = { "admin", "jannik" };
 
     // Social Media Links
     private const string DiscordUrl = "https://discord.gg/qaxg7UdafU";
@@ -578,9 +579,9 @@ public partial class MainWindow : Window
     {
         if ((sender as Button)?.DataContext is UserItem user)
         {
-            if (string.Equals(user.Username, ProtectedAdminUsername, StringComparison.OrdinalIgnoreCase))
+            if (ProtectedAdminUsernames.Contains(user.Username, StringComparer.OrdinalIgnoreCase))
             {
-                MessageBox.Show("Haupt-Admin kann nicht gelöscht werden.", "Gesperrt", MessageBoxButton.OK, MessageBoxImage.Stop);
+                MessageBox.Show($"Der Haupt-Admin '{user.Username}' kann nicht gelöscht werden.", "Gesperrt", MessageBoxButton.OK, MessageBoxImage.Stop);
                 return;
             }
 
