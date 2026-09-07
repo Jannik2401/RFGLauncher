@@ -1,739 +1,110 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Json;
-using System.Reflection;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Threading;
 
 namespace BetaLauncher;
 
-public partial class MainWindow : Window
+public partial class UpdateWindow : Window
 {
-    private static readonly string CurrentLauncherVersion = 
-        Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.0.0";
+    private readonly string DownloadUrl;
+    private readonly string TargetExePath;
 
-    private const string LauncherVersionUrl = "https://raw.githubusercontent.com/Jannik2401/RFGLauncher/main/version.json";
-
-    private const string GitHubOwner = "Jannik2401";
-    private const string GitHubRepo = "RFGLauncher";
-    private const string GameExeName = "kirmes.exe";
-    private const string AccountServerUrl = "http://node1.waifly.com:25433";
-
-    private static readonly string[] ProtectedAdminUsernames = { "admin", "jannik" };
-
-    private const string DiscordUrl = "https://discord.gg/qaxg7UdafU";
-    private const string TwitchUrl = "https://www.twitch.tv/realistic_funfair_games";
-    private const string InstagramUrl = "https://www.instagram.com/realistic_funfair_games/";
-    private const string TikTokUrl = "https://www.tiktok.com/@realisticfunfairgames";
-
-    private string GameDirectory = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "RealisticFunfairGames",
-        "Game"
-    );
-
-    private string VersionFile => Path.Combine(GameDirectory, "version.txt");
-    private string DigestFile => Path.Combine(GameDirectory, "game.digest");
-
-    private readonly HttpClient Http = new();
-    private DispatcherTimer? PerformanceTimer;
-    private DispatcherTimer? StatusCheckTimer;
-
-    private string? LoggedInUsername;
-    private string? LoggedInPassword;
-    private string? LoggedInRole;
-    private bool HasBetaAccess;
-
-    public MainWindow()
+    public UpdateWindow(string downloadUrl, string targetExePath)
     {
         InitializeComponent();
+        DownloadUrl = downloadUrl;
+        TargetExePath = targetExePath;
 
-        Http.DefaultRequestHeaders.UserAgent.ParseAdd("RFG-BetaLauncher/1.0");
-        Http.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github+json");
-        Http.Timeout = TimeSpan.FromMinutes(30);
-
-        Loaded += MainWindow_Loaded;
-        Closed += MainWindow_Closed;
+        Loaded += UpdateWindow_Loaded;
     }
 
-    private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
+    private async void UpdateWindow_Loaded(object sender, RoutedEventArgs e)
+    {
+        await PerformUpdateAsync();
+    }
+
+    private async Task PerformUpdateAsync()
     {
         try
         {
-            Directory.CreateDirectory(GameDirectory);
+            StatusText.Text = "Lade Launcher-Update herunter...";
+            string tempZip = Path.Combine(Path.GetTempPath(), "RFG_Launcher_Update.zip");
+            string extractPath = Path.Combine(Path.GetTempPath(), "RFG_Launcher_Extracted");
 
-            ShowPage(HomePage);
-            UpdateHomeInformation();
-            StartPerformanceMonitor();
+            if (File.Exists(tempZip)) File.Delete(tempZip);
+            if (Directory.Exists(extractPath)) Directory.Delete(extractPath, true);
 
-            LauncherVersionText.Text = $"Version: {CurrentLauncherVersion}";
-
-            await SilentCheckLauncherUpdateAsync();
-            await CheckForUpdatesAsync();
-        }
-        catch (Exception ex)
-        {
-            StatusText.Text = "Launcher-Fehler: " + ex.Message;
-        }
-    }
-
-    private void MainWindow_Closed(object? sender, EventArgs e)
-    {
-        PerformanceTimer?.Stop();
-        StatusCheckTimer?.Stop();
-        Http.Dispose();
-    }
-
-    private void OpenUrl(string url)
-    {
-        try
-        {
-            Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show("Link konnte nicht geöffnet werden:\n" + ex.Message, "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
-    }
-
-    private void DiscordButton_Click(object sender, RoutedEventArgs e) => OpenUrl(DiscordUrl);
-    private void TwitchButton_Click(object sender, RoutedEventArgs e) => OpenUrl(TwitchUrl);
-    private void InstagramButton_Click(object sender, RoutedEventArgs e) => OpenUrl(InstagramUrl);
-    private void TikTokButton_Click(object sender, RoutedEventArgs e) => OpenUrl(TikTokUrl);
-
-    private async Task SilentCheckLauncherUpdateAsync()
-    {
-        try
-        {
-            using HttpClient client = new();
-            client.DefaultRequestHeaders.UserAgent.ParseAdd("RFG-BetaLauncher-Updater");
-            var info = await client.GetFromJsonAsync<LauncherVersionInfo>(LauncherVersionUrl);
-
-            if (info != null && !string.IsNullOrWhiteSpace(info.Version))
+            using (HttpClient client = new())
             {
-                Version onlineVersion = ParseVersion(info.Version);
-                Version installedVersion = ParseVersion(CurrentLauncherVersion);
+                client.DefaultRequestHeaders.UserAgent.ParseAdd("RFG-BetaLauncher-Updater");
+                using HttpResponseMessage response = await client.GetAsync(DownloadUrl, HttpCompletionOption.ResponseHeadersRead);
+                response.EnsureSuccessStatusCode();
 
-                if (onlineVersion > installedVersion)
+                long? totalBytes = response.Content.Headers.ContentLength;
+                await using Stream input = await response.Content.ReadAsStreamAsync();
+                await using FileStream output = new(tempZip, FileMode.Create, FileAccess.Write, FileShare.None);
+
+                byte[] buffer = new byte[81920];
+                long totalRead = 0;
+                int bytesRead;
+
+                while ((bytesRead = await input.ReadAsync(buffer, 0, buffer.Length)) > 0)
                 {
-                    LauncherUpdateStatusText.Text = $"Neues Update: v{onlineVersion}";
-                    LauncherUpdateStatusText.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#38BDF8")!;
-                }
-                else
-                {
-                    LauncherUpdateStatusText.Text = "Launcher ist aktuell.";
-                    LauncherUpdateStatusText.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#10B981")!;
-                }
-            }
-        }
-        catch { }
-    }
-
-    private async void CheckLauncherUpdateButton_Click(object sender, RoutedEventArgs e)
-    {
-        CheckLauncherUpdateButton.IsEnabled = false;
-        try
-        {
-            LauncherUpdateStatusText.Text = "Suche nach Updates...";
-            using HttpClient client = new();
-            client.DefaultRequestHeaders.UserAgent.ParseAdd("RFG-BetaLauncher-Updater");
-            var info = await client.GetFromJsonAsync<LauncherVersionInfo>(LauncherVersionUrl);
-
-            if (info != null && !string.IsNullOrWhiteSpace(info.Version))
-            {
-                Version onlineVersion = ParseVersion(info.Version);
-                Version installedVersion = ParseVersion(CurrentLauncherVersion);
-
-                if (onlineVersion > installedVersion)
-                {
-                    if (MessageBox.Show($"Update auf v{onlineVersion} durchführen?", "Update", MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.Yes)
+                    await output.WriteAsync(buffer, 0, bytesRead);
+                    totalRead += bytesRead;
+                    if (totalBytes.HasValue && totalBytes.Value > 0)
                     {
-                        StartAutoUpdater(info.DownloadUrl);
-                    }
-                }
-                else
-                {
-                    MessageBox.Show("Du nutzt bereits die neueste Version.", "Aktuell", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show("Fehler: " + ex.Message, "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
-        finally
-        {
-            CheckLauncherUpdateButton.IsEnabled = true;
-        }
-    }
-
-    private void StartAutoUpdater(string downloadUrl)
-    {
-        try
-        {
-            string currentExe = Process.GetCurrentProcess().MainModule?.FileName ?? Path.Combine(AppContext.BaseDirectory, "BetaLauncher.exe");
-            UpdateWindow updateWindow = new UpdateWindow(downloadUrl, currentExe);
-            updateWindow.ShowDialog();
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show("Fehler beim Starten des Updaters: " + ex.Message, "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
-    }
-
-    private void ShowPage(UIElement page)
-    {
-        HomePage.Visibility = Visibility.Collapsed;
-        UpdatesPage.Visibility = Visibility.Collapsed;
-        AccountPage.Visibility = Visibility.Collapsed;
-        ChangePasswordPage.Visibility = Visibility.Collapsed;
-        AdminPage.Visibility = Visibility.Collapsed;
-        PerformancePage.Visibility = Visibility.Collapsed;
-        CreditsPage.Visibility = Visibility.Collapsed;
-        SettingsPage.Visibility = Visibility.Collapsed;
-
-        page.Visibility = Visibility.Visible;
-    }
-
-    private void HomeButton_Click(object sender, RoutedEventArgs e) => ShowPage(HomePage);
-    private void UpdatesButton_Click(object sender, RoutedEventArgs e) => ShowPage(UpdatesPage);
-    private void AccountButton_Click(object sender, RoutedEventArgs e) => ShowPage(AccountPage);
-    private void SettingsButton_Click(object sender, RoutedEventArgs e) => ShowPage(SettingsPage);
-    private void AdminButton_Click(object sender, RoutedEventArgs e) { ShowPage(AdminPage); _ = LoadAdminUserListAsync(); }
-    private void PerformanceButton_Click(object sender, RoutedEventArgs e) => ShowPage(PerformancePage);
-    private void CreditsButton_Click(object sender, RoutedEventArgs e) => ShowPage(CreditsPage);
-    private void ExitButton_Click(object sender, RoutedEventArgs e) => Close();
-
-    private void UpdateHomeInformation()
-    {
-        string localVersion = GetLocalVersion();
-        HomeVersionText.Text = string.IsNullOrWhiteSpace(localVersion) ? "Keine Version installiert" : "Version " + localVersion;
-
-        if (IsGameInstalled())
-        {
-            HomeStatusText.Text = "INSTALLIERT";
-            HomeStatusText.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#10B981")!;
-        }
-        else
-        {
-            HomeStatusText.Text = "NICHT INSTALLIERT";
-            HomeStatusText.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#E11D48")!;
-        }
-
-        if (string.IsNullOrEmpty(LoggedInUsername))
-        {
-            HomeBetaAccessText.Text = "NICHT EINGELOGGT";
-            HomeBetaAccessText.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#E11D48")!;
-        }
-        else if (HasBetaAccess)
-        {
-            HomeBetaAccessText.Text = "ZUGRIFF GEWÄHRT";
-            HomeBetaAccessText.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#10B981")!;
-        }
-        else
-        {
-            HomeBetaAccessText.Text = "ZUGRIFF VERWEIGERT";
-            HomeBetaAccessText.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#E11D48")!;
-        }
-
-        StartButton.IsEnabled = IsGameInstalled();
-    }
-
-    private void StartStatusCheck()
-    {
-        StatusCheckTimer?.Stop();
-        StatusCheckTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
-        StatusCheckTimer.Tick += async (s, e) =>
-        {
-            if (string.IsNullOrEmpty(LoggedInUsername)) return;
-
-            try
-            {
-                using HttpClient client = new();
-                var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/user-status", new { username = LoggedInUsername });
-                var result = await response.Content.ReadFromJsonAsync<AccountResponse>();
-
-                if (result != null && result.success)
-                {
-                    bool statusChanged = HasBetaAccess != result.hasBetaAccess || LoggedInRole != result.role;
-                    
-                    HasBetaAccess = result.hasBetaAccess;
-                    LoggedInRole = result.role ?? "user";
-
-                    if (statusChanged)
-                    {
-                        AdminMenuButton.Visibility = LoggedInRole == "admin" ? Visibility.Visible : Visibility.Collapsed;
-                        UpdateHomeInformation();
+                        double percentage = Math.Min(100, totalRead * 100.0 / totalBytes.Value);
+                        ProgressBar.Value = percentage;
                     }
                 }
             }
-            catch { }
-        };
-        StatusCheckTimer.Start();
-    }
 
-    private void StartButton_Click(object sender, RoutedEventArgs e)
-    {
-        try
-        {
-            if (string.IsNullOrEmpty(LoggedInUsername))
+            StatusText.Text = "Entpacke Update...";
+            Directory.CreateDirectory(extractPath);
+            ZipFile.ExtractToDirectory(tempZip, extractPath, true);
+
+            StatusText.Text = "Wende Update an...";
+            await Task.Delay(1000);
+
+            string targetDir = Path.GetDirectoryName(TargetExePath) ?? AppContext.BaseDirectory;
+
+            foreach (string filePath in Directory.GetFiles(extractPath, "*.*", SearchOption.AllDirectories))
             {
-                MessageBox.Show("Bitte zuerst anmelden.", "Hinweis", MessageBoxButton.OK, MessageBoxImage.Warning);
-                ShowPage(AccountPage);
-                return;
+                string relativePath = Path.GetRelativePath(extractPath, filePath);
+                string destinationPath = Path.Combine(targetDir, relativePath);
+
+                Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
+
+                if (string.Equals(Path.GetFileName(destinationPath), Path.GetFileName(TargetExePath), StringComparison.OrdinalIgnoreCase))
+                {
+                    string backupPath = TargetExePath + ".bak";
+                    if (File.Exists(backupPath)) File.Delete(backupPath);
+                    if (File.Exists(TargetExePath)) File.Move(TargetExePath, backupPath, true);
+                }
+
+                File.Copy(filePath, destinationPath, true);
             }
 
-            string? gameExe = FindGameExe();
-            if (gameExe == null)
-            {
-                MessageBox.Show("Spiel-Executable nicht gefunden.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
+            StatusText.Text = "Update erfolgreich! Starte neu...";
+            await Task.Delay(1000);
 
             Process.Start(new ProcessStartInfo
             {
-                FileName = gameExe,
-                WorkingDirectory = Path.GetDirectoryName(gameExe) ?? GameDirectory,
+                FileName = TargetExePath,
                 UseShellExecute = true
             });
+
+            Application.Current.Shutdown();
         }
         catch (Exception ex)
         {
-            MessageBox.Show("Fehler beim Starten: " + ex.Message, "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show("Fehler beim Update des Launchers: " + ex.Message, "Update-Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            Close();
         }
     }
-
-    private bool IsGameInstalled() => FindGameExe() != null;
-
-    private string? FindGameExe()
-    {
-        string directPath = Path.Combine(GameDirectory, GameExeName);
-        if (File.Exists(directPath)) return directPath;
-        if (!Directory.Exists(GameDirectory)) return null;
-        try { return Directory.GetFiles(GameDirectory, GameExeName, SearchOption.AllDirectories).FirstOrDefault(); }
-        catch { return null; }
-    }
-
-    private async void UpdateButton_Click(object sender, RoutedEventArgs e) => await DownloadAndInstallLatestAsync();
-
-    private async Task CheckForUpdatesAsync()
-    {
-        try
-        {
-            StatusText.Text = "Suche nach Updates...";
-            var release = await GetLatestGameReleaseAsync();
-            UpdateButton.IsEnabled = true;
-
-            if (release == null) { StatusText.Text = "Kein Release gefunden."; return; }
-
-            string remoteVersion = NormalizeVersion(release.TagName);
-            string localVersion = NormalizeVersion(GetLocalVersion());
-
-            StatusText.Text = !string.Equals(remoteVersion, localVersion, StringComparison.OrdinalIgnoreCase) || !IsGameInstalled() 
-                ? $"Update verfügbar: {remoteVersion}" : "Spiel ist aktuell.";
-
-            VersionText.Text = "Installiert: " + (string.IsNullOrWhiteSpace(localVersion) ? "Keine" : localVersion);
-            ReleaseNotesText.Text = release.Body ?? "Keine Notes.";
-        }
-        catch { StatusText.Text = "Fehler bei Update-Prüfung."; }
-    }
-
-    private async Task DownloadAndInstallLatestAsync()
-    {
-        try
-        {
-            UpdateButton.IsEnabled = false;
-            var release = await GetLatestGameReleaseAsync();
-            if (release == null) return;
-
-            var asset = release.Assets.FirstOrDefault(a => string.Equals(a.Name, "game.zip", StringComparison.OrdinalIgnoreCase));
-            if (asset == null) { MessageBox.Show("game.zip fehlt im Release.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
-
-            string tempZip = Path.Combine(Path.GetTempPath(), "RFG_game_update.zip");
-            if (File.Exists(tempZip)) File.Delete(tempZip);
-
-            StatusText.Text = "Lade herunter...";
-            using (HttpClient client = new()) { await DownloadFileWithClientAsync(client, asset.BrowserDownloadUrl, tempZip); }
-
-            StatusText.Text = "Installiere...";
-            InstallZip(tempZip);
-            File.Delete(tempZip);
-
-            File.WriteAllText(VersionFile, NormalizeVersion(release.TagName));
-            StatusText.Text = "Erfolgreich installiert!";
-            UpdateHomeInformation();
-        }
-        catch (Exception ex)
-        {
-            StatusText.Text = "Installation fehlgeschlagen.";
-            MessageBox.Show("Fehler: " + ex.Message, "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
-        finally { UpdateButton.IsEnabled = true; }
-    }
-
-    private async Task<GitHubRelease?> GetLatestGameReleaseAsync()
-    {
-        string url = $"https://api.github.com/repos/{GitHubOwner}/{GitHubRepo}/releases?per_page=50";
-        using HttpResponseMessage response = await Http.GetAsync(url);
-        response.EnsureSuccessStatusCode();
-        string json = await response.Content.ReadAsStringAsync();
-        var releases = JsonSerializer.Deserialize<GitHubRelease[]>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-        return releases?.Where(r => !r.Draft && !r.Prerelease && r.Assets.Any(a => string.Equals(a.Name, "game.zip", StringComparison.OrdinalIgnoreCase)))
-                        .OrderByDescending(r => ParseVersion(r.TagName)).FirstOrDefault();
-    }
-
-    private async Task DownloadFileWithClientAsync(HttpClient client, string url, string destination)
-    {
-        using HttpResponseMessage response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
-        response.EnsureSuccessStatusCode();
-        long? totalBytes = response.Content.Headers.ContentLength;
-        await using Stream input = await response.Content.ReadAsStreamAsync();
-        await using FileStream output = new(destination, FileMode.Create, FileAccess.Write, FileShare.None);
-        byte[] buffer = new byte[81920];
-        long totalRead = 0;
-        int bytesRead;
-        while ((bytesRead = await input.ReadAsync(buffer, 0, buffer.Length)) > 0)
-        {
-            await output.WriteAsync(buffer, 0, bytesRead);
-            totalRead += bytesRead;
-            if (totalBytes.HasValue && totalBytes.Value > 0) Progress.Value = Math.Min(100, totalRead * 100.0 / totalBytes.Value);
-        }
-    }
-
-    private void InstallZip(string zipFile)
-    {
-        Directory.CreateDirectory(GameDirectory);
-        using ZipArchive archive = ZipFile.OpenRead(zipFile);
-        string destinationRoot = Path.GetFullPath(GameDirectory) + Path.DirectorySeparatorChar;
-        foreach (ZipArchiveEntry entry in archive.Entries)
-        {
-            string destinationPath = Path.GetFullPath(Path.Combine(GameDirectory, entry.FullName));
-            if (!destinationPath.StartsWith(destinationRoot, StringComparison.OrdinalIgnoreCase)) continue;
-            if (string.IsNullOrEmpty(entry.Name)) { Directory.CreateDirectory(destinationPath); continue; }
-            Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
-            entry.ExtractToFile(destinationPath, true);
-        }
-    }
-
-    private string GetLocalVersion() => File.Exists(VersionFile) ? File.ReadAllText(VersionFile).Trim() : "";
-    private string NormalizeVersion(string? v) => string.IsNullOrWhiteSpace(v) ? "" : (v.StartsWith("v", StringComparison.OrdinalIgnoreCase) ? v.Substring(1) : v).Trim();
-    private Version ParseVersion(string? v) => Version.TryParse(NormalizeVersion(v), out Version? res) ? res : new Version(0, 0, 0);
-
-    private async void LoginAccountButton_Click(object sender, RoutedEventArgs e)
-    {
-        string username = AccountUsernameTextBox.Text.Trim();
-        string password = AccountPasswordBox.Password;
-
-        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
-        {
-            AccountStatusText.Text = "Bitte alle Felder ausfüllen.";
-            return;
-        }
-
-        try
-        {
-            AccountLoginButton.IsEnabled = false;
-            AccountStatusText.Text = "Anmeldung läuft...";
-
-            using HttpClient client = new();
-            var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/login", new { username, password });
-            var result = await response.Content.ReadFromJsonAsync<AccountResponse>();
-
-            if (result != null && result.success)
-            {
-                LoggedInUsername = result.username ?? username;
-                LoggedInPassword = password;
-                LoggedInRole = result.role ?? "user";
-                HasBetaAccess = result.hasBetaAccess;
-
-                AccountStatusText.Text = "";
-                AccountPasswordBox.Clear();
-
-                AdminMenuButton.Visibility = LoggedInRole == "admin" ? Visibility.Visible : Visibility.Collapsed;
-                UpdateHomeInformation();
-                StartStatusCheck();
-
-                ShowPage(result.mustChangePassword ? ChangePasswordPage : HomePage);
-            }
-            else
-            {
-                AccountStatusText.Text = result?.message ?? "Login fehlgeschlagen.";
-            }
-        }
-        catch
-        {
-            AccountStatusText.Text = "Server nicht erreichbar.";
-        }
-        finally
-        {
-            AccountLoginButton.IsEnabled = true;
-        }
-    }
-
-    private async void SaveNewPasswordButton_Click(object sender, RoutedEventArgs e)
-    {
-        string newPw = NewPasswordBox.Password;
-        string confirmPw = ConfirmPasswordBox.Password;
-
-        if (newPw.Length < 6) { ChangePasswordStatusText.Text = "Mindestens 6 Zeichen."; return; }
-        if (newPw != confirmPw) { ChangePasswordStatusText.Text = "Passwörter stimmen nicht überein."; return; }
-
-        try
-        {
-            using HttpClient client = new();
-            var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/change-first-password", new { username = LoggedInUsername, currentPassword = LoggedInPassword, newPassword = newPw });
-            var result = await response.Content.ReadFromJsonAsync<AccountResponse>();
-
-            if (result != null && result.success)
-            {
-                LoggedInPassword = newPw;
-                MessageBox.Show("Passwort erfolgreich geändert!", "Erfolg", MessageBoxButton.OK, MessageBoxImage.Information);
-                ShowPage(HomePage);
-            }
-            else { ChangePasswordStatusText.Text = result?.message ?? "Fehler."; }
-        }
-        catch { ChangePasswordStatusText.Text = "Server nicht erreichbar."; }
-    }
-
-    private async Task LoadAdminUserListAsync()
-    {
-        try
-        {
-            using HttpClient client = new();
-            client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
-            client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
-            
-            var response = await client.GetAsync($"{AccountServerUrl}/api/admin/users");
-            
-            if (!response.IsSuccessStatusCode)
-            {
-                AdminActionStatus.Text = $"Server-Fehler: {(int)response.StatusCode} {response.ReasonPhrase}";
-                return;
-            }
-
-            var result = await response.Content.ReadFromJsonAsync<AdminUserListResponse>();
-            if (result != null && result.success)
-            {
-                UsersDataGrid.ItemsSource = result.users;
-                AdminActionStatus.Text = $"Benutzer erfolgreich geladen ({result.users.Count}).";
-            }
-            else
-            {
-                AdminActionStatus.Text = "Server meldet Erfolg = false.";
-            }
-        }
-        catch (Exception ex) 
-        { 
-            AdminActionStatus.Text = "Fehler: " + ex.Message; 
-        }
-    }
-
-    private async void AdminCreateUser_Click(object sender, RoutedEventArgs e)
-    {
-        string username = AdminNewUsernameBox.Text.Trim();
-        string tempPassword = AdminNewTempPassBox.Text.Trim();
-        string role = (AdminRoleComboBox.SelectedItem as ComboBoxItem)?.Content.ToString()?.ToLower() ?? "user";
-
-        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(tempPassword)) return;
-
-        try
-        {
-            using HttpClient client = new();
-            client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
-            client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
-            var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/admin/create-user", new { username, tempPassword, role });
-            var result = await response.Content.ReadFromJsonAsync<AccountResponse>();
-            AdminActionStatus.Text = result?.message ?? "";
-            if (result != null && result.success) { AdminNewUsernameBox.Clear(); AdminNewTempPassBox.Clear(); await LoadAdminUserListAsync(); }
-        }
-        catch { AdminActionStatus.Text = "Fehler."; }
-    }
-
-    private async void AdminToggleBeta_Click(object sender, RoutedEventArgs e)
-    {
-        if ((sender as Button)?.DataContext is UserItem user)
-        {
-            try
-            {
-                using HttpClient client = new();
-                client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
-                client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
-                
-                var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/admin/toggle-beta", new { username = user.Username });
-                var result = await response.Content.ReadFromJsonAsync<AccountResponse>();
-                
-                if (result != null && result.success)
-                {
-                    AdminActionStatus.Text = $"Beta-Zugang für {user.Username} aktualisiert.";
-                    await LoadAdminUserListAsync();
-                }
-                else
-                {
-                    AdminActionStatus.Text = result?.message ?? "Fehler beim Aktualisieren des Beta-Zugangs.";
-                }
-            }
-            catch (Exception ex) 
-            { 
-                AdminActionStatus.Text = "Fehler: " + ex.Message; 
-            }
-        }
-    }
-
-    private async void AdminResetPw_Click(object sender, RoutedEventArgs e)
-    {
-        if ((sender as Button)?.DataContext is UserItem user)
-        {
-            string newTempPw = "Temp1234!";
-            try
-            {
-                using HttpClient client = new();
-                client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
-                client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
-                await client.PostAsJsonAsync($"{AccountServerUrl}/api/admin/reset-password", new { username = user.Username, newTempPassword = newTempPw });
-                MessageBox.Show($"Passwort für {user.Username} zurückgesetzt.\nTemp: {newTempPw}", "Erfolg", MessageBoxButton.OK, MessageBoxImage.Information);
-                await LoadAdminUserListAsync();
-            }
-            catch { }
-        }
-    }
-
-    private async void AdminToggleLock_Click(object sender, RoutedEventArgs e)
-    {
-        if ((sender as Button)?.DataContext is UserItem user)
-        {
-            try
-            {
-                using HttpClient client = new();
-                client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
-                client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
-                await client.PostAsJsonAsync($"{AccountServerUrl}/api/admin/toggle-lock", new { username = user.Username });
-                await LoadAdminUserListAsync();
-            }
-            catch { }
-        }
-    }
-
-    private async void AdminDeleteUser_Click(object sender, RoutedEventArgs e)
-    {
-        if ((sender as Button)?.DataContext is UserItem user)
-        {
-            if (ProtectedAdminUsernames.Contains(user.Username, StringComparer.OrdinalIgnoreCase))
-            {
-                MessageBox.Show($"Der Haupt-Admin '{user.Username}' kann nicht gelöscht werden.", "Gesperrt", MessageBoxButton.OK, MessageBoxImage.Stop);
-                return;
-            }
-
-            if (MessageBox.Show($"Benutzer '{user.Username}' löschen?", "Bestätigen", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
-            {
-                try
-                {
-                    using HttpClient client = new();
-                    client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
-                    client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
-                    await client.PostAsJsonAsync($"{AccountServerUrl}/api/admin/delete-user", new { username = user.Username });
-                    await LoadAdminUserListAsync();
-                }
-                catch { }
-            }
-        }
-    }
-
-    private PerformanceCounterWrapper? PerformanceCounter;
-
-    private void StartPerformanceMonitor()
-    {
-        try
-        {
-            PerformanceCounter = new PerformanceCounterWrapper();
-            PerformanceTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
-            PerformanceTimer.Tick += (s, e) =>
-            {
-                if (PerformanceCounter == null) return;
-                CpuText.Text = $"CPU: {PerformanceCounter.GetCpuUsage():0}%";
-                RamText.Text = $"RAM: {PerformanceCounter.GetRamUsage():0}%";
-            };
-            PerformanceTimer.Start();
-        }
-        catch
-        {
-            CpuText.Text = "CPU: --";
-            RamText.Text = "RAM: --";
-        }
-    }
-
-    private sealed class LauncherVersionInfo
-    {
-        [JsonPropertyName("version")] public string Version { get; set; } = "";
-        [JsonPropertyName("downloadUrl")] public string DownloadUrl { get; set; } = "";
-    }
-
-    private sealed class GitHubRelease
-    {
-        [JsonPropertyName("tag_name")] public string TagName { get; set; } = "";
-        [JsonPropertyName("body")] public string? Body { get; set; }
-        [JsonPropertyName("draft")] public bool Draft { get; set; }
-        [JsonPropertyName("prerelease")] public bool Prerelease { get; set; }
-        [JsonPropertyName("assets")] public GitHubAsset[] Assets { get; set; } = Array.Empty<GitHubAsset>();
-    }
-
-    private sealed class GitHubAsset
-    {
-        [JsonPropertyName("name")] public string Name { get; set; } = "";
-        [JsonPropertyName("browser_download_url")] public string BrowserDownloadUrl { get; set; } = "";
-    }
-
-    private sealed class AccountResponse
-    {
-        public bool success { get; set; }
-        public string? username { get; set; }
-        public string? role { get; set; }
-        public bool hasBetaAccess { get; set; }
-        public bool mustChangePassword { get; set; }
-        public string? message { get; set; }
-    }
-
-    private sealed class AdminUserListResponse
-    {
-        public bool success { get; set; }
-        public List<UserItem> users { get; set; } = new();
-    }
-
-    public sealed class UserItem
-    {
-        [JsonPropertyName("username")] public string Username { get; set; } = "";
-        [JsonPropertyName("role")] public string Role { get; set; } = "";
-        [JsonPropertyName("hasBetaAccess")] public bool HasBetaAccess { get; set; }
-        [JsonPropertyName("isLocked")] public bool IsLocked { get; set; }
-    }
-}
-
-public class PerformanceCounterWrapper
-{
-    private readonly PerformanceCounter? cpuCounter;
-    private readonly PerformanceCounter? ramCounter;
-
-    public PerformanceCounterWrapper()
-    {
-        try
-        {
-            cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
-            ramCounter = new PerformanceCounter("Memory", "% Committed Bytes In Use");
-            cpuCounter.NextValue();
-            ramCounter.NextValue();
-        }
-        catch { }
-    }
-
-    public float GetCpuUsage() => cpuCounter?.NextValue() ?? 0f;
-    public float GetRamUsage() => ramCounter?.NextValue() ?? 0f;
 }
