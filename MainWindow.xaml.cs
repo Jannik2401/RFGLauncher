@@ -959,4 +959,3 @@ public partial class MainWindow : Window
         }
     }
 }
-```[cite: 3]
