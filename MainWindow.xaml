@@ -148,7 +148,38 @@
                     <Button Content="Einstellungen" Style="{StaticResource NavButtonStyle}" Click="SettingsButton_Click"/>
                 </StackPanel>
 
+                <!-- Unten in der Sidebar: Profil-Box, Version & Beenden -->
                 <StackPanel DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
+                    
+                    <!-- Profil-Box links unten -->
+                    <Border x:Name="UserProfileCornerBox" 
+                            Background="#1E293B" 
+                            BorderBrush="#334155" 
+                            BorderThickness="1" 
+                            CornerRadius="8" 
+                            Height="50" 
+                            Margin="0,0,0,15" 
+                            Visibility="Collapsed">
+                        <Grid Margin="8,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock x:Name="CornerUsernameText" Text="Username" Foreground="White" FontWeight="Bold" FontSize="11" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock x:Name="CornerRoleText" Text="Rolle: USER" Foreground="#94A3B8" FontSize="9"/>
+                            </StackPanel>
+
+                            <Button x:Name="CornerLogoutButton" Grid.Column="1" 
+                                    Content="Logout" 
+                                    Background="#EF4444" Foreground="White" 
+                                    BorderThickness="0" Padding="6,3" FontSize="11"
+                                    Cursor="Hand"
+                                    Click="LogoutButton_Click"/>
+                        </Grid>
+                    </Border>
+
                     <TextBlock x:Name="LauncherVersionText" Text="Version: 1.0.0" Foreground="#64748B" FontSize="12" Margin="10,0,0,10"/>
                     <Button Content="Beenden" Style="{StaticResource NavButtonStyle}" Click="ExitButton_Click" Foreground="#E11D48"/>
                 </StackPanel>
@@ -389,37 +420,5 @@
 
             </Grid>
         </Grid>
-
-        <!-- Profil-Box unten rechts im Content-Bereich -->
-        <Border x:Name="UserProfileCornerBox" 
-                Background="#1E293B" 
-                BorderBrush="#334155" 
-                BorderThickness="1" 
-                CornerRadius="8" 
-                Width="220" Height="60" 
-                HorizontalAlignment="Right" VerticalAlignment="Bottom" 
-                Margin="0,0,25,25" 
-                Visibility="Collapsed"
-                Panel.ZIndex="10"
-                Grid.Column="1">
-            <Grid Margin="10">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                
-                <StackPanel VerticalAlignment="Center">
-                    <TextBlock x:Name="CornerUsernameText" Text="Eingeloggt als..." Foreground="White" FontWeight="Bold" FontSize="12" TextTrimming="CharacterEllipsis"/>
-                    <TextBlock x:Name="CornerRoleText" Text="Rolle: User" Foreground="#94A3B8" FontSize="10"/>
-                </StackPanel>
-
-                <Button x:Name="CornerLogoutButton" Grid.Column="1" 
-                        Content="Logout" 
-                        Background="#EF4444" Foreground="White" 
-                        BorderThickness="0" Padding="8,4" 
-                        Cursor="Hand"
-                        Click="LogoutButton_Click"/>
-            </Grid>
-        </Border>
     </Grid>
 </Window>
