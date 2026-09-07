@@ -44,7 +44,6 @@ public partial class UpdateWindow : Window
                 using HttpResponseMessage response = await client.GetAsync(DownloadUrl, HttpCompletionOption.ResponseHeadersRead);[cite: 3]
                 response.EnsureSuccessStatusCode();[cite: 3]
 
-                // Verhindert das Herunterladen von HTML-Fehlerseiten statt ZIP-Dateien
                 if (response.Content.Headers.ContentType?.MediaType?.Contains("html") == true)
                 {
                     throw new Exception("Der Download-Link verweist auf eine Webseite statt auf eine ZIP-Datei.");
@@ -73,7 +72,6 @@ public partial class UpdateWindow : Window
                 }
             }
 
-            // Integritätsprüfung der heruntergeladenen ZIP-Datei
             FileInfo fi = new FileInfo(tempZip);
             if (!fi.Exists || fi.Length < 100)
             {
