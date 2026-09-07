@@ -249,7 +249,6 @@ public partial class MainWindow : Window
             HomeBetaAccessText.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#E11D48")!;
         }
 
-        // Der Start-Button ist nur aktiv, wenn das Spiel installiert UND der Beta-Zugriff vorhanden ist!
         StartButton.IsEnabled = IsGameInstalled() && HasBetaAccess;
     }
 
@@ -309,7 +308,6 @@ public partial class MainWindow : Window
                 return;
             }
 
-            // Vor dem Start noch einmal live den Status beim Server abfragen, um Umgehungen zu verhindern
             try
             {
                 using HttpClient client = new();
