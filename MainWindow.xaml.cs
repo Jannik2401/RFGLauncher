@@ -177,10 +177,11 @@ public partial class MainWindow : Window
         }
     }
 
-    private void StartAutoUpdater(string downloadUrl)
+    private void StartAutoUpdater(string? downloadUrl)
     {
         try
         {
+            if (string.IsNullOrWhiteSpace(downloadUrl)) return;
             string currentExe = Process.GetCurrentProcess().MainModule?.FileName ?? Path.Combine(AppContext.BaseDirectory, "BetaLauncher.exe");
             UpdateWindow updateWindow = new UpdateWindow(downloadUrl, currentExe);
             updateWindow.ShowDialog();
@@ -392,8 +393,9 @@ public partial class MainWindow : Window
                         .OrderByDescending(r => ParseVersion(r.TagName)).FirstOrDefault();
     }
 
-    private async Task DownloadFileWithClientAsync(HttpClient client, string url, string destination)
+    private async Task DownloadFileWithClientAsync(HttpClient client, string? url, string destination)
     {
+        if (string.IsNullOrWhiteSpace(url)) return;
         using HttpResponseMessage response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
         response.EnsureSuccessStatusCode();
         long? totalBytes = response.Content.Headers.ContentLength;
@@ -510,8 +512,8 @@ public partial class MainWindow : Window
         try
         {
             using HttpClient client = new();
-            client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
-            client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
+            if (!string.IsNullOrEmpty(LoggedInUsername)) client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
+            if (!string.IsNullOrEmpty(LoggedInPassword)) client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
             
             var response = await client.GetAsync($"{AccountServerUrl}/api/admin/users");
             
@@ -549,8 +551,8 @@ public partial class MainWindow : Window
         try
         {
             using HttpClient client = new();
-            client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
-            client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
+            if (!string.IsNullOrEmpty(LoggedInUsername)) client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
+            if (!string.IsNullOrEmpty(LoggedInPassword)) client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
             var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/admin/create-user", new { username, tempPassword, role });
             var result = await response.Content.ReadFromJsonAsync<AccountResponse>();
             AdminActionStatus.Text = result?.message ?? "";
@@ -566,8 +568,8 @@ public partial class MainWindow : Window
             try
             {
                 using HttpClient client = new();
-                client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
-                client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
+                if (!string.IsNullOrEmpty(LoggedInUsername)) client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
+                if (!string.IsNullOrEmpty(LoggedInPassword)) client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
                 
                 var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/admin/toggle-beta", new { username = user.Username });
                 var result = await response.Content.ReadFromJsonAsync<AccountResponse>();
@@ -597,8 +599,8 @@ public partial class MainWindow : Window
             try
             {
                 using HttpClient client = new();
-                client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
-                client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
+                if (!string.IsNullOrEmpty(LoggedInUsername)) client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
+                if (!string.IsNullOrEmpty(LoggedInPassword)) client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
                 await client.PostAsJsonAsync($"{AccountServerUrl}/api/admin/reset-password", new { username = user.Username, newTempPassword = newTempPw });
                 MessageBox.Show($"Passwort für {user.Username} zurückgesetzt.\nTemp: {newTempPw}", "Erfolg", MessageBoxButton.OK, MessageBoxImage.Information);
                 await LoadAdminUserListAsync();
@@ -614,8 +616,8 @@ public partial class MainWindow : Window
             try
             {
                 using HttpClient client = new();
-                client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
-                client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
+                if (!string.IsNullOrEmpty(LoggedInUsername)) client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
+                if (!string.IsNullOrEmpty(LoggedInPassword)) client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
                 await client.PostAsJsonAsync($"{AccountServerUrl}/api/admin/toggle-lock", new { username = user.Username });
                 await LoadAdminUserListAsync();
             }
@@ -638,8 +640,8 @@ public partial class MainWindow : Window
                 try
                 {
                     using HttpClient client = new();
-                    client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
-                    client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
+                    if (!string.IsNullOrEmpty(LoggedInUsername)) client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
+                    if (!string.IsNullOrEmpty(LoggedInPassword)) client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
                     await client.PostAsJsonAsync($"{AccountServerUrl}/api/admin/delete-user", new { username = user.Username });
                     await LoadAdminUserListAsync();
                 }
