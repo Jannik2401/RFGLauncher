@@ -249,7 +249,8 @@ public partial class MainWindow : Window
             HomeBetaAccessText.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#E11D48")!;
         }
 
-        StartButton.IsEnabled = IsGameInstalled();
+        // Der Start-Button ist nur aktiv, wenn das Spiel installiert UND der Beta-Zugriff vorhanden ist!
+        StartButton.IsEnabled = IsGameInstalled() && HasBetaAccess;
     }
 
     private void StartStatusCheck()
@@ -268,10 +269,22 @@ public partial class MainWindow : Window
 
                 if (result != null && result.success)
                 {
-                    bool statusChanged = HasBetaAccess != result.hasBetaAccess || LoggedInRole != result.role;
+                    bool statusChanged = HasBetaAccess != result.hasBetaAccess || LoggedInRole != result.role || result.isLocked;
                     
                     HasBetaAccess = result.hasBetaAccess;
                     LoggedInRole = result.role ?? "user";
+
+                    if (result.isLocked)
+                    {
+                        MessageBox.Show("Dein Account wurde gesperrt.", "Sicherheit", MessageBoxButton.OK, MessageBoxImage.Error);
+                        if (File.Exists(SessionFile)) File.Delete(SessionFile);
+                        LoggedInUsername = null;
+                        LoggedInPassword = null;
+                        ShowPage(AccountPage);
+                        UpdateHomeInformation();
+                        StatusCheckTimer?.Stop();
+                        return;
+                    }
 
                     if (statusChanged)
                     {
@@ -285,7 +298,7 @@ public partial class MainWindow : Window
         StatusCheckTimer.Start();
     }
 
-    private void StartButton_Click(object sender, RoutedEventArgs e)
+    private async void StartButton_Click(object sender, RoutedEventArgs e)
     {
         try
         {
@@ -293,6 +306,31 @@ public partial class MainWindow : Window
             {
                 MessageBox.Show("Bitte zuerst anmelden.", "Hinweis", MessageBoxButton.OK, MessageBoxImage.Warning);
                 ShowPage(AccountPage);
+                return;
+            }
+
+            // Vor dem Start noch einmal live den Status beim Server abfragen, um Umgehungen zu verhindern
+            try
+            {
+                using HttpClient client = new();
+                var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/user-status", new { username = LoggedInUsername });
+                var result = await response.Content.ReadFromJsonAsync<AccountResponse>();
+                if (result != null && result.success)
+                {
+                    HasBetaAccess = result.hasBetaAccess;
+                    if (result.isLocked || !HasBetaAccess)
+                    {
+                        MessageBox.Show("Kein aktiver Beta-Zugriff oder Account gesperrt.", "Zugriff verweigert", MessageBoxButton.OK, MessageBoxImage.Stop);
+                        UpdateHomeInformation();
+                        return;
+                    }
+                }
+            }
+            catch { }
+
+            if (!HasBetaAccess)
+            {
+                MessageBox.Show("Du hast keinen Beta-Zugriff.", "Zugriff verweigert", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -788,6 +826,9 @@ public partial class MainWindow : Window
 
         [JsonPropertyName("mustChangePassword")]
         public bool mustChangePassword { get; set; }
+
+        [JsonPropertyName("isLocked")]
+        public bool isLocked { get; set; }
     }
 
     private sealed class AdminUserListResponse
