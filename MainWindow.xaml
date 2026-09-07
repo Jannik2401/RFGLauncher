@@ -141,7 +141,7 @@
 
                     <Button Content="Home" Style="{StaticResource NavButtonStyle}" Click="HomeButton_Click"/>
                     <Button Content="Updates" Style="{StaticResource NavButtonStyle}" Click="UpdatesButton_Click"/>
-                    <Button Content="Account" Style="{StaticResource NavButtonStyle}" Click="AccountButton_Click"/>
+                    <Button x:Name="AccountMenuButton" Content="Account" Style="{StaticResource NavButtonStyle}" Click="AccountButton_Click"/>
                     <Button x:Name="AdminMenuButton" Content="Admin Panel" Style="{StaticResource NavButtonStyle}" Click="AdminButton_Click" Visibility="Collapsed"/>
                     <Button Content="Performance" Style="{StaticResource NavButtonStyle}" Click="PerformanceButton_Click"/>
                     <Button Content="Credits" Style="{StaticResource NavButtonStyle}" Click="CreditsButton_Click"/>
@@ -389,5 +389,37 @@
 
             </Grid>
         </Grid>
+
+        <!-- Profil-Box unten rechts im Content-Bereich -->
+        <Border x:Name="UserProfileCornerBox" 
+                Background="#1E293B" 
+                BorderBrush="#334155" 
+                BorderThickness="1" 
+                CornerRadius="8" 
+                Width="220" Height="60" 
+                HorizontalAlignment="Right" VerticalAlignment="Bottom" 
+                Margin="0,0,25,25" 
+                Visibility="Collapsed"
+                Panel.ZIndex="10"
+                Grid.Column="1">
+            <Grid Margin="10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock x:Name="CornerUsernameText" Text="Eingeloggt als..." Foreground="White" FontWeight="Bold" FontSize="12" TextTrimming="CharacterEllipsis"/>
+                    <TextBlock x:Name="CornerRoleText" Text="Rolle: User" Foreground="#94A3B8" FontSize="10"/>
+                </StackPanel>
+
+                <Button x:Name="CornerLogoutButton" Grid.Column="1" 
+                        Content="Logout" 
+                        Background="#EF4444" Foreground="White" 
+                        BorderThickness="0" Padding="8,4" 
+                        Cursor="Hand"
+                        Click="LogoutButton_Click"/>
+            </Grid>
+        </Border>
     </Grid>
 </Window>
