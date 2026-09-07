@@ -118,10 +118,7 @@ public partial class MainWindow : Window
     {
         bool isLoggedIn = !string.IsNullOrEmpty(LoggedInUsername);
 
-        // Account-Button links verstecken, wenn eingeloggt
         AccountMenuButton.Visibility = isLoggedIn ? Visibility.Collapsed : Visibility.Visible;
-        
-        // Profil-Box links unten in der Sidebar anzeigen, wenn eingeloggt
         UserProfileCornerBox.Visibility = isLoggedIn ? Visibility.Visible : Visibility.Collapsed;
 
         if (isLoggedIn)
