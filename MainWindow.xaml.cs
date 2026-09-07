@@ -59,6 +59,10 @@ public partial class MainWindow : Window
     private bool _isPasswordVisible = false;
     private string _rawPassword = "";
 
+    // Inline Account Settings Menu State
+    private bool _inlinePasswordVisible = false;
+    private string _inlineRawPassword = string.Empty;
+
     public MainWindow()
     {
         InitializeComponent();
@@ -199,6 +203,74 @@ public partial class MainWindow : Window
             AccountPasswordBox.Visibility = Visibility.Visible;
             TogglePasswordBtn.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#94A3B8")!;
         }
+    }
+
+    // Inline Account Settings Menu Event Handlers
+    private void UserProfileCornerBox_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (string.IsNullOrEmpty(LoggedInUsername)) return;
+
+        InlineTxtLoginUsername.Text = LoggedInUsername;
+        InlineTxtDisplayName.Text = CornerUsernameText.Text;
+        _inlineRawPassword = LoggedInPassword ?? string.Empty;
+        InlinePwdBox.Password = _inlineRawPassword;
+        _inlinePasswordVisible = false;
+        InlinePwdBox.Visibility = Visibility.Visible;
+        InlineTxtVisiblePassword.Visibility = Visibility.Collapsed;
+        InlineBtnTogglePwd.Content = "Show";
+
+        AccountSettingsPanel.Visibility = Visibility.Visible;
+    }
+
+    private void InlinePwdBox_PasswordChanged(object sender, RoutedEventArgs e)
+    {
+        if (!_inlinePasswordVisible)
+        {
+            _inlineRawPassword = InlinePwdBox.Password;
+        }
+    }
+
+    private void InlineTxtVisiblePassword_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (_inlinePasswordVisible)
+        {
+            _inlineRawPassword = InlineTxtVisiblePassword.Text;
+        }
+    }
+
+    private void InlineBtnTogglePwd_Click(object sender, RoutedEventArgs e)
+    {
+        _inlinePasswordVisible = !_inlinePasswordVisible;
+        if (_inlinePasswordVisible)
+        {
+            InlineTxtVisiblePassword.Text = _inlineRawPassword;
+            InlinePwdBox.Visibility = Visibility.Collapsed;
+            InlineTxtVisiblePassword.Visibility = Visibility.Visible;
+            InlineBtnTogglePwd.Content = "Hide";
+        }
+        else
+        {
+            InlinePwdBox.Password = _inlineRawPassword;
+            InlineTxtVisiblePassword.Visibility = Visibility.Collapsed;
+            InlinePwdBox.Visibility = Visibility.Visible;
+            InlineBtnTogglePwd.Content = "Show";
+        }
+    }
+
+    private void InlineSaveButton_Click(object sender, RoutedEventArgs e)
+    {
+        string newName = InlineTxtDisplayName.Text.Trim();
+        if (!string.IsNullOrEmpty(newName))
+        {
+            NewDisplayNameTextBox.Text = newName;
+            SaveDisplayNameButton_Click(sender, e);
+        }
+        AccountSettingsPanel.Visibility = Visibility.Collapsed;
+    }
+
+    private void InlineCancelButton_Click(object sender, RoutedEventArgs e)
+    {
+        AccountSettingsPanel.Visibility = Visibility.Collapsed;
     }
 
     private async Task SilentCheckLauncherUpdateAsync()
