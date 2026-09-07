@@ -5,19 +5,28 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BetaLauncher"
         mc:Ignorable="d"
-        Title="RFG Beta Launcher" Height="650" Width="1000"
+        Title="RFG Beta Launcher" Height="680" Width="1100"
         WindowStartupLocation="CenterScreen"
-        Background="#0F172A" Foreground="#F8FAFC">
+        Background="#0B132B" Foreground="#F8FAFC">
 
     <Window.Resources>
-        <!-- Button Style -->
+        <!-- Card Border Style -->
+        <Style x:Key="CardBorderStyle" TargetType="Border">
+            <Setter Property="Background" Value="#111B33"/>
+            <Setter Property="BorderBrush" Value="#1E294B"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="20"/>
+        </Style>
+
+        <!-- Navigation Button Style -->
         <Style x:Key="NavButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="#94A3B8"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Height" Value="40"/>
-            <Setter Property="Margin" Value="0,2,0,2"/>
+            <Setter Property="Height" Value="42"/>
+            <Setter Property="Margin" Value="0,3,0,3"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
             <Setter Property="Padding" Value="15,0,0,0"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -32,12 +41,13 @@
             </Setter>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#1E293B"/>
-                    <Setter Property="Foreground" Value="#F8FAFC"/>
+                    <Setter Property="Background" Value="#1C2D5A"/>
+                    <Setter Property="Foreground" Value="#38BDF8"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
 
+        <!-- Primary Action Button -->
         <Style x:Key="ActionButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="#0284C7"/>
             <Setter Property="Foreground" Value="#FFFFFF"/>
@@ -60,19 +70,57 @@
                     <Setter Property="Background" Value="#0369A1"/>
                 </Trigger>
                 <Trigger Property="IsEnabled" Value="False">
-                    <Setter Property="Background" Value="#334155"/>
-                    <Setter Property="Foreground" Value="#64748B"/>
+                    <Setter Property="Background" Value="#1E293B"/>
+                    <Setter Property="Foreground" Value="#475569"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
 
-        <!-- Fix für ComboBox Item Textfarbe -->
+        <!-- TextBox Style -->
+        <Style TargetType="TextBox">
+            <Setter Property="Background" Value="#0B132B"/>
+            <Setter Property="Foreground" Value="#F8FAFC"/>
+            <Setter Property="BorderBrush" Value="#1E294B"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6">
+                            <ScrollViewer x:Name="PART_ContentHost"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- PasswordBox Style -->
+        <Style TargetType="PasswordBox">
+            <Setter Property="Background" Value="#0B132B"/>
+            <Setter Property="Foreground" Value="#F8FAFC"/>
+            <Setter Property="BorderBrush" Value="#1E294B"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="PasswordBox">
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6">
+                            <ScrollViewer x:Name="PART_ContentHost"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ComboBox Style -->
         <Style TargetType="ComboBoxItem">
-            <Setter Property="Background" Value="#0F172A"/>
+            <Setter Property="Background" Value="#0B132B"/>
             <Setter Property="Foreground" Value="#F8FAFC"/>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#1E293B"/>
+                    <Setter Property="Background" Value="#1C2D5A"/>
                     <Setter Property="Foreground" Value="#38BDF8"/>
                 </Trigger>
             </Style.Triggers>
@@ -81,15 +129,15 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="220"/>
+            <ColumnDefinition Width="230"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Navigation Left Sidebar -->
-        <Border Grid.Column="0" Background="#020617" BorderBrush="#1E293B" BorderThickness="0,0,1,0">
-            <DockPanel Margin="10,20,10,20">
+        <!-- Left Sidebar Navigation -->
+        <Border Grid.Column="0" Background="#070D1F" BorderBrush="#16203B" BorderThickness="0,0,1,0">
+            <DockPanel Margin="15,20,15,20">
                 <StackPanel DockPanel.Dock="Top">
-                    <TextBlock Text="RFG LAUNCHER" FontSize="18" FontWeight="Bold" Foreground="#38BDF8" Margin="10,0,0,20"/>
+                    <TextBlock Text="RFG LAUNCHER" FontSize="18" FontWeight="Bold" Foreground="#38BDF8" Margin="10,0,0,25"/>
 
                     <Button Content="Home" Style="{StaticResource NavButtonStyle}" Click="HomeButton_Click"/>
                     <Button Content="Updates" Style="{StaticResource NavButtonStyle}" Click="UpdatesButton_Click"/>
@@ -107,216 +155,239 @@
             </DockPanel>
         </Border>
 
-        <!-- Main Content Area -->
-        <Grid Grid.Column="1" Margin="30">
+        <!-- Main Content Layout -->
+        <Grid Grid.Column="1" Margin="25">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="60"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
 
-            <!-- HOME PAGE -->
-            <Grid x:Name="HomePage" Visibility="Visible">
-                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                    <TextBlock Text="Realistic Funfair Games" FontSize="32" FontWeight="Bold" Foreground="#F8FAFC" HorizontalAlignment="Center" Margin="0,0,0,10"/>
-                    <TextBlock x:Name="HomeVersionText" Text="Version 1.0.0" FontSize="16" Foreground="#94A3B8" HorizontalAlignment="Center" Margin="0,0,0,30"/>
+            <!-- Top Header Bar (matches dashboard header style) -->
+            <Border Grid.Row="0" Style="{StaticResource CardBorderStyle}" Margin="0,0,0,20" Padding="20,0">
+                <Grid>
+                    <TextBlock Text="REALISTIC FUNFAIR GAMES" VerticalAlignment="Center" FontWeight="Bold" FontSize="16" Foreground="#F8FAFC" LetterSpacing="1"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <Border Background="#16203B" CornerRadius="6" Padding="12,6">
+                            <TextBlock Text="Status: Bereit" FontSize="12" Foreground="#38BDF8" FontWeight="SemiBold"/>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </Border>
 
-                    <Border Background="#1E293B" CornerRadius="12" Padding="25" Width="400" Margin="0,0,0,30">
-                        <StackPanel>
-                            <Grid Margin="0,0,0,10">
-                                <TextBlock Text="Spiel-Status:" Foreground="#94A3B8" FontSize="14"/>
-                                <TextBlock x:Name="HomeStatusText" Text="PRÜFE..." Foreground="#38BDF8" FontWeight="Bold" FontSize="14" HorizontalAlignment="Right"/>
-                            </Grid>
-                            <Grid>
-                                <TextBlock Text="Beta-Zugang:" Foreground="#94A3B8" FontSize="14"/>
-                                <TextBlock x:Name="HomeBetaAccessText" Text="PRÜFE..." Foreground="#38BDF8" FontWeight="Bold" FontSize="14" HorizontalAlignment="Right"/>
-                            </Grid>
+            <!-- Content Area per Page -->
+            <Grid Grid.Row="1">
+
+                <!-- HOME PAGE -->
+                <Grid x:Name="HomePage" Visibility="Visible">
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="480">
+                        <TextBlock Text="Willkommen zurück!" FontSize="28" FontWeight="Bold" Foreground="#F8FAFC" HorizontalAlignment="Center" Margin="0,0,0,5"/>
+                        <TextBlock x:Name="HomeVersionText" Text="Installierte Version: --" FontSize="14" Foreground="#94A3B8" HorizontalAlignment="Center" Margin="0,0,0,25"/>
+
+                        <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,25">
+                            <StackPanel>
+                                <Grid Margin="0,0,0,15">
+                                    <TextBlock Text="Spiel-Status:" Foreground="#94A3B8" FontSize="14"/>
+                                    <TextBlock x:Name="HomeStatusText" Text="PRÜFE..." Foreground="#38BDF8" FontWeight="Bold" FontSize="14" HorizontalAlignment="Right"/>
+                                </Grid>
+                                <Grid>
+                                    <TextBlock Text="Beta-Zugang:" Foreground="#94A3B8" FontSize="14"/>
+                                    <TextBlock x:Name="HomeBetaAccessText" Text="PRÜFE..." Foreground="#38BDF8" FontWeight="Bold" FontSize="14" HorizontalAlignment="Right"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <Button x:Name="StartButton" Content="SPIEL STARTEN" Style="{StaticResource ActionButtonStyle}" Height="48" FontSize="15" Click="StartButton_Click"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- UPDATES PAGE -->
+                <Grid x:Name="UpdatesPage" Visibility="Collapsed">
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,20">
+                            <TextBlock Text="Spiel-Updates" FontSize="22" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,0,0,5"/>
+                            <TextBlock x:Name="VersionText" Text="Installiert: Keine" Foreground="#94A3B8"/>
+                        </StackPanel>
+
+                        <Border DockPanel.Dock="Bottom" Style="{StaticResource CardBorderStyle}" Margin="0,20,0,0">
+                            <StackPanel>
+                                <ProgressBar x:Name="Progress" Height="6" Background="#0B132B" Foreground="#0284C7" Margin="0,0,0,15" BorderThickness="0"/>
+                                <Grid>
+                                    <TextBlock x:Name="StatusText" Text="Bereit" Foreground="#94A3B8" VerticalAlignment="Center"/>
+                                    <Button x:Name="UpdateButton" Content="Prüfen &amp; Updaten" Style="{StaticResource ActionButtonStyle}" HorizontalAlignment="Right" Click="UpdateButton_Click"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource CardBorderStyle}">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <TextBlock x:Name="ReleaseNotesText" Text="Lade Release Notes..." TextWrapping="Wrap" Foreground="#CBD5E1"/>
+                            </ScrollViewer>
+                        </Border>
+                    </DockPanel>
+                </Grid>
+
+                <!-- ACCOUNT PAGE -->
+                <Grid x:Name="AccountPage" Visibility="Collapsed">
+                    <Border Style="{StaticResource CardBorderStyle}" VerticalAlignment="Center" HorizontalAlignment="Center" Width="380">
+                        <StackPanel Margin="10">
+                            <TextBlock Text="Account Login" FontSize="22" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,0,0,20" HorizontalAlignment="Center"/>
+
+                            <TextBlock Text="Benutzername" Foreground="#94A3B8" FontSize="13" Margin="0,0,0,5"/>
+                            <TextBox x:Name="AccountUsernameTextBox" Height="40" Margin="0,0,0,15"/>
+
+                            <TextBlock Text="Passwort" Foreground="#94A3B8" FontSize="13" Margin="0,0,0,5"/>
+                            <PasswordBox x:Name="AccountPasswordBox" Height="40" Margin="0,0,0,25"/>
+
+                            <Button x:Name="AccountLoginButton" Content="Einloggen" Style="{StaticResource ActionButtonStyle}" Height="42" Click="LoginAccountButton_Click" Margin="0,0,0,15"/>
+
+                            <TextBlock x:Name="AccountStatusText" Text="" Foreground="#E11D48" TextWrapping="Wrap" HorizontalAlignment="Center" TextAlignment="Center"/>
                         </StackPanel>
                     </Border>
+                </Grid>
 
-                    <Button x:Name="StartButton" Content="SPIEL STARTEN" Style="{StaticResource ActionButtonStyle}" Height="50" Width="250" FontSize="16" Click="StartButton_Click"/>
-                </StackPanel>
-            </Grid>
+                <!-- CHANGE PASSWORD PAGE -->
+                <Grid x:Name="ChangePasswordPage" Visibility="Collapsed">
+                    <Border Style="{StaticResource CardBorderStyle}" VerticalAlignment="Center" HorizontalAlignment="Center" Width="400">
+                        <StackPanel Margin="10">
+                            <TextBlock Text="Passwort ändern" FontSize="22" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,0,0,8" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Bitte vergebe ein sicheres neues Passwort." Foreground="#94A3B8" TextWrapping="Wrap" Margin="0,0,0,20" HorizontalAlignment="Center" TextAlignment="Center"/>
 
-            <!-- UPDATES PAGE -->
-            <Grid x:Name="UpdatesPage" Visibility="Collapsed">
-                <DockPanel>
-                    <StackPanel DockPanel.Dock="Top" Margin="0,0,0,20">
-                        <TextBlock Text="Spiel-Updates" FontSize="24" FontWeight="Bold" Margin="0,0,0,5"/>
-                        <TextBlock x:Name="VersionText" Text="Installiert: Keine" Foreground="#94A3B8"/>
-                    </StackPanel>
+                            <TextBlock Text="Neues Passwort" Foreground="#94A3B8" Margin="0,0,0,5"/>
+                            <PasswordBox x:Name="NewPasswordBox" Height="40" Margin="0,0,0,15"/>
 
-                    <StackPanel DockPanel.Dock="Bottom" Margin="0,20,0,0">
-                        <ProgressBar x:Name="Progress" Height="8" Background="#1E293B" Foreground="#0284C7" Margin="0,0,0,15"/>
-                        <Grid>
-                            <TextBlock x:Name="StatusText" Text="Bereit" Foreground="#94A3B8" VerticalAlignment="Center"/>
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                                <Button x:Name="UpdateButton" Content="Prüfen &amp; Updaten" Style="{StaticResource ActionButtonStyle}" Click="UpdateButton_Click"/>
-                            </StackPanel>
-                        </Grid>
-                    </StackPanel>
+                            <TextBlock Text="Passwort bestätigen" Foreground="#94A3B8" Margin="0,0,0,5"/>
+                            <PasswordBox x:Name="ConfirmPasswordBox" Height="40" Margin="0,0,0,25"/>
 
-                    <Border Background="#1E293B" CornerRadius="8" Padding="15">
-                        <ScrollViewer VerticalScrollBarVisibility="Auto">
-                            <TextBlock x:Name="ReleaseNotesText" Text="Lade Release Notes..." TextWrapping="Wrap" Foreground="#CBD5E1"/>
-                        </ScrollViewer>
+                            <Button Content="Speichern" Style="{StaticResource ActionButtonStyle}" Click="SaveNewPasswordButton_Click" Margin="0,0,0,15"/>
+
+                            <TextBlock x:Name="ChangePasswordStatusText" Text="" Foreground="#E11D48" TextWrapping="Wrap" HorizontalAlignment="Center"/>
+                        </StackPanel>
                     </Border>
-                </DockPanel>
-            </Grid>
+                </Grid>
 
-            <!-- ACCOUNT PAGE -->
-            <Grid x:Name="AccountPage" Visibility="Collapsed">
-                <Border Background="#1E293B" CornerRadius="12" Padding="30" VerticalAlignment="Center" HorizontalAlignment="Center" Width="360">
+                <!-- ADMIN PAGE -->
+                <Grid x:Name="AdminPage" Visibility="Collapsed">
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Top" Text="Admin Panel" FontSize="22" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,0,0,15"/>
+
+                        <Border DockPanel.Dock="Top" Style="{StaticResource CardBorderStyle}" Margin="0,0,0,15">
+                            <StackPanel Orientation="Horizontal">
+                                <StackPanel Margin="0,0,15,0">
+                                    <TextBlock Text="Benutzername" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
+                                    <TextBox x:Name="AdminNewUsernameBox" Width="160" Height="35"/>
+                                </StackPanel>
+
+                                <StackPanel Margin="0,0,15,0">
+                                    <TextBlock Text="Temp-Passwort" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
+                                    <TextBox x:Name="AdminNewTempPassBox" Width="160" Height="35"/>
+                                </StackPanel>
+
+                                <StackPanel Margin="0,0,15,0">
+                                    <TextBlock Text="Rolle" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
+                                    <ComboBox x:Name="AdminRoleComboBox" Width="110" Height="35" Background="#0B132B" Foreground="#F8FAFC" BorderBrush="#1E294B" SelectedIndex="0">
+                                        <ComboBoxItem Content="User"/>
+                                        <ComboBoxItem Content="Admin"/>
+                                    </ComboBox>
+                                </StackPanel>
+
+                                <Button Content="Erstellen" Style="{StaticResource ActionButtonStyle}" Height="35" VerticalAlignment="Bottom" Click="AdminCreateUser_Click"/>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock x:Name="AdminActionStatus" DockPanel.Dock="Bottom" Text="" Foreground="#38BDF8" Margin="0,10,0,0"/>
+
+                        <Border Style="{StaticResource CardBorderStyle}" Padding="0">
+                            <DataGrid x:Name="UsersDataGrid" AutoGenerateColumns="False" Background="Transparent" RowBackground="#111B33" AlternatingRowBackground="#0B132B" Foreground="#F8FAFC" BorderThickness="0" HeadersVisibility="Column">
+                                <DataGrid.ColumnHeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader">
+                                        <Setter Property="Background" Value="#070D1F"/>
+                                        <Setter Property="Foreground" Value="#F8FAFC"/>
+                                        <Setter Property="FontWeight" Value="Bold"/>
+                                        <Setter Property="Padding" Value="12,8"/>
+                                        <Setter Property="BorderBrush" Value="#1E294B"/>
+                                        <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                                    </Style>
+                                </DataGrid.ColumnHeaderStyle>
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Name" Binding="{Binding Username}" Width="*"/>
+                                    <DataGridTextColumn Header="Rolle" Binding="{Binding Role}" Width="90"/>
+                                    <DataGridCheckBoxColumn Header="Beta" Binding="{Binding HasBetaAccess}" Width="60"/>
+                                    <DataGridCheckBoxColumn Header="Gesperrt" Binding="{Binding IsLocked}" Width="70"/>
+                                    <DataGridTemplateColumn Width="240">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Button Content="Beta" Click="AdminToggleBeta_Click" Margin="2" Padding="6,3"/>
+                                                    <Button Content="Reset" Click="AdminResetPw_Click" Margin="2" Padding="6,3"/>
+                                                    <Button Content="Sperren" Click="AdminToggleLock_Click" Margin="2" Padding="6,3"/>
+                                                    <Button Content="Löschen" Click="AdminDeleteUser_Click" Foreground="#E11D48" Margin="2" Padding="6,3"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Border>
+                    </DockPanel>
+                </Grid>
+
+                <!-- PERFORMANCE PAGE -->
+                <Grid x:Name="PerformancePage" Visibility="Collapsed">
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="340">
+                        <TextBlock Text="System-Auslastung" FontSize="22" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,0,0,20" HorizontalAlignment="Center"/>
+
+                        <Border Style="{StaticResource CardBorderStyle}">
+                            <StackPanel>
+                                <TextBlock x:Name="CpuText" Text="CPU: --%" FontSize="18" FontWeight="Bold" Foreground="#38BDF8" Margin="0,0,0,15"/>
+                                <TextBlock x:Name="RamText" Text="RAM: --%" FontSize="18" FontWeight="Bold" Foreground="#10B981"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+
+                <!-- CREDITS PAGE -->
+                <Grid x:Name="CreditsPage" Visibility="Collapsed">
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="460">
+                        <TextBlock Text="Credits &amp; Social Media" FontSize="22" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,0,0,20" HorizontalAlignment="Center"/>
+
+                        <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,20">
+                            <StackPanel>
+                                <TextBlock Text="Idee &amp; Inspiration" FontSize="13" Foreground="#38BDF8" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                                <TextBlock Text="Dennys" FontSize="15" Foreground="#F8FAFC" HorizontalAlignment="Center" Margin="0,0,0,15"/>
+
+                                <TextBlock Text="Entwicklung" FontSize="13" Foreground="#38BDF8" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                                <TextBlock Text="Realistic Funfair Games Team" FontSize="15" Foreground="#F8FAFC" HorizontalAlignment="Center" Margin="0,0,0,15"/>
+
+                                <TextBlock Text="Besonderer Dank" FontSize="13" Foreground="#38BDF8" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                                <TextBlock Text="Alle Beta-Tester" FontSize="15" Foreground="#F8FAFC" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <Button Content="Discord" Style="{StaticResource ActionButtonStyle}" Click="DiscordButton_Click" Margin="4"/>
+                            <Button Content="Twitch" Style="{StaticResource ActionButtonStyle}" Click="TwitchButton_Click" Margin="4"/>
+                            <Button Content="Instagram" Style="{StaticResource ActionButtonStyle}" Click="InstagramButton_Click" Margin="4"/>
+                            <Button Content="TikTok" Style="{StaticResource ActionButtonStyle}" Click="TikTokButton_Click" Margin="4"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+
+                <!-- SETTINGS PAGE -->
+                <Grid x:Name="SettingsPage" Visibility="Collapsed">
                     <StackPanel>
-                        <TextBlock Text="Anmelden" FontSize="24" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,0,0,20" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Launcher Einstellungen" FontSize="22" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,0,0,20"/>
 
-                        <TextBlock Text="Benutzername" Foreground="#94A3B8" FontSize="13" Margin="0,0,0,5"/>
-                        <TextBox x:Name="AccountUsernameTextBox" Height="40" Background="#0F172A" Foreground="#F8FAFC" BorderThickness="0" Padding="12,0,12,0" Margin="0,0,0,15" VerticalContentAlignment="Center"/>
-
-                        <TextBlock Text="Passwort" Foreground="#94A3B8" FontSize="13" Margin="0,0,0,5"/>
-                        <PasswordBox x:Name="AccountPasswordBox" Height="40" Background="#0F172A" Foreground="#F8FAFC" BorderThickness="0" Padding="12,0,12,0" Margin="0,0,0,20" VerticalContentAlignment="Center"/>
-
-                        <Button x:Name="AccountLoginButton" Content="Einloggen" Style="{StaticResource ActionButtonStyle}" Height="42" Click="LoginAccountButton_Click" Margin="0,0,0,15"/>
-
-                        <TextBlock x:Name="AccountStatusText" Text="" Foreground="#E11D48" TextWrapping="Wrap" HorizontalAlignment="Center" TextAlignment="Center"/>
+                        <Border Style="{StaticResource CardBorderStyle}">
+                            <StackPanel>
+                                <TextBlock Text="Launcher Updates" FontSize="16" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,0,0,8"/>
+                                <TextBlock x:Name="LauncherUpdateStatusText" Text="Suche nach Updates..." Foreground="#94A3B8" Margin="0,0,0,15"/>
+                                <Button x:Name="CheckLauncherUpdateButton" Content="Nach Launcher-Updates suchen" Style="{StaticResource ActionButtonStyle}" HorizontalAlignment="Left" Click="CheckLauncherUpdateButton_Click"/>
+                            </StackPanel>
+                        </Border>
                     </StackPanel>
-                </Border>
+                </Grid>
+
             </Grid>
-
-            <!-- CHANGE PASSWORD PAGE -->
-            <Grid x:Name="ChangePasswordPage" Visibility="Collapsed">
-                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="320">
-                    <TextBlock Text="Passwort ändern" FontSize="24" FontWeight="Bold" Margin="0,0,0,10" HorizontalAlignment="Center"/>
-                    <TextBlock Text="Bitte vergebe ein neues Passwort für deinen Account." Foreground="#94A3B8" TextWrapping="Wrap" Margin="0,0,0,20" HorizontalAlignment="Center"/>
-
-                    <TextBlock Text="Neues Passwort" Foreground="#94A3B8" Margin="0,0,0,5"/>
-                    <PasswordBox x:Name="NewPasswordBox" Height="40" Background="#1E293B" Foreground="#F8FAFC" BorderThickness="0" Padding="10,0,10,0" Margin="0,0,0,15" VerticalContentAlignment="Center"/>
-
-                    <TextBlock Text="Passwort bestätigen" Foreground="#94A3B8" Margin="0,0,0,5"/>
-                    <PasswordBox x:Name="ConfirmPasswordBox" Height="40" Background="#1E293B" Foreground="#F8FAFC" BorderThickness="0" Padding="10,0,10,0" Margin="0,0,0,20" VerticalContentAlignment="Center"/>
-
-                    <Button Content="Speichern" Style="{StaticResource ActionButtonStyle}" Click="SaveNewPasswordButton_Click" Margin="0,0,0,15"/>
-
-                    <TextBlock x:Name="ChangePasswordStatusText" Text="" Foreground="#E11D48" TextWrapping="Wrap" HorizontalAlignment="Center"/>
-                </StackPanel>
-            </Grid>
-
-            <!-- ADMIN PAGE -->
-            <Grid x:Name="AdminPage" Visibility="Collapsed">
-                <DockPanel>
-                    <TextBlock DockPanel.Dock="Top" Text="Admin Panel" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
-
-                    <!-- User Creation Form -->
-                    <Border DockPanel.Dock="Top" Background="#1E293B" CornerRadius="8" Padding="15" Margin="0,0,0,20">
-                        <StackPanel Orientation="Horizontal">
-                            <StackPanel Margin="0,0,15,0">
-                                <TextBlock Text="Benutzername" Foreground="#94A3B8" FontSize="12"/>
-                                <TextBox x:Name="AdminNewUsernameBox" Width="150" Height="35" Background="#0F172A" Foreground="#F8FAFC" BorderThickness="0" Padding="8,0,8,0" VerticalContentAlignment="Center"/>
-                            </StackPanel>
-
-                            <StackPanel Margin="0,0,15,0">
-                                <TextBlock Text="Temp-Passwort" Foreground="#94A3B8" FontSize="12"/>
-                                <TextBox x:Name="AdminNewTempPassBox" Width="150" Height="35" Background="#0F172A" Foreground="#F8FAFC" BorderThickness="0" Padding="8,0,8,0" VerticalContentAlignment="Center"/>
-                            </StackPanel>
-
-                            <StackPanel Margin="0,0,15,0">
-                                <TextBlock Text="Rolle" Foreground="#94A3B8" FontSize="12"/>
-                                <ComboBox x:Name="AdminRoleComboBox" Width="100" Height="35" Background="#0F172A" Foreground="#F8FAFC" SelectedIndex="0">
-                                    <ComboBoxItem Content="User"/>
-                                    <ComboBoxItem Content="Admin"/>
-                                </ComboBox>
-                            </StackPanel>
-
-                            <Button Content="Erstellen" Style="{StaticResource ActionButtonStyle}" Height="35" VerticalAlignment="Bottom" Click="AdminCreateUser_Click"/>
-                        </StackPanel>
-                    </Border>
-
-                    <TextBlock x:Name="AdminActionStatus" DockPanel.Dock="Bottom" Text="" Foreground="#38BDF8" Margin="0,10,0,0"/>
-
-                    <DataGrid x:Name="UsersDataGrid" AutoGenerateColumns="False" Background="#1E293B" RowBackground="#0F172A" AlternatingRowBackground="#1E293B" Foreground="#F8FAFC" BorderThickness="0" HeadersVisibility="Column">
-                        <DataGrid.ColumnHeaderStyle>
-                            <Style TargetType="DataGridColumnHeader">
-                                <Setter Property="Background" Value="#0F172A"/>
-                                <Setter Property="Foreground" Value="#F8FAFC"/>
-                                <Setter Property="FontWeight" Value="Bold"/>
-                                <Setter Property="Padding" Value="10,6"/>
-                                <Setter Property="BorderBrush" Value="#334155"/>
-                                <Setter Property="BorderThickness" Value="0,0,1,1"/>
-                            </Style>
-                        </DataGrid.ColumnHeaderStyle>
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="Name" Binding="{Binding Username}" Width="*"/>
-                            <DataGridTextColumn Header="Rolle" Binding="{Binding Role}" Width="80"/>
-                            <DataGridCheckBoxColumn Header="Beta" Binding="{Binding HasBetaAccess}" Width="50"/>
-                            <DataGridCheckBoxColumn Header="Gesperrt" Binding="{Binding IsLocked}" Width="60"/>
-                            <DataGridTemplateColumn Width="220">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Orientation="Horizontal">
-                                            <Button Content="Beta" Click="AdminToggleBeta_Click" Margin="2" Padding="5,2,5,2"/>
-                                            <Button Content="Reset" Click="AdminResetPw_Click" Margin="2" Padding="5,2,5,2"/>
-                                            <Button Content="Sperren" Click="AdminToggleLock_Click" Margin="2" Padding="5,2,5,2"/>
-                                            <Button Content="Löschen" Click="AdminDeleteUser_Click" Foreground="#E11D48" Margin="2" Padding="5,2,5,2"/>
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
-                        </DataGrid.Columns>
-                    </DataGrid>
-                </DockPanel>
-            </Grid>
-
-            <!-- PERFORMANCE PAGE -->
-            <Grid x:Name="PerformancePage" Visibility="Collapsed">
-                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                    <TextBlock Text="System Auslastung" FontSize="24" FontWeight="Bold" Margin="0,0,0,30" HorizontalAlignment="Center"/>
-
-                    <Border Background="#1E293B" CornerRadius="12" Padding="30" Width="300">
-                        <StackPanel>
-                            <TextBlock x:Name="CpuText" Text="CPU: --%" FontSize="20" FontWeight="Bold" Foreground="#38BDF8" Margin="0,0,0,15"/>
-                            <TextBlock x:Name="RamText" Text="RAM: --%" FontSize="20" FontWeight="Bold" Foreground="#10B981"/>
-                        </StackPanel>
-                    </Border>
-                </StackPanel>
-            </Grid>
-
-            <!-- CREDITS PAGE -->
-            <Grid x:Name="CreditsPage" Visibility="Collapsed">
-                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="450">
-                    <TextBlock Text="Credits &amp; Social Media" FontSize="24" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center"/>
-
-                    <Border Background="#1E293B" CornerRadius="12" Padding="20" Margin="0,0,0,20">
-                        <StackPanel>
-                            <TextBlock Text="Idee &amp; Inspiration" FontSize="14" Foreground="#38BDF8" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,2"/>
-                            <TextBlock Text="Dennys" FontSize="16" Foreground="#F8FAFC" HorizontalAlignment="Center" Margin="0,0,0,15"/>
-
-                            <TextBlock Text="Entwicklung" FontSize="14" Foreground="#38BDF8" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,2"/>
-                            <TextBlock Text="Realistic Funfair Games Team" FontSize="16" Foreground="#F8FAFC" HorizontalAlignment="Center" Margin="0,0,0,15"/>
-
-                            <TextBlock Text="Besonderer Dank" FontSize="14" Foreground="#38BDF8" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,2"/>
-                            <TextBlock Text="Alle Beta-Tester" FontSize="16" Foreground="#F8FAFC" HorizontalAlignment="Center"/>
-                        </StackPanel>
-                    </Border>
-
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                        <Button Content="Discord" Style="{StaticResource ActionButtonStyle}" Click="DiscordButton_Click" Margin="5"/>
-                        <Button Content="Twitch" Style="{StaticResource ActionButtonStyle}" Click="TwitchButton_Click" Margin="5"/>
-                        <Button Content="Instagram" Style="{StaticResource ActionButtonStyle}" Click="InstagramButton_Click" Margin="5"/>
-                        <Button Content="TikTok" Style="{StaticResource ActionButtonStyle}" Click="TikTokButton_Click" Margin="5"/>
-                    </StackPanel>
-                </StackPanel>
-            </Grid>
-
-            <!-- SETTINGS PAGE -->
-            <Grid x:Name="SettingsPage" Visibility="Collapsed">
-                <StackPanel Margin="20">
-                    <TextBlock Text="Launcher Einstellungen" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
-
-                    <Border Background="#1E293B" CornerRadius="8" Padding="20" Margin="0,0,0,20">
-                        <StackPanel>
-                            <TextBlock Text="Launcher Updates" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
-                            <TextBlock x:Name="LauncherUpdateStatusText" Text="Suche nach Updates..." Foreground="#94A3B8" Margin="0,0,0,15"/>
-                            <Button x:Name="CheckLauncherUpdateButton" Content="Nach Launcher-Updates suchen" Style="{StaticResource ActionButtonStyle}" HorizontalAlignment="Left" Click="CheckLauncherUpdateButton_Click"/>
-                        </StackPanel>
-                    </Border>
-                </StackPanel>
-            </Grid>
-
         </Grid>
     </Grid>
 </Window>
