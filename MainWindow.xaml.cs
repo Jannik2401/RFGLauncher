@@ -29,7 +29,7 @@ public partial class MainWindow : Window
     private const string GameExeName = "kirmes.exe";
     private const string AccountServerUrl = "http://node1.waifly.com:25433";
 
-    private static readonly string[] ProtectedAdminUsernames = { "admin"};
+    private static readonly string[] ProtectedAdminUsernames = { "admin" };
 
     private const string DiscordUrl = "https://discord.gg/qaxg7UdafU";
     private const string TwitchUrl = "https://www.twitch.tv/realistic_funfair_games";
@@ -44,6 +44,7 @@ public partial class MainWindow : Window
 
     private string VersionFile => Path.Combine(GameDirectory, "version.txt");
     private string DigestFile => Path.Combine(GameDirectory, "game.digest");
+    private string SessionFile => Path.Combine(GameDirectory, "session.json");
 
     private readonly HttpClient Http = new();
     private DispatcherTimer? PerformanceTimer;
@@ -80,6 +81,7 @@ public partial class MainWindow : Window
 
             await SilentCheckLauncherUpdateAsync();
             await CheckForUpdatesAsync();
+            await TryAutoLoginAsync();
         }
         catch (Exception ex)
         {
@@ -431,6 +433,52 @@ public partial class MainWindow : Window
     private string NormalizeVersion(string? v) => string.IsNullOrWhiteSpace(v) ? "" : (v.StartsWith("v", StringComparison.OrdinalIgnoreCase) ? v.Substring(1) : v).Trim();
     private Version ParseVersion(string? v) => Version.TryParse(NormalizeVersion(v), out Version? res) ? res : new Version(0, 0, 0);
 
+    private async Task TryAutoLoginAsync()
+    {
+        try
+        {
+            if (!File.Exists(SessionFile)) return;
+
+            string json = File.ReadAllText(SessionFile);
+            var session = JsonSerializer.Deserialize<SavedSession>(json);
+
+            if (session != null && !string.IsNullOrWhiteSpace(session.Username) && !string.IsNullOrWhiteSpace(session.Password))
+            {
+                using HttpClient client = new();
+                var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/login", new { username = session.Username, password = session.Password });
+                var result = await response.Content.ReadFromJsonAsync<AccountResponse>();
+
+                if (result != null && result.success)
+                {
+                    LoggedInUsername = result.username ?? session.Username;
+                    LoggedInPassword = session.Password;
+                    LoggedInRole = result.role ?? "user";
+                    HasBetaAccess = result.hasBetaAccess;
+
+                    AdminMenuButton.Visibility = LoggedInRole == "admin" ? Visibility.Visible : Visibility.Collapsed;
+                    UpdateHomeInformation();
+                    StartStatusCheck();
+                }
+                else
+                {
+                    File.Delete(SessionFile);
+                }
+            }
+        }
+        catch { }
+    }
+
+    private void SaveSession(string username, string password)
+    {
+        try
+        {
+            var session = new SavedSession { Username = username, Password = password };
+            string json = JsonSerializer.Serialize(session);
+            File.WriteAllText(SessionFile, json);
+        }
+        catch { }
+    }
+
     private async void LoginAccountButton_Click(object sender, RoutedEventArgs e)
     {
         string username = AccountUsernameTextBox.Text.Trim();
@@ -457,6 +505,8 @@ public partial class MainWindow : Window
                 LoggedInPassword = password;
                 LoggedInRole = result.role ?? "user";
                 HasBetaAccess = result.hasBetaAccess;
+
+                SaveSession(username, password);
 
                 AccountStatusText.Text = "";
                 AccountPasswordBox.Clear();
@@ -499,6 +549,7 @@ public partial class MainWindow : Window
             if (result != null && result.success)
             {
                 LoggedInPassword = newPw;
+                SaveSession(LoggedInUsername ?? "", newPw);
                 MessageBox.Show("Passwort erfolgreich geändert!", "Erfolg", MessageBoxButton.OK, MessageBoxImage.Information);
                 ShowPage(HomePage);
             }
@@ -680,6 +731,15 @@ public partial class MainWindow : Window
 
         [JsonPropertyName("downloadUrl")]
         public string? DownloadUrl { get; set; }
+    }
+
+    private sealed class SavedSession
+    {
+        [JsonPropertyName("username")]
+        public string? Username { get; set; }
+
+        [JsonPropertyName("password")]
+        public string? Password { get; set; }
     }
 
     private sealed class GitHubRelease
