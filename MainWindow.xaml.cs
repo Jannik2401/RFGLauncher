@@ -55,6 +55,10 @@ public partial class MainWindow : Window
     private string? LoggedInRole;
     private bool HasBetaAccess;
 
+    // Password Eye Toggle State
+    private bool _isPasswordVisible = false;
+    private string _rawPassword = "";
+
     public MainWindow()
     {
         InitializeComponent();
@@ -125,6 +129,15 @@ public partial class MainWindow : Window
         {
             CornerUsernameText.Text = LoggedInUsername;
             CornerRoleText.Text = $"Rolle: {LoggedInRole?.ToUpper()}";
+
+            AccountLoginPanel.Visibility = Visibility.Collapsed;
+            AccountProfilePanel.Visibility = Visibility.Visible;
+            ProfileUsernameDisplay.Text = LoggedInUsername;
+        }
+        else
+        {
+            AccountLoginPanel.Visibility = Visibility.Visible;
+            AccountProfilePanel.Visibility = Visibility.Collapsed;
         }
     }
 
@@ -149,6 +162,43 @@ public partial class MainWindow : Window
         UpdateHomeInformation();
         UpdateAccountUIVisibility();
         ShowPage(HomePage);
+    }
+
+    // Password Eye Toggle Methods
+    private void AccountPasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
+    {
+        if (!_isPasswordVisible)
+        {
+            _rawPassword = AccountPasswordBox.Password;
+        }
+    }
+
+    private void AccountPasswordVisibleTextBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (_isPasswordVisible)
+        {
+            _rawPassword = AccountPasswordVisibleTextBox.Text;
+        }
+    }
+
+    private void TogglePasswordVisibility_Click(object sender, RoutedEventArgs e)
+    {
+        _isPasswordVisible = !_isPasswordVisible;
+
+        if (_isPasswordVisible)
+        {
+            AccountPasswordVisibleTextBox.Text = _rawPassword;
+            AccountPasswordBox.Visibility = Visibility.Collapsed;
+            AccountPasswordVisibleTextBox.Visibility = Visibility.Visible;
+            TogglePasswordBtn.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#38BDF8")!;
+        }
+        else
+        {
+            AccountPasswordBox.Password = _rawPassword;
+            AccountPasswordVisibleTextBox.Visibility = Visibility.Collapsed;
+            AccountPasswordBox.Visibility = Visibility.Visible;
+            TogglePasswordBtn.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#94A3B8")!;
+        }
     }
 
     private async Task SilentCheckLauncherUpdateAsync()
@@ -254,6 +304,7 @@ public partial class MainWindow : Window
     private void PerformanceButton_Click(object sender, RoutedEventArgs e) => ShowPage(PerformancePage);
     private void CreditsButton_Click(object sender, RoutedEventArgs e) => ShowPage(CreditsPage);
     private void ExitButton_Click(object sender, RoutedEventArgs e) => Close();
+    private void GoToChangePassword_Click(object sender, RoutedEventArgs e) => ShowPage(ChangePasswordPage);
 
     private void UpdateHomeInformation()
     {
@@ -559,7 +610,7 @@ public partial class MainWindow : Window
     private async void LoginAccountButton_Click(object sender, RoutedEventArgs e)
     {
         string username = AccountUsernameTextBox.Text.Trim();
-        string password = AccountPasswordBox.Password;
+        string password = _rawPassword;
 
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
         {
@@ -587,6 +638,8 @@ public partial class MainWindow : Window
 
                 AccountStatusText.Text = "";
                 AccountPasswordBox.Clear();
+                AccountPasswordVisibleTextBox.Clear();
+                _rawPassword = "";
 
                 AdminMenuButton.Visibility = LoggedInRole == "admin" ? Visibility.Visible : Visibility.Collapsed;
                 UpdateHomeInformation();
@@ -607,6 +660,43 @@ public partial class MainWindow : Window
         finally
         {
             AccountLoginButton.IsEnabled = true;
+        }
+    }
+
+    private async void SaveDisplayNameButton_Click(object sender, RoutedEventArgs e)
+    {
+        string newDisplayName = NewDisplayNameTextBox.Text.Trim();
+
+        if (string.IsNullOrWhiteSpace(newDisplayName))
+        {
+            MessageBox.Show("Bitte einen gültigen Anzeigenamen eingeben.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        try
+        {
+            using HttpClient client = new();
+            if (!string.IsNullOrEmpty(LoggedInUsername)) client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
+            if (!string.IsNullOrEmpty(LoggedInPassword)) client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
+
+            var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/change-display-name", new { username = LoggedInUsername, displayName = newDisplayName });
+            var result = await response.Content.ReadFromJsonAsync<AccountResponse>();
+
+            if (result != null && result.success)
+            {
+                MessageBox.Show("Anzeigename erfolgreich geändert!", "Erfolg", MessageBoxButton.OK, MessageBoxImage.Information);
+                CornerUsernameText.Text = newDisplayName;
+                ProfileUsernameDisplay.Text = newDisplayName;
+                NewDisplayNameTextBox.Clear();
+            }
+            else
+            {
+                MessageBox.Show(result?.message ?? "Fehler beim Ändern des Anzeigenamens.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show("Server nicht erreichbar: " + ex.Message, "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
