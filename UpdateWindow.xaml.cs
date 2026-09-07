@@ -40,21 +40,14 @@ public partial class UpdateWindow : Window
                 using var response = await client.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead);
                 response.EnsureSuccessStatusCode();
 
-                long? totalBytes = response.Content.Headers.ContentLength;
                 await using Stream input = await response.Content.ReadAsStreamAsync();
                 await using FileStream output = new(tempExePath, FileMode.Create, FileAccess.Write, FileShare.None);
 
                 byte[] buffer = new byte[81920];
-                long totalRead = 0;
                 int bytesRead;
                 while ((bytesRead = await input.ReadAsync(buffer, 0, buffer.Length)) > 0)
                 {
                     await output.WriteAsync(buffer, 0, bytesRead);
-                    totalRead += bytesRead;
-                    if (totalBytes.HasValue && totalBytes.Value > 0 && UpdateProgress != null)
-                    {
-                        UpdateProgress.Value = Math.Min(100, totalRead * 100.0 / totalBytes.Value);
-                    }
                 }
             }
 
