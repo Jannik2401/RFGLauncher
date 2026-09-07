@@ -259,21 +259,51 @@
 
                 <!-- ACCOUNT PAGE -->
                 <Grid x:Name="AccountPage" Visibility="Collapsed">
-                    <Border Style="{StaticResource CardBorderStyle}" VerticalAlignment="Center" HorizontalAlignment="Center" Width="380">
-                        <StackPanel Margin="10">
-                            <TextBlock Text="Account Login" FontSize="22" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,0,0,20" HorizontalAlignment="Center"/>
+                    <!-- Login Panel (Sichtbar wenn nicht eingeloggt) -->
+                    <StackPanel x:Name="AccountLoginPanel" VerticalAlignment="Center" HorizontalAlignment="Center" Width="380">
+                        <Border Style="{StaticResource CardBorderStyle}">
+                            <StackPanel Margin="10">
+                                <TextBlock Text="Account Login" FontSize="22" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,0,0,20" HorizontalAlignment="Center"/>
 
-                            <TextBlock Text="Benutzername" Foreground="#94A3B8" FontSize="13" Margin="0,0,0,5"/>
-                            <TextBox x:Name="AccountUsernameTextBox" Height="40" Margin="0,0,0,15"/>
+                                <TextBlock Text="Benutzername" Foreground="#94A3B8" FontSize="13" Margin="0,0,0,5"/>
+                                <TextBox x:Name="AccountUsernameTextBox" Height="40" Margin="0,0,0,15"/>
 
-                            <TextBlock Text="Passwort" Foreground="#94A3B8" FontSize="13" Margin="0,0,0,5"/>
-                            <PasswordBox x:Name="AccountPasswordBox" Height="40" Margin="0,0,0,25"/>
+                                <TextBlock Text="Passwort" Foreground="#94A3B8" FontSize="13" Margin="0,0,0,5"/>
+                                <Grid Margin="0,0,0,25">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="42"/>
+                                    </Grid.ColumnDefinitions>
+                                    <PasswordBox x:Name="AccountPasswordBox" Height="40" PasswordChanged="AccountPasswordBox_PasswordChanged"/>
+                                    <TextBox x:Name="AccountPasswordVisibleTextBox" Height="40" Visibility="Collapsed" TextChanged="AccountPasswordVisibleTextBox_TextChanged"/>
+                                    <Button x:Name="TogglePasswordBtn" Grid.Column="1" Content="👁" Click="TogglePasswordVisibility_Click" Background="#1E294B" Foreground="#38BDF8" BorderThickness="0" Height="40" Cursor="Hand"/>
+                                </Grid>
 
-                            <Button x:Name="AccountLoginButton" Content="Einloggen" Style="{StaticResource ActionButtonStyle}" Height="42" Click="LoginAccountButton_Click" Margin="0,0,0,15"/>
+                                <Button x:Name="AccountLoginButton" Content="Einloggen" Style="{StaticResource ActionButtonStyle}" Height="42" Click="LoginAccountButton_Click" Margin="0,0,0,15"/>
 
-                            <TextBlock x:Name="AccountStatusText" Text="" Foreground="#E11D48" TextWrapping="Wrap" HorizontalAlignment="Center" TextAlignment="Center"/>
-                        </StackPanel>
-                    </Border>
+                                <TextBlock x:Name="AccountStatusText" Text="" Foreground="#E11D48" TextWrapping="Wrap" HorizontalAlignment="Center" TextAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Profile Panel (Sichtbar wenn eingeloggt - Name anzeigen & Anzeigename ändern) -->
+                    <StackPanel x:Name="AccountProfilePanel" VerticalAlignment="Center" HorizontalAlignment="Center" Width="420" Visibility="Collapsed">
+                        <Border Style="{StaticResource CardBorderStyle}">
+                            <StackPanel Margin="10">
+                                <TextBlock Text="Account-Verwaltung" FontSize="22" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,0,0,20" HorizontalAlignment="Center"/>
+
+                                <TextBlock Text="Benutzername:" Foreground="#94A3B8" FontSize="13" Margin="0,0,0,2"/>
+                                <TextBlock x:Name="ProfileUsernameDisplay" Text="--" FontSize="16" FontWeight="Bold" Foreground="#38BDF8" Margin="0,0,0,15"/>
+
+                                <TextBlock Text="Neuer Anzeigename / Display-Name" Foreground="#94A3B8" FontSize="13" Margin="0,0,0,5"/>
+                                <TextBox x:Name="NewDisplayNameTextBox" Height="40" Margin="0,0,0,15"/>
+
+                                <Button Content="Anzeigenamen speichern" Style="{StaticResource ActionButtonStyle}" Height="40" Click="SaveDisplayNameButton_Click" Margin="0,0,0,20"/>
+
+                                <Button Content="Passwort ändern" Style="{StaticResource ActionButtonStyle}" Background="#334155" Height="40" Click="GoToChangePassword_Click"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
                 </Grid>
 
                 <!-- CHANGE PASSWORD PAGE -->
