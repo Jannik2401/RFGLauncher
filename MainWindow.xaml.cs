@@ -82,6 +82,7 @@ public partial class MainWindow : Window
             await SilentCheckLauncherUpdateAsync();
             await CheckForUpdatesAsync();
             await TryAutoLoginAsync();
+            UpdateAccountUIVisibility();
         }
         catch (Exception ex)
         {
@@ -112,6 +113,46 @@ public partial class MainWindow : Window
     private void TwitchButton_Click(object sender, RoutedEventArgs e) => OpenUrl(TwitchUrl);
     private void InstagramButton_Click(object sender, RoutedEventArgs e) => OpenUrl(InstagramUrl);
     private void TikTokButton_Click(object sender, RoutedEventArgs e) => OpenUrl(TikTokUrl);
+
+    private void UpdateAccountUIVisibility()
+    {
+        bool isLoggedIn = !string.IsNullOrEmpty(LoggedInUsername);
+
+        // Account-Button links verstecken, wenn eingeloggt
+        AccountMenuButton.Visibility = isLoggedIn ? Visibility.Collapsed : Visibility.Visible;
+        
+        // Profil-Box rechts unten anzeigen, wenn eingeloggt
+        UserProfileCornerBox.Visibility = isLoggedIn ? Visibility.Visible : Visibility.Collapsed;
+
+        if (isLoggedIn)
+        {
+            CornerUsernameText.Text = LoggedInUsername;
+            CornerRoleText.Text = $"Rolle: {LoggedInRole?.ToUpper()}";
+        }
+    }
+
+    private void LogoutButton_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (File.Exists(SessionFile))
+            {
+                File.Delete(SessionFile);
+            }
+        }
+        catch { }
+
+        LoggedInUsername = null;
+        LoggedInPassword = null;
+        LoggedInRole = null;
+        HasBetaAccess = false;
+
+        AdminMenuButton.Visibility = Visibility.Collapsed;
+
+        UpdateHomeInformation();
+        UpdateAccountUIVisibility();
+        ShowPage(HomePage);
+    }
 
     private async Task SilentCheckLauncherUpdateAsync()
     {
@@ -281,6 +322,7 @@ public partial class MainWindow : Window
                         LoggedInPassword = null;
                         ShowPage(AccountPage);
                         UpdateHomeInformation();
+                        UpdateAccountUIVisibility();
                         StatusCheckTimer?.Stop();
                         return;
                     }
@@ -289,6 +331,7 @@ public partial class MainWindow : Window
                     {
                         AdminMenuButton.Visibility = LoggedInRole == "admin" ? Visibility.Visible : Visibility.Collapsed;
                         UpdateHomeInformation();
+                        UpdateAccountUIVisibility();
                     }
                 }
             }
@@ -493,6 +536,7 @@ public partial class MainWindow : Window
 
                     AdminMenuButton.Visibility = LoggedInRole == "admin" ? Visibility.Visible : Visibility.Collapsed;
                     UpdateHomeInformation();
+                    UpdateAccountUIVisibility();
                     StartStatusCheck();
                 }
                 else
@@ -549,6 +593,7 @@ public partial class MainWindow : Window
 
                 AdminMenuButton.Visibility = LoggedInRole == "admin" ? Visibility.Visible : Visibility.Collapsed;
                 UpdateHomeInformation();
+                UpdateAccountUIVisibility();
                 StartStatusCheck();
 
                 ShowPage(result.mustChangePassword ? ChangePasswordPage : HomePage);
