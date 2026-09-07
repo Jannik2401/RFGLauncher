@@ -29,7 +29,7 @@ public partial class MainWindow : Window
     private const string GameExeName = "kirmes.exe";
     private const string AccountServerUrl = "http://node1.waifly.com:25433";
 
-    private static readonly string[] ProtectedAdminUsernames = { "admin", "jannik" };
+    private static readonly string[] ProtectedAdminUsernames = { "admin"};
 
     private const string DiscordUrl = "https://discord.gg/qaxg7UdafU";
     private const string TwitchUrl = "https://www.twitch.tv/realistic_funfair_games";
