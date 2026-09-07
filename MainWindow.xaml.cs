@@ -47,6 +47,7 @@ public partial class MainWindow : Window
 
     private readonly HttpClient Http = new();
     private DispatcherTimer? PerformanceTimer;
+    private DispatcherTimer? StatusCheckTimer;
 
     private string? LoggedInUsername;
     private string? LoggedInPassword;
@@ -89,6 +90,7 @@ public partial class MainWindow : Window
     private void MainWindow_Closed(object? sender, EventArgs e)
     {
         PerformanceTimer?.Stop();
+        StatusCheckTimer?.Stop();
         Http.Dispose();
     }
 
@@ -235,16 +237,49 @@ public partial class MainWindow : Window
         }
         else if (HasBetaAccess)
         {
-            HomeBetaAccessText.Text = "AKTIV";
+            HomeBetaAccessText.Text = "ZUGRIFF GEWÄHRT";
             HomeBetaAccessText.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#10B981")!;
         }
         else
         {
-            HomeBetaAccessText.Text = "KEIN ZUGANG";
+            HomeBetaAccessText.Text = "ZUGRIFF VERWEIGERT";
             HomeBetaAccessText.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#E11D48")!;
         }
 
         StartButton.IsEnabled = IsGameInstalled();
+    }
+
+    private void StartStatusCheck()
+    {
+        StatusCheckTimer?.Stop();
+        StatusCheckTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
+        StatusCheckTimer.Tick += async (s, e) =>
+        {
+            if (string.IsNullOrEmpty(LoggedInUsername)) return;
+
+            try
+            {
+                using HttpClient client = new();
+                var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/user-status", new { username = LoggedInUsername });
+                var result = await response.Content.ReadFromJsonAsync<AccountResponse>();
+
+                if (result != null && result.success)
+                {
+                    bool statusChanged = HasBetaAccess != result.hasBetaAccess || LoggedInRole != result.role;
+                    
+                    HasBetaAccess = result.hasBetaAccess;
+                    LoggedInRole = result.role ?? "user";
+
+                    if (statusChanged)
+                    {
+                        AdminMenuButton.Visibility = LoggedInRole == "admin" ? Visibility.Visible : Visibility.Collapsed;
+                        UpdateHomeInformation();
+                    }
+                }
+            }
+            catch { }
+        };
+        StatusCheckTimer.Start();
     }
 
     private void StartButton_Click(object sender, RoutedEventArgs e)
@@ -426,6 +461,7 @@ public partial class MainWindow : Window
 
                 AdminMenuButton.Visibility = LoggedInRole == "admin" ? Visibility.Visible : Visibility.Collapsed;
                 UpdateHomeInformation();
+                StartStatusCheck();
 
                 ShowPage(result.mustChangePassword ? ChangePasswordPage : HomePage);
             }
