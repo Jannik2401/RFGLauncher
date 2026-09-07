@@ -1,23 +1,22 @@
 using System;
-using System.Diagnostics;
 using System.IO;
-using System.IO.Compression;
 using System.Net.Http;
-using System.Threading.Tasks;
+using System.Diagnostics;
 using System.Windows;
+using System.Threading.Tasks;
 
 namespace BetaLauncher;
 
 public partial class UpdateWindow : Window
 {
-    private readonly string DownloadUrl;
-    private readonly string TargetExePath;
+    private readonly string downloadUrl;
+    private readonly string currentExePath;
 
-    public UpdateWindow(string downloadUrl, string targetExePath)
+    public UpdateWindow(string downloadUrl, string currentExePath)
     {
         InitializeComponent();
-        DownloadUrl = downloadUrl;
-        TargetExePath = targetExePath;
+        this.downloadUrl = downloadUrl;
+        this.currentExePath = currentExePath;
 
         Loaded += UpdateWindow_Loaded;
     }
@@ -31,101 +30,63 @@ public partial class UpdateWindow : Window
     {
         try
         {
-            StatusText.Text = "Lade Launcher-Update herunter...";
-            string tempZip = Path.Combine(Path.GetTempPath(), "RFG_Launcher_Update.zip");
-            string extractPath = Path.Combine(Path.GetTempPath(), "RFG_Launcher_Extracted");
+            StatusText.Text = "Lade neue Launcher-Version herunter...";
 
-            if (File.Exists(tempZip)) File.Delete(tempZip);
-            if (Directory.Exists(extractPath)) Directory.Delete(extractPath, true);
+            string tempExePath = Path.Combine(Path.GetTempPath(), "BetaLauncher_New.exe");
+            if (File.Exists(tempExePath)) File.Delete(tempExePath);
 
             using (HttpClient client = new())
             {
-                client.DefaultRequestHeaders.UserAgent.ParseAdd("RFG-BetaLauncher-Updater");
-                using HttpResponseMessage response = await client.GetAsync(DownloadUrl, HttpCompletionOption.ResponseHeadersRead);
+                using var response = await client.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead);
                 response.EnsureSuccessStatusCode();
-
-                if (response.Content.Headers.ContentType?.MediaType?.Contains("html") == true)
-                {
-                    throw new Exception("Der Download-Link verweist auf eine Webseite statt auf eine ZIP-Datei.");
-                }
 
                 long? totalBytes = response.Content.Headers.ContentLength;
                 await using Stream input = await response.Content.ReadAsStreamAsync();
-                await using FileStream output = new(tempZip, FileMode.Create, FileAccess.Write, FileShare.None);
+                await using FileStream output = new(tempExePath, FileMode.Create, FileAccess.Write, FileShare.None);
 
                 byte[] buffer = new byte[81920];
                 long totalRead = 0;
                 int bytesRead;
-
                 while ((bytesRead = await input.ReadAsync(buffer, 0, buffer.Length)) > 0)
                 {
                     await output.WriteAsync(buffer, 0, bytesRead);
                     totalRead += bytesRead;
                     if (totalBytes.HasValue && totalBytes.Value > 0)
                     {
-                        double percentage = Math.Min(100, totalRead * 100.0 / totalBytes.Value);
-                        Dispatcher.Invoke(() =>
-                        {
-                            ProgressBar.Value = percentage;
-                        });
+                        // Falls du eine ProgressBar namens UpdateProgress hast:
+                        UpdateProgress.Value = Math.Min(100, totalRead * 100.0 / totalBytes.Value);
                     }
                 }
             }
 
-            FileInfo fi = new FileInfo(tempZip);
-            if (!fi.Exists || fi.Length < 100)
-            {
-                throw new Exception("Die heruntergeladene Datei ist leer oder beschädigt.");
-            }
+            StatusText.Text = "Installiere Update...";
+            await Task.Delay(500);
 
-            using (var zipCheck = ZipFile.OpenRead(tempZip))
-            {
-                if (zipCheck.Entries.Count == 0)
-                {
-                    throw new Exception("Die ZIP-Datei enthält keine Einträge.");
-                }
-            }
+            // Batch-Skript erstellen, das die EXE im Hintergrund ersetzt, sobald der Launcher zu ist
+            string batchPath = Path.Combine(Path.GetTempPath(), "update_launcher.bat");
+            string batchContent = $@"
+@echo off
+timeout /t 2 /nobreak > nul
+move /y ""{tempExePath}"" ""{currentExePath}""
+start """" ""{currentExePath}""
+del ""%~f0""
+";
 
-            StatusText.Text = "Entpacke Update...";
-            Directory.CreateDirectory(extractPath);
-            ZipFile.ExtractToDirectory(tempZip, extractPath, true);
+            File.WriteAllText(batchPath, batchContent);
 
-            StatusText.Text = "Wende Update an...";
-            await Task.Delay(1000);
-
-            string targetDir = Path.GetDirectoryName(TargetExePath) ?? AppContext.BaseDirectory;
-
-            foreach (string filePath in Directory.GetFiles(extractPath, "*.*", SearchOption.AllDirectories))
-            {
-                string relativePath = Path.GetRelativePath(extractPath, filePath);
-                string destinationPath = Path.Combine(targetDir, relativePath);
-
-                Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
-
-                if (string.Equals(Path.GetFileName(destinationPath), Path.GetFileName(TargetExePath), StringComparison.OrdinalIgnoreCase))
-                {
-                    string backupPath = TargetExePath + ".bak";
-                    if (File.Exists(backupPath)) File.Delete(backupPath);
-                    if (File.Exists(TargetExePath)) File.Move(TargetExePath, backupPath, true);
-                }
-
-                File.Copy(filePath, destinationPath, true);
-            }
-
-            StatusText.Text = "Update erfolgreich! Starte neu...";
-            await Task.Delay(1000);
-
+            // Batch-Datei starten und den aktuellen Launcher sauber schließen
             Process.Start(new ProcessStartInfo
             {
-                FileName = TargetExePath,
-                UseShellExecute = true
+                FileName = batchPath,
+                CreateNoWindow = true,
+                UseShellExecute = false
             });
 
             Application.Current.Shutdown();
         }
         catch (Exception ex)
         {
-            MessageBox.Show("Fehler beim Update des Launchers: " + ex.Message, "Update-Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show("Fehler beim Update: " + ex.Message, "Update-Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
             Close();
         }
     }
