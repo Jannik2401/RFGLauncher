@@ -537,7 +537,7 @@ public partial class MainWindow : Window[cite: 7]
             string remoteVersion = NormalizeVersion(release.TagName);[cite: 7]
             string localVersion = NormalizeVersion(GetLocalVersion());[cite: 7]
 
-            StatusText.Text = !string.Equals(remoteVersion, localVersion, StringComparison.OrdinalIgnoreCase) || !IsGameInstalled() [cite: 7]
+            StatusText.Text = !string.Equals(remoteVersion, localVersion, StringComparison.OrdinalIgnoreCase) || !IsGameInstalled()[cite: 7]
                 ? $"Update verfügbar: {remoteVersion}" : "Spiel ist aktuell.";[cite: 7]
 
             VersionText.Text = "Installiert: " + (string.IsNullOrWhiteSpace(localVersion) ? "Keine" : localVersion);[cite: 7]
@@ -747,7 +747,6 @@ public partial class MainWindow : Window[cite: 7]
             if (!string.IsNullOrEmpty(LoggedInUsername)) client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
             if (!string.IsNullOrEmpty(LoggedInPassword)) client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
 
-            // Korrektur: Auf den korrekten Endpunkt /api/update-display-name und Property newDisplayName angepasst
             var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/update-display-name", new { username = LoggedInUsername, newDisplayName = newDisplayName });
             string responseString = await response.Content.ReadAsStringAsync();
 
@@ -832,7 +831,7 @@ public partial class MainWindow : Window[cite: 7]
         }
         catch (Exception ex) 
         {  
-            AdminActionStatus.Text = "Fehler: " + ex.Message; [cite: 7]
+            AdminActionStatus.Text = "Fehler: " + ex.Message;[cite: 7]
         }
     }
 
@@ -882,7 +881,7 @@ public partial class MainWindow : Window[cite: 7]
             }
             catch (Exception ex) 
             {  
-                AdminActionStatus.Text = "Fehler: " + ex.Message; [cite: 7]
+                AdminActionStatus.Text = "Fehler: " + ex.Message;[cite: 7]
             }
         }
     }
