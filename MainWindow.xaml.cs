@@ -672,4 +672,147 @@ public partial class MainWindow : Window
     }
 
     private sealed class LauncherVersionInfo
-    
+    {
+        [JsonPropertyName("version")]
+        public string? Version { get; set; }
+
+        [JsonPropertyName("downloadUrl")]
+        public string? DownloadUrl { get; set; }
+    }
+
+    private sealed class GitHubRelease
+    {
+        [JsonPropertyName("tag_name")]
+        public string? TagName { get; set; }
+
+        [JsonPropertyName("body")]
+        public string? Body { get; set; }
+
+        [JsonPropertyName("draft")]
+        public bool Draft { get; set; }
+
+        [JsonPropertyName("prerelease")]
+        public bool Prerelease { get; set; }
+
+        [JsonPropertyName("assets")]
+        public GitHubAsset[] Assets { get; set; } = Array.Empty<GitHubAsset>();
+    }
+
+    private sealed class GitHubAsset
+    {
+        [JsonPropertyName("name")]
+        public string? Name { get; set; }
+
+        [JsonPropertyName("browser_download_url")]
+        public string? BrowserDownloadUrl { get; set; }
+    }
+
+    private sealed class AccountResponse
+    {
+        [JsonPropertyName("success")]
+        public bool success { get; set; }
+
+        [JsonPropertyName("message")]
+        public string? message { get; set; }
+
+        [JsonPropertyName("username")]
+        public string? username { get; set; }
+
+        [JsonPropertyName("role")]
+        public string? role { get; set; }
+
+        [JsonPropertyName("hasBetaAccess")]
+        public bool hasBetaAccess { get; set; }
+
+        [JsonPropertyName("mustChangePassword")]
+        public bool mustChangePassword { get; set; }
+    }
+
+    private sealed class AdminUserListResponse
+    {
+        [JsonPropertyName("success")]
+        public bool success { get; set; }
+
+        [JsonPropertyName("users")]
+        public List<UserItem> users { get; set; } = new();
+    }
+
+    public sealed class UserItem
+    {
+        [JsonPropertyName("username")]
+        public string? Username { get; set; }
+
+        [JsonPropertyName("role")]
+        public string? Role { get; set; }
+
+        [JsonPropertyName("hasBetaAccess")]
+        public bool HasBetaAccess { get; set; }
+
+        [JsonPropertyName("isLocked")]
+        public bool IsLocked { get; set; }
+
+        [JsonPropertyName("mustChangePassword")]
+        public bool MustChangePassword { get; set; }
+    }
+
+    private sealed class PerformanceCounterWrapper
+    {
+        private readonly PerformanceCounter? cpuCounter;
+        private readonly Process currentProcess;
+
+        public PerformanceCounterWrapper()
+        {
+            currentProcess = Process.GetCurrentProcess();
+            try
+            {
+                cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total", true);
+                cpuCounter.NextValue();
+            }
+            catch
+            {
+                cpuCounter = null;
+            }
+        }
+
+        public float GetCpuUsage()
+        {
+            try
+            {
+                return cpuCounter?.NextValue() ?? 0f;
+            }
+            catch
+            {
+                return 0f;
+            }
+        }
+
+        public float GetRamUsage()
+        {
+            try
+            {
+                currentProcess.Refresh();
+                long workingSet = currentProcess.WorkingSet64;
+                long totalPhysicalMemory = GetTotalMemoryInBytes();
+                if (totalPhysicalMemory <= 0) return 0f;
+                return (float)((double)workingSet / totalPhysicalMemory * 100.0);
+            }
+            catch
+            {
+                return 0f;
+            }
+        }
+
+        private static long GetTotalMemoryInBytes()
+        {
+            try
+            {
+                var gcMemoryInfo = GC.GetGCMemoryInfo();
+                return gcMemoryInfo.TotalAvailableMemoryBytes;
+            }
+            catch
+            {
+                return 1024L * 1024L * 1024L * 8L;
+            }
+        }
+    }
+}
