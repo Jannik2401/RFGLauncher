@@ -30,7 +30,7 @@ public partial class UpdateWindow : Window
     {
         try
         {
-            StatusText.Text = "Lade neue Launcher-Version herunter...";
+            StatusText.Text = "Lade Launcher-Update herunter...";
 
             string tempExePath = Path.Combine(Path.GetTempPath(), "BetaLauncher_New.exe");
             if (File.Exists(tempExePath)) File.Delete(tempExePath);
@@ -40,14 +40,31 @@ public partial class UpdateWindow : Window
                 using var response = await client.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead);
                 response.EnsureSuccessStatusCode();
 
+                long? totalBytes = response.Content.Headers.ContentLength;
                 await using Stream input = await response.Content.ReadAsStreamAsync();
                 await using FileStream output = new(tempExePath, FileMode.Create, FileAccess.Write, FileShare.None);
 
                 byte[] buffer = new byte[81920];
+                long totalRead = 0;
                 int bytesRead;
+
                 while ((bytesRead = await input.ReadAsync(buffer, 0, buffer.Length)) > 0)
                 {
                     await output.WriteAsync(buffer, 0, bytesRead);
+                    totalRead += bytesRead;
+
+                    if (totalBytes.HasValue && totalBytes.Value > 0)
+                    {
+                        double percentage = (double)totalRead / totalBytes.Value * 100.0;
+                        
+                        Dispatcher.Invoke(() =>
+                        {
+                            if (UpdateProgress != null)
+                            {
+                                UpdateProgress.Value = Math.Min(100, percentage);
+                            }
+                        });
+                    }
                 }
             }
 
@@ -76,7 +93,7 @@ del ""%~f0""
         }
         catch (Exception ex)
         {
-            MessageBox.Show("Fehler beim Update: " + ex.Message, "Update-Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show("Fehler beim Update des Launchers: " + ex.Message, "Update-Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
             Close();
         }
     }
