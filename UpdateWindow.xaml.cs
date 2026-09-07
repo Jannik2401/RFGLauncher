@@ -51,9 +51,8 @@ public partial class UpdateWindow : Window
                 {
                     await output.WriteAsync(buffer, 0, bytesRead);
                     totalRead += bytesRead;
-                    if (totalBytes.HasValue && totalBytes.Value > 0)
+                    if (totalBytes.HasValue && totalBytes.Value > 0 && UpdateProgress != null)
                     {
-                        // Falls du eine ProgressBar namens UpdateProgress hast:
                         UpdateProgress.Value = Math.Min(100, totalRead * 100.0 / totalBytes.Value);
                     }
                 }
@@ -62,7 +61,6 @@ public partial class UpdateWindow : Window
             StatusText.Text = "Installiere Update...";
             await Task.Delay(500);
 
-            // Batch-Skript erstellen, das die EXE im Hintergrund ersetzt, sobald der Launcher zu ist
             string batchPath = Path.Combine(Path.GetTempPath(), "update_launcher.bat");
             string batchContent = $@"
 @echo off
@@ -74,7 +72,6 @@ del ""%~f0""
 
             File.WriteAllText(batchPath, batchContent);
 
-            // Batch-Datei starten und den aktuellen Launcher sauber schließen
             Process.Start(new ProcessStartInfo
             {
                 FileName = batchPath,
