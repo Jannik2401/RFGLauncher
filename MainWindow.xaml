@@ -162,10 +162,10 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- Top Header Bar (matches dashboard header style) -->
+            <!-- Top Header Bar -->
             <Border Grid.Row="0" Style="{StaticResource CardBorderStyle}" Margin="0,0,0,20" Padding="20,0">
                 <Grid>
-                    <TextBlock Text="REALISTIC FUNFAIR GAMES" VerticalAlignment="Center" FontWeight="Bold" FontSize="16" Foreground="#F8FAFC" LetterSpacing="1"/>
+                    <TextBlock Text="REALISTIC FUNFAIR GAMES" VerticalAlignment="Center" FontWeight="Bold" FontSize="16" Foreground="#F8FAFC"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                         <Border Background="#16203B" CornerRadius="6" Padding="12,6">
                             <TextBlock Text="Status: Bereit" FontSize="12" Foreground="#38BDF8" FontWeight="SemiBold"/>
