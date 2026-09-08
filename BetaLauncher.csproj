@@ -1,22 +1,14 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
+<PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
-    <ApplicationIcon />
+    <ApplicationIcon>Assets\logo.ico</ApplicationIcon>
     <StartupObject>BetaLauncher.App</StartupObject>
     
     <!-- Automatische Versionierung über GitHub Actions (nutzt GITHUB_RUN_NUMBER, lokal als Fallback '0') -->
     <Version>1.0.$([MSBuild]::ValueOrDefault('$([System.Environment]::GetEnvironmentVariable(\'GITHUB_RUN_NUMBER\'))', '0'))</Version>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="8.0.0" />
-  </ItemGroup>
-
-</Project>
+</PropertyGroup>
