@@ -23,7 +23,6 @@ public partial class MainWindow : Window
         Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.0.0";
 
     private const string LauncherVersionUrl = "https://raw.githubusercontent.com/Jannik2401/RFGLauncher/main/version.json";
-
     private const string GitHubOwner = "Jannik2401";
     private const string GitHubRepo = "RFGLauncher";
     private const string GameExeName = "kirmes.exe";
@@ -36,7 +35,7 @@ public partial class MainWindow : Window
     private const string InstagramUrl = "https://www.instagram.com/realistic_funfair_games/";
     private const string TikTokUrl = "https://www.tiktok.com/@realisticfunfairgames";
 
-    private string GameDirectory = Path.Combine(
+    private readonly string GameDirectory = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "RealisticFunfairGames",
         "Game"
@@ -55,10 +54,10 @@ public partial class MainWindow : Window
     private string? LoggedInRole;
     private bool HasBetaAccess;
 
-    private bool _isPasswordVisible = false;
-    private string _rawPassword = "";
+    private bool _isPasswordVisible;
+    private string _rawPassword = string.Empty;
 
-    private bool _inlinePasswordVisible = false;
+    private bool _inlinePasswordVisible;
     private string _inlineRawPassword = string.Empty;
 
     public MainWindow()
@@ -147,10 +146,7 @@ public partial class MainWindow : Window
     {
         try
         {
-            if (File.Exists(SessionFile))
-            {
-                File.Delete(SessionFile);
-            }
+            if (File.Exists(SessionFile)) File.Delete(SessionFile);
         }
         catch { }
 
@@ -168,18 +164,12 @@ public partial class MainWindow : Window
 
     private void AccountPasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
     {
-        if (!_isPasswordVisible)
-        {
-            _rawPassword = AccountPasswordBox.Password;
-        }
+        if (!_isPasswordVisible) _rawPassword = AccountPasswordBox.Password;
     }
 
     private void AccountPasswordVisibleTextBox_TextChanged(object sender, TextChangedEventArgs e)
     {
-        if (_isPasswordVisible)
-        {
-            _rawPassword = AccountPasswordVisibleTextBox.Text;
-        }
+        if (_isPasswordVisible) _rawPassword = AccountPasswordVisibleTextBox.Text;
     }
 
     private void TogglePasswordVisibility_Click(object sender, RoutedEventArgs e)
@@ -220,18 +210,12 @@ public partial class MainWindow : Window
 
     private void InlinePwdBox_PasswordChanged(object sender, RoutedEventArgs e)
     {
-        if (!_inlinePasswordVisible)
-        {
-            _inlineRawPassword = InlinePwdBox.Password;
-        }
+        if (!_inlinePasswordVisible) _inlineRawPassword = InlinePwdBox.Password;
     }
 
     private void InlineTxtVisiblePassword_TextChanged(object sender, TextChangedEventArgs e)
     {
-        if (_inlinePasswordVisible)
-        {
-            _inlineRawPassword = InlineTxtVisiblePassword.Text;
-        }
+        if (_inlinePasswordVisible) _inlineRawPassword = InlineTxtVisiblePassword.Text;
     }
 
     private void InlineBtnTogglePwd_Click(object sender, RoutedEventArgs e)
@@ -423,14 +407,14 @@ public partial class MainWindow : Window
                 var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/user-status", new { username = LoggedInUsername });
                 var result = await response.Content.ReadFromJsonAsync<AccountResponse>();
 
-                if (result != null && result.success)
+                if (result != null && result.Success)
                 {
-                    bool statusChanged = HasBetaAccess != result.hasBetaAccess || LoggedInRole != result.role || result.isLocked;
+                    bool statusChanged = HasBetaAccess != result.HasBetaAccess || LoggedInRole != result.Role || result.IsLocked;
                     
-                    HasBetaAccess = result.hasBetaAccess;
-                    LoggedInRole = result.role ?? "user";
+                    HasBetaAccess = result.HasBetaAccess;
+                    LoggedInRole = result.Role ?? "user";
 
-                    if (result.isLocked)
+                    if (result.IsLocked)
                     {
                         MessageBox.Show("Dein Account wurde gesperrt.", "Sicherheit", MessageBoxButton.OK, MessageBoxImage.Error);
                         if (File.Exists(SessionFile)) File.Delete(SessionFile);
@@ -472,10 +456,10 @@ public partial class MainWindow : Window
                 using HttpClient client = new();
                 var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/user-status", new { username = LoggedInUsername });
                 var result = await response.Content.ReadFromJsonAsync<AccountResponse>();
-                if (result != null && result.success)
+                if (result != null && result.Success)
                 {
-                    HasBetaAccess = result.hasBetaAccess;
-                    if (result.isLocked || !HasBetaAccess)
+                    HasBetaAccess = result.HasBetaAccess;
+                    if (result.IsLocked || !HasBetaAccess)
                     {
                         MessageBox.Show("Kein aktiver Beta-Zugriff oder Account gesperrt.", "Zugriff verweigert", MessageBoxButton.OK, MessageBoxImage.Stop);
                         UpdateHomeInformation();
@@ -624,8 +608,8 @@ public partial class MainWindow : Window
         }
     }
 
-    private string GetLocalVersion() => File.Exists(VersionFile) ? File.ReadAllText(VersionFile).Trim() : "";
-    private string NormalizeVersion(string? v) => string.IsNullOrWhiteSpace(v) ? "" : (v.StartsWith("v", StringComparison.OrdinalIgnoreCase) ? v.Substring(1) : v).Trim();
+    private string GetLocalVersion() => File.Exists(VersionFile) ? File.ReadAllText(VersionFile).Trim() : string.Empty;
+    private string NormalizeVersion(string? v) => string.IsNullOrWhiteSpace(v) ? string.Empty : (v.StartsWith("v", StringComparison.OrdinalIgnoreCase) ? v.Substring(1) : v).Trim();
     private Version ParseVersion(string? v) => Version.TryParse(NormalizeVersion(v), out Version? res) ? res : new Version(0, 0, 0);
 
     private async Task TryAutoLoginAsync()
@@ -643,12 +627,12 @@ public partial class MainWindow : Window
                 var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/login", new { username = session.Username, password = session.Password });
                 var result = await response.Content.ReadFromJsonAsync<AccountResponse>();
 
-                if (result != null && result.success)
+                if (result != null && result.Success)
                 {
-                    LoggedInUsername = result.username ?? session.Username;
+                    LoggedInUsername = result.Username ?? session.Username;
                     LoggedInPassword = session.Password;
-                    LoggedInRole = result.role ?? "user";
-                    HasBetaAccess = result.hasBetaAccess;
+                    LoggedInRole = result.Role ?? "user";
+                    HasBetaAccess = result.HasBetaAccess;
 
                     AdminMenuButton.Visibility = LoggedInRole == "admin" ? Visibility.Visible : Visibility.Collapsed;
                     UpdateHomeInformation();
@@ -695,30 +679,30 @@ public partial class MainWindow : Window
             var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/login", new { username, password });
             var result = await response.Content.ReadFromJsonAsync<AccountResponse>();
 
-            if (result != null && result.success)
+            if (result != null && result.Success)
             {
-                LoggedInUsername = result.username ?? username;
+                LoggedInUsername = result.Username ?? username;
                 LoggedInPassword = password;
-                LoggedInRole = result.role ?? "user";
-                HasBetaAccess = result.hasBetaAccess;
+                LoggedInRole = result.Role ?? "user";
+                HasBetaAccess = result.HasBetaAccess;
 
                 SaveSession(username, password);
 
-                AccountStatusText.Text = "";
+                AccountStatusText.Text = string.Empty;
                 AccountPasswordBox.Clear();
                 AccountPasswordVisibleTextBox.Clear();
-                _rawPassword = "";
+                _rawPassword = string.Empty;
 
                 AdminMenuButton.Visibility = LoggedInRole == "admin" ? Visibility.Visible : Visibility.Collapsed;
                 UpdateHomeInformation();
                 UpdateAccountUIVisibility();
                 StartStatusCheck();
 
-                ShowPage(result.mustChangePassword ? ChangePasswordPage : HomePage);
+                ShowPage(result.MustChangePassword ? ChangePasswordPage : HomePage);
             }
             else
             {
-                AccountStatusText.Text = result?.message ?? "Login fehlgeschlagen.";
+                AccountStatusText.Text = result?.Message ?? "Login fehlgeschlagen.";
             }
         }
         catch
@@ -747,18 +731,18 @@ public partial class MainWindow : Window
             if (!string.IsNullOrEmpty(LoggedInUsername)) client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
             if (!string.IsNullOrEmpty(LoggedInPassword)) client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
 
-            var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/update-display-name", new { username = LoggedInUsername, newDisplayName = newDisplayName });
+            var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/update-display-name", new { username = LoggedInUsername, newDisplayName });
             string responseString = await response.Content.ReadAsStringAsync();
 
             if (responseString.TrimStart().StartsWith("<"))
             {
-                MessageBox.Show("Der Server hat unerwartet HTML statt JSON zurückgegeben (Endpunkt-Fehler).", "Server-Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Der Server hat unerwartet HTML statt JSON zurückgegeben.", "Server-Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
             var result = JsonSerializer.Deserialize<AccountResponse>(responseString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-            if (result != null && result.success)
+            if (result != null && result.Success)
             {
                 MessageBox.Show("Anzeigename erfolgreich geändert!", "Erfolg", MessageBoxButton.OK, MessageBoxImage.Information);
                 CornerUsernameText.Text = newDisplayName;
@@ -767,7 +751,7 @@ public partial class MainWindow : Window
             }
             else
             {
-                MessageBox.Show(result?.message ?? "Fehler beim Ändern des Anzeigenamens.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(result?.Message ?? "Fehler beim Ändern des Anzeigenamens.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
         catch (Exception ex)
@@ -790,14 +774,14 @@ public partial class MainWindow : Window
             var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/change-first-password", new { username = LoggedInUsername, currentPassword = LoggedInPassword, newPassword = newPw });
             var result = await response.Content.ReadFromJsonAsync<AccountResponse>();
 
-            if (result != null && result.success)
+            if (result != null && result.Success)
             {
                 LoggedInPassword = newPw;
-                SaveSession(LoggedInUsername ?? "", newPw);
+                SaveSession(LoggedInUsername ?? string.Empty, newPw);
                 MessageBox.Show("Passwort erfolgreich geändert!", "Erfolg", MessageBoxButton.OK, MessageBoxImage.Information);
                 ShowPage(HomePage);
             }
-            else { ChangePasswordStatusText.Text = result?.message ?? "Fehler."; }
+            else { ChangePasswordStatusText.Text = result?.Message ?? "Fehler."; }
         }
         catch { ChangePasswordStatusText.Text = "Server nicht erreichbar."; }
     }
@@ -819,10 +803,10 @@ public partial class MainWindow : Window
             }
 
             var result = await response.Content.ReadFromJsonAsync<AdminUserListResponse>();
-            if (result != null && result.success)
+            if (result != null && result.Success)
             {
-                UsersDataGrid.ItemsSource = result.users;
-                AdminActionStatus.Text = $"Benutzer erfolgreich geladen ({result.users.Count}).";
+                UsersDataGrid.ItemsSource = result.Users;
+                AdminActionStatus.Text = $"Benutzer erfolgreich geladen ({result.Users.Count}).";
             }
             else
             {
@@ -850,8 +834,8 @@ public partial class MainWindow : Window
             if (!string.IsNullOrEmpty(LoggedInPassword)) client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
             var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/admin/create-user", new { username, tempPassword, role });
             var result = await response.Content.ReadFromJsonAsync<AccountResponse>();
-            AdminActionStatus.Text = result?.message ?? "";
-            if (result != null && result.success) { AdminNewUsernameBox.Clear(); AdminNewTempPassBox.Clear(); await LoadAdminUserListAsync(); }
+            AdminActionStatus.Text = result?.Message ?? string.Empty;
+            if (result != null && result.Success) { AdminNewUsernameBox.Clear(); AdminNewTempPassBox.Clear(); await LoadAdminUserListAsync(); }
         }
         catch { AdminActionStatus.Text = "Fehler."; }
     }
@@ -869,14 +853,14 @@ public partial class MainWindow : Window
                 var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/admin/toggle-beta", new { username = user.Username });
                 var result = await response.Content.ReadFromJsonAsync<AccountResponse>();
                 
-                if (result != null && result.success)
+                if (result != null && result.Success)
                 {
                     AdminActionStatus.Text = $"Beta-Zugang für {user.Username} aktualisiert.";
                     await LoadAdminUserListAsync();
                 }
                 else
                 {
-                    AdminActionStatus.Text = result?.message ?? "Fehler beim Aktualisieren des Beta-Zugangs.";
+                    AdminActionStatus.Text = result?.Message ?? "Fehler beim Aktualisieren des Beta-Zugangs.";
                 }
             }
             catch (Exception ex) 
@@ -1016,34 +1000,34 @@ public partial class MainWindow : Window
     private sealed class AccountResponse
     {
         [JsonPropertyName("success")]
-        public bool success { get; set; }
+        public bool Success { get; set; }
 
         [JsonPropertyName("message")]
-        public string? message { get; set; }
+        public string? Message { get; set; }
 
         [JsonPropertyName("username")]
-        public string? username { get; set; }
+        public string? Username { get; set; }
 
         [JsonPropertyName("role")]
-        public string? role { get; set; }
+        public string? Role { get; set; }
 
         [JsonPropertyName("hasBetaAccess")]
-        public bool hasBetaAccess { get; set; }
+        public bool HasBetaAccess { get; set; }
 
         [JsonPropertyName("mustChangePassword")]
-        public bool mustChangePassword { get; set; }
+        public bool MustChangePassword { get; set; }
 
         [JsonPropertyName("isLocked")]
-        public bool isLocked { get; set; }
+        public bool IsLocked { get; set; }
     }
 
     private sealed class AdminUserListResponse
     {
         [JsonPropertyName("success")]
-        public bool success { get; set; }
+        public bool Success { get; set; }
 
         [JsonPropertyName("users")]
-        public List<UserItem> users { get; set; } = new();
+        public List<UserItem> Users { get; set; } = new();
     }
 
     public sealed class UserItem
