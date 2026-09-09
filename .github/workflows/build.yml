@@ -1,4 +1,4 @@
-name: Build and Release BetaLauncher
+name: Build and Release RFGlauncher
 
 on:
   workflow_dispatch:
@@ -32,32 +32,29 @@ jobs:
           $ver = "1.0.${{ github.run_number }}"
           Write-Host "Setze Projekt-Version auf: $ver"
           
-          $csprojPath = Get-ChildItem -Filter *.csproj | Select-Object -ExpandProperty FullName
-          [xml]$csproj = Get-Content $csprojPath -Encoding UTF8
-
-          $propGroup = $csproj.GetElementsByTagName("PropertyGroup")[0]
-          if ($null -eq $propGroup) {
-              $projectNode = $csproj.GetElementsByTagName("Project")[0]
-              $propGroup = $csproj.CreateElement("PropertyGroup", $projectNode.NamespaceURI)
-              $projectNode.AppendChild($propGroup)
-          }
+          # Absolut sichere Ermittlung als einzelner String
+          $csprojFile = Get-ChildItem -Filter *.csproj | Select-Object -First 1
+          $csprojPath = $csprojFile.FullName
+          Write-Host "Verwende Projektdatei: $csprojPath"
+          
+          $content = Get-Content $csprojPath -Raw -Encoding utf8
 
           foreach ($tagName in @("Version", "AssemblyVersion", "FileVersion")) {
-              $node = $propGroup.GetElementsByTagName($tagName)[0]
-              if ($null -eq $node) {
-                  $node = $csproj.CreateElement($tagName, $propGroup.NamespaceURI)
-                  $propGroup.AppendChild($node)
+              $val = if ($tagName -eq "Version") { $ver } else { "$ver.0" }
+              if ($content -match "<$tagName>.*?</$tagName>") {
+                  $content = $content -replace "<$tagName>.*?</$tagName>", "<$tagName>$val</$tagName>"
+              } else {
+                  $content = $content -replace '</PropertyGroup>', "    <$tagName>$val</$tagName>`n  </PropertyGroup>"
               }
-              $node.InnerText = if ($tagName -eq "Version") { $ver } else { "$ver.0" }
           }
 
-          $csproj.Save($csprojPath)
+          Set-Content -Path $csprojPath -Value $content -NoNewline -Encoding utf8
 
       - name: Launcher bauen
         shell: pwsh
         run: |
-          $csprojPath = Get-ChildItem -Filter *.csproj | Select-Object -ExpandProperty Name
-          dotnet publish $csprojPath -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:EnableCompressionInSingleFile=false -o ./publish
+          $csprojName = (Get-ChildItem -Filter *.csproj | Select-Object -First 1).Name
+          dotnet publish $csprojName -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:EnableCompressionInSingleFile=false -o ./publish
 
       - name: Release erstellen oder aktualisieren & EXE hochladen
         uses: softprops/action-gh-release@v2
