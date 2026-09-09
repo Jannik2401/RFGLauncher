@@ -32,7 +32,10 @@ jobs:
           $ver = "1.0.${{ github.run_number }}"
           Write-Host "Setze Projekt-Version auf: $ver"
           
-          $csprojPath = Get-ChildItem -Filter *.csproj | Select-Object -ExpandProperty FullName
+          # Eindeutig nur die erste .csproj-Datei auswählen, um Arrays zu verhindern
+          $csprojPath = (Get-ChildItem -Filter *.csproj | Select-Object -First 1).FullName
+          Write-Host "Verwende Projektdatei: $csprojPath"
+          
           $content = Get-Content $csprojPath -Raw -Encoding utf8
 
           foreach ($tagName in @("Version", "AssemblyVersion", "FileVersion")) {
@@ -49,8 +52,8 @@ jobs:
       - name: Launcher bauen
         shell: pwsh
         run: |
-          $csprojPath = Get-ChildItem -Filter *.csproj | Select-Object -ExpandProperty Name
-          dotnet publish $csprojPath -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:EnableCompressionInSingleFile=false -o ./publish
+          $csprojName = (Get-ChildItem -Filter *.csproj | Select-Object -First 1).Name
+          dotnet publish $csprojName -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:EnableCompressionInSingleFile=false -o ./publish
 
       - name: Release erstellen oder aktualisieren & EXE hochladen
         uses: softprops/action-gh-release@v2
