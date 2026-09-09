@@ -32,16 +32,20 @@ jobs:
           $ver = "1.0.${{ github.run_number }}"
           Write-Host "Setze Projekt-Version auf: $ver"
           
-          # Finde die .csproj Datei automatisch im aktuellen Verzeichnis
           $csprojPath = Get-ChildItem -Filter *.csproj | Select-Object -ExpandProperty FullName
           [xml]$csproj = Get-Content $csprojPath -Encoding UTF8
 
-          # Robuste XPath-Suche für Version, AssemblyVersion und FileVersion
+          $propGroup = $csproj.GetElementsByTagName("PropertyGroup")[0]
+          if ($null -eq $propGroup) {
+              $projectNode = $csproj.GetElementsByTagName("Project")[0]
+              $propGroup = $csproj.CreateElement("PropertyGroup", $projectNode.NamespaceURI)
+              $projectNode.AppendChild($propGroup)
+          }
+
           foreach ($tagName in @("Version", "AssemblyVersion", "FileVersion")) {
-              $node = $csproj.SelectSingleNode("//Project/PropertyGroup/$tagName")
+              $node = $propGroup.GetElementsByTagName($tagName)[0]
               if ($null -eq $node) {
-                  $propGroup = $csproj.SelectSingleNode("//Project/PropertyGroup")
-                  $node = $csproj.CreateElement($tagName, $csproj.DocumentElement.NamespaceURI)
+                  $node = $csproj.CreateElement($tagName, $propGroup.NamespaceURI)
                   $propGroup.AppendChild($node)
               }
               $node.InnerText = if ($tagName -eq "Version") { $ver } else { "$ver.0" }
