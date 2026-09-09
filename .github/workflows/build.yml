@@ -35,7 +35,7 @@ jobs:
           $csprojPath = (Get-ChildItem -Filter *.csproj | Select-Object -First 1).FullName
           Write-Host "Verwende Projektdatei: $csprojPath"
           
-          [xml]$csproj = Get-Content $csprojPath -Encoding UTF8
+          [xml]$csproj = Get-Content $csprojPath -Raw -Encoding UTF8
           
           $propGroup = $csproj.GetElementsByTagName("PropertyGroup")[0]
           if ($null -eq $propGroup) {
