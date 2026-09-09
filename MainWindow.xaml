@@ -5,7 +5,7 @@
         Background="#0F172A"
         Foreground="#F8FAFC"
         WindowStartupLocation="CenterScreen"
-        Icon="Assets/logo.ico">
+        Icon="/Assets/logo.ico">
 
     <Window.Resources>
         <!-- Standard Button Style -->
@@ -212,7 +212,7 @@
             <!-- CREDITS PAGE -->
             <Grid x:Name="CreditsPage" Visibility="Visible">
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="460">
-                    <Image Source="Assets/logo.png" Width="80" Height="80" Margin="0,0,0,15" HorizontalAlignment="Center"/>
+                    <Image Source="/Assets/logo.ico" Width="80" Height="80" Margin="0,0,0,15" HorizontalAlignment="Center"/>
                     
                     <TextBlock Text="Credits &amp; Social Media" FontSize="22" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,0,0,20" HorizontalAlignment="Center"/>
 
