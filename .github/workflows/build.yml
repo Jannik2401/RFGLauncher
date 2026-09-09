@@ -27,37 +27,53 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Version in .csproj eintragen
+        shell: pwsh
         run: |
           $ver = "1.0.${{ github.run_number }}"
           Write-Host "Setze Projekt-Version auf: $ver"
           
-          [xml]$csproj = Get-Content BetaLauncher.csproj
-          $csproj.Project.PropertyGroup.Version = $ver
-          $csproj.Project.PropertyGroup.AssemblyVersion = "$ver.0"
-          $csproj.Project.PropertyGroup.FileVersion = "$ver.0"
-          $csproj.Save("$PWD/BetaLauncher.csproj")
+          # Finde die .csproj Datei automatisch im aktuellen Verzeichnis
+          $csprojPath = Get-ChildItem -Filter *.csproj | Select-Object -ExpandProperty FullName
+          [xml]$csproj = Get-Content $csprojPath -Encoding UTF8
+
+          # Robuste XPath-Suche für Version, AssemblyVersion und FileVersion
+          foreach ($tagName in @("Version", "AssemblyVersion", "FileVersion")) {
+              $node = $csproj.SelectSingleNode("//Project/PropertyGroup/$tagName")
+              if ($null -eq $node) {
+                  $propGroup = $csproj.SelectSingleNode("//Project/PropertyGroup")
+                  $node = $csproj.CreateElement($tagName, $csproj.DocumentElement.NamespaceURI)
+                  $propGroup.AppendChild($node)
+              }
+              $node.InnerText = if ($tagName -eq "Version") { $ver } else { "$ver.0" }
+          }
+
+          $csproj.Save($csprojPath)
 
       - name: Launcher bauen
-        run: dotnet publish BetaLauncher.csproj -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:EnableCompressionInSingleFile=false -o ./publish
+        shell: pwsh
+        run: |
+          $csprojPath = Get-ChildItem -Filter *.csproj | Select-Object -ExpandProperty Name
+          dotnet publish $csprojPath -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:EnableCompressionInSingleFile=false -o ./publish
 
       - name: Release erstellen oder aktualisieren & EXE hochladen
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest
-          name: BetaLauncher (Version 1.0.${{ github.run_number }})
+          name: RFGlauncher (Version 1.0.${{ github.run_number }})
           body: "Automatisch aktualisiertes Release für den Launcher (Version 1.0.${{ github.run_number }})."
-          files: ./publish/BetaLauncher.exe
+          files: ./publish/RFGlauncher.exe
           overwrite_files: true
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: version.json automatisch aktualisieren
+        shell: pwsh
         run: |
           $ver = "1.0.${{ github.run_number }}"
           $json = @{
               version = "$ver"
-              downloadUrl = "https://github.com/${{ github.repository }}/releases/download/latest/BetaLauncher.exe"
+              downloadUrl = "https://github.com/${{ github.repository }}/releases/download/latest/RFGlauncher.exe"
           } | ConvertTo-Json
           Set-Content -Path version.json -Value $json
           
