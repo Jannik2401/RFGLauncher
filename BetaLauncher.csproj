@@ -8,4 +8,8 @@
     <ApplicationIcon>Assets/logo.ico</ApplicationIcon>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Resource Include="Assets\**" />
+  </ItemGroup>
+
 </Project>
