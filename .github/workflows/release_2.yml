@@ -33,8 +33,6 @@ jobs:
           Write-Host "Setze Projekt-Version auf: $ver"
           
           $csprojPath = Join-Path $PWD "BetaLauncher.csproj"
-          Write-Host "Verwende Projektdatei: $csprojPath"
-          
           [xml]$csproj = Get-Content $csprojPath -Raw -Encoding UTF8
           
           $propGroup = $csproj.GetElementsByTagName("PropertyGroup")[0]
@@ -65,18 +63,26 @@ jobs:
         shell: pwsh
         run: |
           dotnet publish BetaLauncher.csproj -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:EnableCompressionInSingleFile=false -o ./publish
+          
+          if (Test-Path "./publish/BetaLauncher.exe") {
+              Move-Item "./publish/BetaLauncher.exe" "./publish/RFGlauncher.exe" -Force
+          }
 
-      - name: Release erstellen oder aktualisieren & EXE hochladen
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: latest
-          name: "RFGlauncher (Version 1.0.${{ github.run_number }})"
-          body: "Automatisch aktualisiertes Release für den Launcher (Version 1.0.${{ github.run_number }})."
-          files: ./publish/RFGlauncher.exe
-          overwrite_files: true
-          prerelease: false
+      - name: Release aktualisieren oder neu erstellen
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: pwsh
+        run: |
+          $tagName = "latest"
+          $releaseName = "RFGlauncher (Version 1.0.${{ github.run_number }})"
+          $notes = "Automatisch aktualisiertes Release für den Launcher (Version 1.0.${{ github.run_number }})."
+          $exePath = "./publish/RFGlauncher.exe"
+
+          # Versuche das bestehende Release zu löschen, falls es existiert
+          gh release delete "$tagName" --repo "${{ github.repository }}" --yes --cleanup-tag 2>&1
+          
+          # Erstelle ein neues Release mit der frisch gebauten EXE
+          gh release create "$tagName" "$exePath" --repo "${{ github.repository }}" --title "$releaseName" --notes "$notes"
 
       - name: version.json automatisch aktualisieren
         shell: pwsh
