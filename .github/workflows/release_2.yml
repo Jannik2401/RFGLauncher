@@ -78,8 +78,24 @@ jobs:
           $notes = "Automatisch aktualisiertes Release für den Launcher (Version 1.0.${{ github.run_number }})."
           $exePath = "./publish/RFGlauncher.exe"
 
-          # Bestehendes Release löschen, damit die neue EXE sauber reinkommt
           gh release delete "$tagName" --repo "${{ github.repository }}" --yes --cleanup-tag 2>&1
-          
-          # Neues Release mit der frischen EXE erstellen
           gh release create "$tagName" "$exePath" --repo "${{ github.repository }}" --title "$releaseName" --notes "$notes"
+
+      - name: version.json automatisch aktualisieren & pushen
+        shell: pwsh
+        run: |
+          $ver = "1.0.${{ github.run_number }}"
+          $json = @{
+              version = "$ver"
+              downloadUrl = "https://github.com/${{ github.repository }}/releases/download/latest/RFGlauncher.exe"
+          } | ConvertTo-Json -Depth 10
+          Set-Content -Path version.json -Value $json -Encoding utf8
+          
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          git fetch origin main
+          git checkout main
+          git add version.json
+          git commit -m "Auto-update version.json to $ver [skip ci]" || exit 0
+          git push origin main
