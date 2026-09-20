@@ -130,6 +130,9 @@ public partial class MainWindow : Window
             appResources["SidebarBackgroundBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1E293B")!);
             appResources["InputBackgroundBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#334155")!);
         }
+
+        // Erzwinge sofortige Aktualisierung der UI-Brushes
+        this.InvalidateVisual();
     }
 
     private void ThemeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
