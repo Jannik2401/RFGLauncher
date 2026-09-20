@@ -7,6 +7,27 @@
         WindowStartupLocation="CenterScreen">
 
     <Window.Resources>
+        <!-- DataGrid Lesbarkeits-Fix für das Admin-Panel -->
+        <Style TargetType="DataGrid">
+            <Setter Property="Background" Value="#1E293B"/>
+            <Setter Property="Foreground" Value="#F8FAFC"/>
+            <Setter Property="BorderBrush" Value="#334155"/>
+            <Setter Property="RowBackground" Value="#1E293B"/>
+            <Setter Property="AlternatingRowBackground" Value="#1E293B"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="#334155"/>
+            <Setter Property="VerticalGridLinesBrush" Value="#334155"/>
+        </Style>
+
+        <Style TargetType="DataGridCell">
+            <Setter Property="Foreground" Value="#F8FAFC"/>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#38BDF8"/>
+                    <Setter Property="Foreground" Value="#0F172A"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
         <!-- Standard Button Style -->
         <Style x:Key="ActionButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="#334155"/>
@@ -191,7 +212,7 @@
                         <Button Content="Benutzer erstellen" Style="{StaticResource ActionButtonStyle}" Click="AdminCreateUser_Click"/>
                     </StackPanel>
 
-                    <DataGrid x:Name="UsersDataGrid" Height="300" Background="#1E293B" Foreground="#F8FAFC" AutoGenerateColumns="True"/>
+                    <DataGrid x:Name="UsersDataGrid" Height="300" AutoGenerateColumns="True"/>
                 </StackPanel>
             </Grid>
 
