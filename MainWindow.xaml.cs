@@ -405,7 +405,6 @@ public partial class MainWindow : Window
     private void StartStatusCheck()
     {
         StatusCheckTimer?.Stop();
-        // Live-Abfrage alle 3 Sekunden für den Beta-Zugriff und Kontostatus
         StatusCheckTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
         StatusCheckTimer.Tick += async (s, e) =>
         {
@@ -826,6 +825,32 @@ public partial class MainWindow : Window
         catch (Exception ex) 
         {  
             AdminActionStatus.Text = "Fehler: " + ex.Message;
+        }
+    }
+
+    private async void UsersDataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
+    {
+        if (e.Row.Item is UserItem user)
+        {
+            await Task.Delay(50);
+            try
+            {
+                using HttpClient client = new();
+                if (!string.IsNullOrEmpty(LoggedInUsername)) client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
+                if (!string.IsNullOrEmpty(LoggedInPassword)) client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
+                
+                var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/admin/toggle-beta", new { username = user.Username });
+                var result = await response.Content.ReadFromJsonAsync<AccountResponse>();
+                
+                if (result != null && result.Success)
+                {
+                    AdminActionStatus.Text = $"Beta-Zugang für {user.Username} aktualisiert.";
+                }
+            }
+            catch (Exception ex)
+            {
+                AdminActionStatus.Text = "Fehler beim Speichern: " + ex.Message;
+            }
         }
     }
 
