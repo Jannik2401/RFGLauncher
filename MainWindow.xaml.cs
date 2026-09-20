@@ -405,7 +405,8 @@ public partial class MainWindow : Window
     private void StartStatusCheck()
     {
         StatusCheckTimer?.Stop();
-        StatusCheckTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
+        // Live-Abfrage alle 3 Sekunden für den Beta-Zugriff und Kontostatus
+        StatusCheckTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
         StatusCheckTimer.Tick += async (s, e) =>
         {
             if (string.IsNullOrEmpty(LoggedInUsername)) return;
@@ -1057,7 +1058,7 @@ public partial class MainWindow : Window
         public bool MustChangePassword { get; set; }
     }
 
-    private sealed class PerformanceCounterWrapper
+    public sealed class PerformanceCounterWrapper
     {
         private readonly PerformanceCounter? cpuCounter;
         private readonly Process currentProcess;
