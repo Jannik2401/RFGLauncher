@@ -1104,7 +1104,7 @@ public partial class MainWindow : Window
             }
         }
 
-        package static long GetTotalMemoryInBytes()
+        private static long GetTotalMemoryInBytes()
         {
             try
             {
