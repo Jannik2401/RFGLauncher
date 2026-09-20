@@ -75,10 +75,12 @@ jobs:
         run: |
           $tagName = "latest"
           $releaseName = "RFGlauncher (Version 1.0.${{ github.run_number }})"
-          $notes = "Automatisch aktualisiertes Release für den Launcher (Version 1.0.${{ github.run_number }})."
+          $notes = "Automatisches Update für den Launcher (Version 1.0.${{ github.run_number }})."
           $exePath = "./publish/RFGlauncher.exe"
 
-          gh release delete "$tagName" --repo "${{ github.repository }}" --yes --cleanup-tag 2>&1
+          gh release delete "$tagName" --repo "${{ github.repository }}" --yes --cleanup-tag 2>&1 | Out-Null
+          git push origin --delete "$tagName" 2>&1 | Out-Null
+
           gh release create "$tagName" "$exePath" --repo "${{ github.repository }}" --title "$releaseName" --notes "$notes"
 
       - name: version.json automatisch aktualisieren & pushen
