@@ -7,37 +7,6 @@
         WindowStartupLocation="CenterScreen">
 
     <Window.Resources>
-        <!-- DataGrid Lesbarkeits-Fix für das Admin-Panel -->
-        <Style TargetType="DataGrid">
-            <Setter Property="Background" Value="#1E293B"/>
-            <Setter Property="Foreground" Value="#F8FAFC"/>
-            <Setter Property="BorderBrush" Value="#334155"/>
-            <Setter Property="RowBackground" Value="#1E293B"/>
-            <Setter Property="AlternatingRowBackground" Value="#1E293B"/>
-            <Setter Property="HorizontalGridLinesBrush" Value="#334155"/>
-            <Setter Property="VerticalGridLinesBrush" Value="#334155"/>
-        </Style>
-
-        <Style TargetType="DataGridCell">
-            <Setter Property="Foreground" Value="#F8FAFC"/>
-            <Style.Triggers>
-                <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="#38BDF8"/>
-                    <Setter Property="Foreground" Value="#0F172A"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <!-- DataGrid Spaltenüberschriften (Header) Fix -->
-        <Style TargetType="DataGridColumnHeader">
-            <Setter Property="Background" Value="#334155"/>
-            <Setter Property="Foreground" Value="#F8FAFC"/>
-            <Setter Property="Padding" Value="10,6"/>
-            <Setter Property="BorderBrush" Value="#475569"/>
-            <Setter Property="BorderThickness" Value="0,0,1,1"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-        </Style>
-
         <!-- Standard Button Style -->
         <Style x:Key="ActionButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="#334155"/>
@@ -213,16 +182,53 @@
                     <TextBlock x:Name="AdminActionStatus" Text="" Foreground="#38BDF8" Margin="0,0,0,10"/>
                     
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
-                        <TextBox x:Name="AdminNewUsernameBox" Width="120" Padding="4" Background="#334155" Foreground="#F8FAFC" BorderThickness="0" Margin="0,0,10,0"/>
-                        <TextBox x:Name="AdminNewTempPassBox" Width="120" Padding="4" Background="#334155" Foreground="#F8FAFC" BorderThickness="0" Margin="0,0,10,0"/>
-                        <ComboBox x:Name="AdminRoleComboBox" Width="90" Margin="0,0,10,0">
+                        <TextBox x:Name="AdminNewUsernameBox" Width="130" Padding="6" Background="#334155" Foreground="#F8FAFC" BorderThickness="0" Margin="0,0,10,0"/>
+                        <TextBox x:Name="AdminNewTempPassBox" Width="130" Padding="6" Background="#334155" Foreground="#F8FAFC" BorderThickness="0" Margin="0,0,10,0"/>
+                        <ComboBox x:Name="AdminRoleComboBox" Width="90" Margin="0,0,10,0" VerticalContentAlignment="Center">
                             <ComboBoxItem Content="User" IsSelected="True"/>
                             <ComboBoxItem Content="Admin"/>
                         </ComboBox>
                         <Button Content="Benutzer erstellen" Style="{StaticResource ActionButtonStyle}" Click="AdminCreateUser_Click"/>
                     </StackPanel>
 
-                    <DataGrid x:Name="UsersDataGrid" Height="300" AutoGenerateColumns="True" CellEditEnding="UsersDataGrid_CellEditEnding"/>
+                    <!-- Scrollbare Liste mit Benutzerkarten und echten Aktions-Buttons -->
+                    <ScrollViewer Height="430" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl x:Name="UsersItemsControl">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="#1E293B" CornerRadius="6" Padding="12" Margin="0,0,0,8">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="150"/>
+                                                <ColumnDefinition Width="90"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <!-- Benutzername & Rolle -->
+                                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Username}" FontWeight="Bold" FontSize="14" Foreground="#F8FAFC"/>
+                                                <TextBlock Text="{Binding Role}" FontSize="11" Foreground="#38BDF8"/>
+                                            </StackPanel>
+
+                                            <!-- Status-Anzeigen (Beta / Gesperrt) -->
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding HasBetaAccess, StringFormat='Beta: {0}'}" FontSize="11" Foreground="#10B981"/>
+                                                <TextBlock Text="{Binding IsLocked, StringFormat='Gesperrt: {0}'}" FontSize="11" Foreground="#E11D48"/>
+                                            </StackPanel>
+
+                                            <!-- Aktions-Buttons -->
+                                            <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                                                <Button Content="Beta umschalten" Style="{StaticResource ActionButtonStyle}" Click="AdminToggleBeta_Click" Margin="4,0" FontSize="11"/>
+                                                <Button Content="Passwort Reset" Style="{StaticResource ActionButtonStyle}" Click="AdminResetPw_Click" Margin="4,0" FontSize="11"/>
+                                                <Button Content="Sperren" Style="{StaticResource ActionButtonStyle}" Click="AdminToggleLock_Click" Margin="4,0" FontSize="11" Background="#B45309"/>
+                                                <Button Content="Löschen" Style="{StaticResource ActionButtonStyle}" Click="AdminDeleteUser_Click" Margin="4,0" FontSize="11" Background="#991B1B"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
                 </StackPanel>
             </Grid>
 
