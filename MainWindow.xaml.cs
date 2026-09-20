@@ -1055,6 +1055,12 @@ public partial class MainWindow : Window
 
         [JsonPropertyName("mustChangePassword")]
         public bool MustChangePassword { get; set; }
+
+        public string BetaText => HasBetaAccess ? "Beta: Aktiv" : "Beta: Inaktiv";
+        public string BetaColor => HasBetaAccess ? "#10B981" : "#E11D48";
+
+        public string LockText => IsLocked ? "Gesperrt: Ja" : "Gesperrt: Nein";
+        public string LockColor => IsLocked ? "#E11D48" : "#10B981";
     }
 
     public sealed class PerformanceCounterWrapper
