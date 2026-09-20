@@ -191,7 +191,7 @@
                         <Button Content="Benutzer erstellen" Style="{StaticResource ActionButtonStyle}" Click="AdminCreateUser_Click"/>
                     </StackPanel>
 
-                    <!-- Scrollbare Liste mit Benutzerkarten und echten Aktions-Buttons -->
+                    <!-- Scrollbare Liste mit Benutzerkarten und farbcodierten Statusanzeigen -->
                     <ScrollViewer Height="430" VerticalScrollBarVisibility="Auto">
                         <ItemsControl x:Name="UsersItemsControl">
                             <ItemsControl.ItemTemplate>
@@ -200,7 +200,7 @@
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="150"/>
-                                                <ColumnDefinition Width="90"/>
+                                                <ColumnDefinition Width="110"/>
                                                 <ColumnDefinition Width="*"/>
                                             </Grid.ColumnDefinitions>
 
@@ -210,10 +210,10 @@
                                                 <TextBlock Text="{Binding Role}" FontSize="11" Foreground="#38BDF8"/>
                                             </StackPanel>
 
-                                            <!-- Status-Anzeigen (Beta / Gesperrt) -->
+                                            <!-- Status-Anzeigen (Dynamisch eingefärbt) -->
                                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding HasBetaAccess, StringFormat='Beta: {0}'}" FontSize="11" Foreground="#10B981"/>
-                                                <TextBlock Text="{Binding IsLocked, StringFormat='Gesperrt: {0}'}" FontSize="11" Foreground="#E11D48"/>
+                                                <TextBlock Text="{Binding BetaText}" FontSize="11" FontWeight="Bold" Foreground="{Binding BetaColor}"/>
+                                                <TextBlock Text="{Binding LockText}" FontSize="11" FontWeight="Bold" Foreground="{Binding LockColor}"/>
                                             </StackPanel>
 
                                             <!-- Aktions-Buttons -->
