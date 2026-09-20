@@ -44,6 +44,7 @@ public partial class MainWindow : Window
     private string VersionFile => Path.Combine(GameDirectory, "version.txt");
     private string DigestFile => Path.Combine(GameDirectory, "game.digest");
     private string SessionFile => Path.Combine(GameDirectory, "session.json");
+    private string SettingsFile => Path.Combine(GameDirectory, "settings.json");
 
     private readonly HttpClient Http = new();
     private DispatcherTimer? PerformanceTimer;
@@ -59,6 +60,8 @@ public partial class MainWindow : Window
 
     private bool _inlinePasswordVisible;
     private string _inlineRawPassword = string.Empty;
+
+    private bool _isInitializingTheme = true;
 
     public MainWindow()
     {
@@ -77,6 +80,9 @@ public partial class MainWindow : Window
         try
         {
             Directory.CreateDirectory(GameDirectory);
+
+            LoadSettings();
+            _isInitializingTheme = false;
 
             ShowPage(HomePage);
             UpdateHomeInformation();
@@ -100,6 +106,80 @@ public partial class MainWindow : Window
         PerformanceTimer?.Stop();
         StatusCheckTimer?.Stop();
         Http.Dispose();
+    }
+
+    private void ApplyTheme(string theme)
+    {
+        var appResources = Application.Current.Resources;
+
+        if (theme == "Light")
+        {
+            appResources["WindowBackgroundBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F1F5F9")!);
+            appResources["CardBackgroundBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFFFFF")!);
+            appResources["TextPrimaryBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#0F172A")!);
+            appResources["TextSecondaryBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#64748B")!);
+            appResources["SidebarBackgroundBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E2E8F0")!);
+            appResources["InputBackgroundBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E2E8F0")!);
+        }
+        else
+        {
+            appResources["WindowBackgroundBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#0F172A")!);
+            appResources["CardBackgroundBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1E293B")!);
+            appResources["TextPrimaryBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F8FAFC")!);
+            appResources["TextSecondaryBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#94A3B8")!);
+            appResources["SidebarBackgroundBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1E293B")!);
+            appResources["InputBackgroundBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#334155")!);
+        }
+    }
+
+    private void ThemeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_isInitializingTheme) return;
+
+        if (ThemeComboBox.SelectedItem is ComboBoxItem item && item.Tag is string theme)
+        {
+            ApplyTheme(theme);
+            SaveSettings(theme);
+        }
+    }
+
+    private void SaveSettings(string theme)
+    {
+        try
+        {
+            var settings = new { Theme = theme };
+            File.WriteAllText(SettingsFile, JsonSerializer.Serialize(settings));
+        }
+        catch { }
+    }
+
+    private void LoadSettings()
+    {
+        try
+        {
+            string theme = "Dark";
+            if (File.Exists(SettingsFile))
+            {
+                string json = File.ReadAllText(SettingsFile);
+                using var doc = JsonDocument.Parse(json);
+                if (doc.RootElement.TryGetProperty("Theme", out var themeProp))
+                {
+                    theme = themeProp.GetString() ?? "Dark";
+                }
+            }
+
+            ApplyTheme(theme);
+
+            foreach (ComboBoxItem item in ThemeComboBox.Items)
+            {
+                if (item.Tag?.ToString() == theme)
+                {
+                    ThemeComboBox.SelectedItem = item;
+                    break;
+                }
+            }
+        }
+        catch { }
     }
 
     private void OpenUrl(string url)
