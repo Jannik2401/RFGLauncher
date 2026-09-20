@@ -814,7 +814,7 @@ public partial class MainWindow : Window
             var result = await response.Content.ReadFromJsonAsync<AdminUserListResponse>();
             if (result != null && result.Success)
             {
-                UsersDataGrid.ItemsSource = result.Users;
+                UsersItemsControl.ItemsSource = result.Users;
                 AdminActionStatus.Text = $"Benutzer erfolgreich geladen ({result.Users.Count}).";
             }
             else
@@ -825,32 +825,6 @@ public partial class MainWindow : Window
         catch (Exception ex) 
         {  
             AdminActionStatus.Text = "Fehler: " + ex.Message;
-        }
-    }
-
-    private async void UsersDataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
-    {
-        if (e.Row.Item is UserItem user)
-        {
-            await Task.Delay(50);
-            try
-            {
-                using HttpClient client = new();
-                if (!string.IsNullOrEmpty(LoggedInUsername)) client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
-                if (!string.IsNullOrEmpty(LoggedInPassword)) client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
-                
-                var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/admin/toggle-beta", new { username = user.Username });
-                var result = await response.Content.ReadFromJsonAsync<AccountResponse>();
-                
-                if (result != null && result.Success)
-                {
-                    AdminActionStatus.Text = $"Beta-Zugang für {user.Username} aktualisiert.";
-                }
-            }
-            catch (Exception ex)
-            {
-                AdminActionStatus.Text = "Fehler beim Speichern: " + ex.Message;
-            }
         }
     }
 
@@ -1130,7 +1104,7 @@ public partial class MainWindow : Window
             }
         }
 
-        private static long GetTotalMemoryInBytes()
+        package static long GetTotalMemoryInBytes()
         {
             try
             {
