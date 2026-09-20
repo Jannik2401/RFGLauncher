@@ -222,7 +222,7 @@
                         <Button Content="Benutzer erstellen" Style="{StaticResource ActionButtonStyle}" Click="AdminCreateUser_Click"/>
                     </StackPanel>
 
-                    <DataGrid x:Name="UsersDataGrid" Height="300" AutoGenerateColumns="True"/>
+                    <DataGrid x:Name="UsersDataGrid" Height="300" AutoGenerateColumns="True" CellEditEnding="UsersDataGrid_CellEditEnding"/>
                 </StackPanel>
             </Grid>
 
