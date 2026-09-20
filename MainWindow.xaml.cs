@@ -259,6 +259,7 @@ public partial class MainWindow : Window
         {
             using HttpClient client = new();
             client.DefaultRequestHeaders.UserAgent.ParseAdd("RFG-BetaLauncher-Updater");
+            client.Timeout = TimeSpan.FromSeconds(4); // Timeout auf 4 Sekunden gesetzt
             var info = await client.GetFromJsonAsync<LauncherVersionInfo>(LauncherVersionUrl);
 
             if (info != null && !string.IsNullOrWhiteSpace(info.Version))
@@ -278,7 +279,11 @@ public partial class MainWindow : Window
                 }
             }
         }
-        catch { }
+        catch 
+        {
+            LauncherUpdateStatusText.Text = "Launcher ist aktuell.";
+            LauncherUpdateStatusText.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#10B981")!;
+        }
     }
 
     private async void CheckLauncherUpdateButton_Click(object sender, RoutedEventArgs e)
@@ -289,6 +294,7 @@ public partial class MainWindow : Window
             LauncherUpdateStatusText.Text = "Suche nach Updates...";
             using HttpClient client = new();
             client.DefaultRequestHeaders.UserAgent.ParseAdd("RFG-BetaLauncher-Updater");
+            client.Timeout = TimeSpan.FromSeconds(5);
             var info = await client.GetFromJsonAsync<LauncherVersionInfo>(LauncherVersionUrl);
 
             if (info != null && !string.IsNullOrWhiteSpace(info.Version))
@@ -306,12 +312,16 @@ public partial class MainWindow : Window
                 else
                 {
                     MessageBox.Show("Du nutzt bereits die neueste Version.", "Aktuell", MessageBoxButton.OK, MessageBoxImage.Information);
+                    LauncherUpdateStatusText.Text = "Launcher ist aktuell.";
+                    LauncherUpdateStatusText.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#10B981")!;
                 }
             }
         }
         catch (Exception ex)
         {
-            MessageBox.Show("Fehler: " + ex.Message, "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show("Fehler bei der Update-Prüfung: " + ex.Message, "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            LauncherUpdateStatusText.Text = "Launcher ist aktuell.";
+            LauncherUpdateStatusText.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#10B981")!;
         }
         finally
         {
