@@ -259,7 +259,7 @@ public partial class MainWindow : Window
         {
             using HttpClient client = new();
             client.DefaultRequestHeaders.UserAgent.ParseAdd("RFG-BetaLauncher-Updater");
-            client.Timeout = TimeSpan.FromSeconds(4); // Timeout auf 4 Sekunden gesetzt
+            client.Timeout = TimeSpan.FromSeconds(4);
             var info = await client.GetFromJsonAsync<LauncherVersionInfo>(LauncherVersionUrl);
 
             if (info != null && !string.IsNullOrWhiteSpace(info.Version))
@@ -304,14 +304,13 @@ public partial class MainWindow : Window
 
                 if (onlineVersion > installedVersion)
                 {
-                    if (MessageBox.Show($"Update auf v{onlineVersion} durchführen?", "Update", MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.Yes)
-                    {
-                        StartAutoUpdater(info.DownloadUrl);
-                    }
+                    LauncherUpdateStatusText.Text = $"Update gefunden: v{onlineVersion}";
+                    LauncherUpdateStatusText.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#38BDF8")!;
+                    StartAutoUpdater(info.DownloadUrl);
                 }
                 else
                 {
-                    MessageBox.Show("Du nutzt bereits die neueste Version.", "Aktuell", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show($"Du nutzt bereits die neueste Version (v{installedVersion}).", "Aktuell", MessageBoxButton.OK, MessageBoxImage.Information);
                     LauncherUpdateStatusText.Text = "Launcher ist aktuell.";
                     LauncherUpdateStatusText.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#10B981")!;
                 }
