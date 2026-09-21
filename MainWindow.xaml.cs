@@ -819,7 +819,7 @@ public partial class MainWindow : Window
             }
 
             VersionText.Text = "Installiert: " + (string.IsNullOrWhiteSpace(localVersion) ? "Keine" : localVersion);
-            ReleaseNotesText.Text = $"Aktuelle Server-Version: {remoteVersion}\nBereit zum Herunterladen (Rate-Limit geschützt).";
+            ReleaseNotesText.Text = $"Aktuelle Server-Version: {remoteVersion}\nBereit zum Herunterladen.";
         }
         catch (Exception ex) 
         { 
@@ -835,23 +835,27 @@ public partial class MainWindow : Window
             UpdateButton.IsEnabled = false;
             using HttpClient client = new();
             var versionInfo = await client.GetFromJsonAsync<GameVersionResponse>($"{AccountServerUrl}/api/game/version");
-            if (versionInfo == null || string.IsNullOrWhiteSpace(versionInfo.DownloadUrl)) 
+            
+            string version = versionInfo?.Version?.Trim() ?? "1.0.0";
+            string downloadUrl = versionInfo?.DownloadUrl ?? string.Empty;
+
+            // Automatischer Fallback auf den Standard-GitHub-Release-Link, falls kein Link eingetragen ist
+            if (string.IsNullOrWhiteSpace(downloadUrl))
             {
-                MessageBox.Show("Kein Download-Link auf dem Server hinterlegt.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
+                downloadUrl = $"https://github.com/{GitHubOwner}/{GitHubRepo}/releases/download/v{version}/game.zip";
             }
 
             string tempZip = Path.Combine(Path.GetTempPath(), "RFG_game_update.zip");
             if (File.Exists(tempZip)) File.Delete(tempZip);
 
             StatusText.Text = "Lade Spiel herunter...";
-            await DownloadFileWithClientAsync(client, versionInfo.DownloadUrl, tempZip);
+            await DownloadFileWithClientAsync(client, downloadUrl, tempZip);
 
             StatusText.Text = "Installiere...";
             InstallZip(tempZip);
             File.Delete(tempZip);
 
-            File.WriteAllText(VersionFile, versionInfo.Version?.Trim() ?? "1.0.0");
+            File.WriteAllText(VersionFile, version);
 
             StatusText.Text = "Erfolgreich installiert!";
             GameUpdateNotificationBanner.Visibility = Visibility.Collapsed;
