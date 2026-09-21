@@ -15,6 +15,35 @@
         <SolidColorBrush x:Key="SidebarBackgroundBrush" Color="#1E293B"/>
         <SolidColorBrush x:Key="InputBackgroundBrush" Color="#334155"/>
 
+        <!-- Start-Animationen -->
+        <Storyboard x:Key="LaunchAnimation">
+            <!-- 1. Hintergrund / Hauptfenster sanft einblenden (Fade-in) -->
+            <DoubleAnimation 
+                Storyboard.TargetName="MainGrid"
+                Storyboard.TargetProperty="Opacity"
+                From="0.0" To="1.0" Duration="0:0:0.6"/>
+
+            <!-- 2. Sidebar fliegt von links ein -->
+            <DoubleAnimation 
+                Storyboard.TargetName="SidebarBorder"
+                Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
+                From="-50" To="0" Duration="0:0:0.5" DecelerationRatio="0.3"/>
+            <DoubleAnimation 
+                Storyboard.TargetName="SidebarBorder"
+                Storyboard.TargetProperty="Opacity"
+                From="0.0" To="1.0" Duration="0:0:0.4"/>
+
+            <!-- 3. Hauptinhalt gleitet leicht von unten nach oben herein -->
+            <DoubleAnimation 
+                Storyboard.TargetName="ContentAreaGrid"
+                Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                From="30" To="0" Duration="0:0:0.5" DecelerationRatio="0.3"/>
+            <DoubleAnimation 
+                Storyboard.TargetName="ContentAreaGrid"
+                Storyboard.TargetProperty="Opacity"
+                From="0.0" To="1.0" Duration="0:0:0.5"/>
+        </Storyboard>
+
         <!-- Standard Button Style -->
         <Style x:Key="ActionButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="{StaticResource InputBackgroundBrush}"/>
@@ -46,14 +75,18 @@
         </Style>
     </Window.Resources>
 
-    <Grid>
+    <!-- Haupt-Grid startet unsichtbar für die Animation -->
+    <Grid x:Name="MainGrid" Opacity="0">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="220"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
         <!-- Navigation Sidebar -->
-        <Border Background="{DynamicResource SidebarBackgroundBrush}" Grid.Column="0">
+        <Border x:Name="SidebarBorder" Background="{DynamicResource SidebarBackgroundBrush}" Grid.Column="0" Opacity="0">
+            <Border.RenderTransform>
+                <TranslateTransform X="0" Y="0"/>
+            </Border.RenderTransform>
             <StackPanel Margin="15">
                 <TextBlock Text="RFG Launcher" FontSize="18" FontWeight="Bold" Foreground="#38BDF8" Margin="0,0,0,20" HorizontalAlignment="Center"/>
                 
@@ -76,7 +109,10 @@
         </Border>
 
         <!-- Main Content Area -->
-        <Grid Grid.Column="1" Margin="20">
+        <Grid x:Name="ContentAreaGrid" Grid.Column="1" Margin="20" Opacity="0">
+            <Grid.RenderTransform>
+                <TranslateTransform X="0" Y="0"/>
+            </Grid.RenderTransform>
             
             <!-- Top Corner User Profile / Login trigger -->
             <StackPanel HorizontalAlignment="Right" VerticalAlignment="Top" Orientation="Horizontal" Panel.ZIndex="10">
@@ -199,7 +235,7 @@
                         <Button Content="Benutzer erstellen" Style="{StaticResource ActionButtonStyle}" Click="AdminCreateUser_Click"/>
                     </StackPanel>
 
-                    <!-- Scrollbare Liste mit Benutzerkarten und farbcodierten Statusanzeigen -->
+                    <!-- Scrollbare Liste -->
                     <ScrollViewer Height="430" VerticalScrollBarVisibility="Auto">
                         <ItemsControl x:Name="UsersItemsControl">
                             <ItemsControl.ItemTemplate>
@@ -212,19 +248,16 @@
                                                 <ColumnDefinition Width="*"/>
                                             </Grid.ColumnDefinitions>
 
-                                            <!-- Benutzername & Rolle -->
                                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                                 <TextBlock Text="{Binding Username}" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource TextPrimaryBrush}"/>
                                                 <TextBlock Text="{Binding Role}" FontSize="11" Foreground="#38BDF8"/>
                                             </StackPanel>
 
-                                            <!-- Status-Anzeigen (Dynamisch eingefärbt) -->
                                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                                 <TextBlock Text="{Binding BetaText}" FontSize="11" FontWeight="Bold" Foreground="{Binding BetaColor}"/>
                                                 <TextBlock Text="{Binding LockText}" FontSize="11" FontWeight="Bold" Foreground="{Binding LockColor}"/>
                                             </StackPanel>
 
-                                            <!-- Aktions-Buttons -->
                                             <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
                                                 <Button Content="Beta umschalten" Style="{StaticResource ActionButtonStyle}" Click="AdminToggleBeta_Click" Margin="4,0" FontSize="11"/>
                                                 <Button Content="Passwort Reset" Style="{StaticResource ActionButtonStyle}" Click="AdminResetPw_Click" Margin="4,0" FontSize="11"/>
@@ -254,9 +287,8 @@
             </Grid>
 
             <!-- CREDITS PAGE -->
-            <Grid x:Name="CreditsPage" Visibility="Visible">
+            <Grid x:Name="CreditsPage" Visibility="Collapsed">
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="460">
-                    
                     <TextBlock Text="Credits &amp; Social Media" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,20" HorizontalAlignment="Center"/>
 
                     <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,20">
@@ -282,7 +314,7 @@
             </Grid>
 
             <!-- SETTINGS PAGE -->
-            <Grid x:Name="SettingsPage" Visibility="Collapsed">
+            <Grid x:Name="SettingsPage" Visibility="Visible">
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="350">
                     <TextBlock Text="Einstellungen" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,20"/>
                     
