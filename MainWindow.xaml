@@ -282,51 +282,79 @@
                     </StackPanel>
                 </Grid>
 
-                <!-- ADMIN PAGE -->
+                <!-- ADMIN PAGE (MIT REITERN OBEN RECHTS) -->
                 <Grid x:Name="AdminPage" Visibility="Collapsed">
                     <StackPanel Margin="10">
-                        <TextBlock Text="Admin Panel" FontSize="22" FontWeight="Bold" Margin="0,0,0,15"/>
+                        <Grid Margin="0,0,0,15">
+                            <TextBlock Text="Admin Panel" FontSize="22" FontWeight="Bold" VerticalAlignment="Center"/>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                <Button x:Name="AdminTabAccountsBtn" Content="Accounts" Style="{StaticResource ActionButtonStyle}" Click="AdminTabAccounts_Click" Margin="0,0,8,0" Background="#38BDF8" Foreground="#0F172A" FontWeight="Bold"/>
+                                <Button x:Name="AdminTabNewsBtn" Content="News erstellen" Style="{StaticResource ActionButtonStyle}" Click="AdminTabNews_Click" Background="{DynamicResource InputBackgroundBrush}"/>
+                            </StackPanel>
+                        </Grid>
+
                         <TextBlock x:Name="AdminActionStatus" Text="" Foreground="#38BDF8" Margin="0,0,0,10"/>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
-                            <TextBox x:Name="AdminNewUsernameBox" Width="130" Padding="6" Background="{DynamicResource InputBackgroundBrush}" Foreground="{DynamicResource TextPrimaryBrush}" BorderThickness="0" Margin="0,0,10,0"/>
-                            <TextBox x:Name="AdminNewTempPassBox" Width="130" Padding="6" Background="{DynamicResource InputBackgroundBrush}" Foreground="{DynamicResource TextPrimaryBrush}" BorderThickness="0" Margin="0,0,10,0"/>
-                            <ComboBox x:Name="AdminRoleComboBox" Width="90" Margin="0,0,10,0" VerticalContentAlignment="Center">
-                                <ComboBoxItem Content="User" IsSelected="True"/>
-                                <ComboBoxItem Content="Admin"/>
-                            </ComboBox>
-                            <Button Content="Benutzer erstellen" Style="{StaticResource ActionButtonStyle}" Click="AdminCreateUser_Click"/>
+
+                        <!-- BEREICH 1: ACCOUNTS VERWALTEN -->
+                        <StackPanel x:Name="AdminAccountsSection">
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                                <TextBox x:Name="AdminNewUsernameBox" Width="130" Padding="6" Background="{DynamicResource InputBackgroundBrush}" Foreground="{DynamicResource TextPrimaryBrush}" BorderThickness="0" Margin="0,0,10,0"/>
+                                <TextBox x:Name="AdminNewTempPassBox" Width="130" Padding="6" Background="{DynamicResource InputBackgroundBrush}" Foreground="{DynamicResource TextPrimaryBrush}" BorderThickness="0" Margin="0,0,10,0"/>
+                                <ComboBox x:Name="AdminRoleComboBox" Width="90" Margin="0,0,10,0" VerticalContentAlignment="Center">
+                                    <ComboBoxItem Content="User" IsSelected="True"/>
+                                    <ComboBoxItem Content="Admin"/>
+                                </ComboBox>
+                                <Button Content="Benutzer erstellen" Style="{StaticResource ActionButtonStyle}" Click="AdminCreateUser_Click"/>
+                            </StackPanel>
+                            <ScrollViewer Height="430" VerticalScrollBarVisibility="Auto">
+                                <ItemsControl x:Name="UsersItemsControl">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="{DynamicResource CardBackgroundBrush}" CornerRadius="6" Padding="12" Margin="0,0,0,8">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="150"/>
+                                                        <ColumnDefinition Width="110"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding Username}" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                                        <TextBlock Text="{Binding Role}" FontSize="11" Foreground="#38BDF8"/>
+                                                    </StackPanel>
+                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding BetaText}" FontSize="11" FontWeight="Bold" Foreground="{Binding BetaColor}"/>
+                                                        <TextBlock Text="{Binding LockText}" FontSize="11" FontWeight="Bold" Foreground="{Binding LockColor}"/>
+                                                    </StackPanel>
+                                                    <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                                                        <Button Content="Beta umschalten" Style="{StaticResource ActionButtonStyle}" Click="AdminToggleBeta_Click" Margin="4,0" FontSize="11"/>
+                                                        <Button Content="Passwort Reset" Style="{StaticResource ActionButtonStyle}" Click="AdminResetPw_Click" Margin="4,0" FontSize="11"/>
+                                                        <Button Content="Sperren" Style="{StaticResource ActionButtonStyle}" Click="AdminToggleLock_Click" Margin="4,0" FontSize="11" Background="#B45309"/>
+                                                        <Button Content="Löschen" Style="{StaticResource ActionButtonStyle}" Click="AdminDeleteUser_Click" Margin="4,0" FontSize="11" Background="#991B1B"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
                         </StackPanel>
-                        <ScrollViewer Height="430" VerticalScrollBarVisibility="Auto">
-                            <ItemsControl x:Name="UsersItemsControl">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Border Background="{DynamicResource CardBackgroundBrush}" CornerRadius="6" Padding="12" Margin="0,0,0,8">
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="150"/>
-                                                    <ColumnDefinition Width="110"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                </Grid.ColumnDefinitions>
-                                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding Username}" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource TextPrimaryBrush}"/>
-                                                    <TextBlock Text="{Binding Role}" FontSize="11" Foreground="#38BDF8"/>
-                                                </StackPanel>
-                                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding BetaText}" FontSize="11" FontWeight="Bold" Foreground="{Binding BetaColor}"/>
-                                                    <TextBlock Text="{Binding LockText}" FontSize="11" FontWeight="Bold" Foreground="{Binding LockColor}"/>
-                                                </StackPanel>
-                                                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
-                                                    <Button Content="Beta umschalten" Style="{StaticResource ActionButtonStyle}" Click="AdminToggleBeta_Click" Margin="4,0" FontSize="11"/>
-                                                    <Button Content="Passwort Reset" Style="{StaticResource ActionButtonStyle}" Click="AdminResetPw_Click" Margin="4,0" FontSize="11"/>
-                                                    <Button Content="Sperren" Style="{StaticResource ActionButtonStyle}" Click="AdminToggleLock_Click" Margin="4,0" FontSize="11" Background="#B45309"/>
-                                                    <Button Content="Löschen" Style="{StaticResource ActionButtonStyle}" Click="AdminDeleteUser_Click" Margin="4,0" FontSize="11" Background="#991B1B"/>
-                                                </StackPanel>
-                                            </Grid>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </ScrollViewer>
+
+                        <!-- BEREICH 2: NEWS ERSTELLEN -->
+                        <StackPanel x:Name="AdminNewsSection" Visibility="Collapsed" Width="500" HorizontalAlignment="Left">
+                            <Border Style="{StaticResource CardBorderStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Neue Ankündigung verfassen" FontSize="16" FontWeight="Bold" Foreground="#38BDF8" Margin="0,0,0,15"/>
+                                    
+                                    <TextBlock Text="Titel der Ankündigung:" Margin="0,0,0,5"/>
+                                    <TextBox x:Name="AdminNewsTitleBox" Padding="8" Background="{DynamicResource InputBackgroundBrush}" Foreground="{DynamicResource TextPrimaryBrush}" BorderThickness="0" Margin="0,0,0,15"/>
+                                    
+                                    <TextBlock Text="Inhalt / Nachricht:" Margin="0,0,0,5"/>
+                                    <TextBox x:Name="AdminNewsContentBox" Height="150" AcceptsReturn="True" TextWrapping="Wrap" Padding="8" Background="{DynamicResource InputBackgroundBrush}" Foreground="{DynamicResource TextPrimaryBrush}" BorderThickness="0" Margin="0,0,0,20"/>
+                                    
+                                    <Button Content="Ankündigung live veröffentlichen" Style="{StaticResource ActionButtonStyle}" Click="PublishNewsButton_Click" Background="#10B981" FontWeight="Bold" Height="40"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
                     </StackPanel>
                 </Grid>
 
