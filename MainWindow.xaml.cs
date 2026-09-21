@@ -92,16 +92,15 @@ public partial class MainWindow : Window
 
             LauncherVersionText.Text = $"Version: {CurrentLauncherVersion}";
 
-            // Dreistufige Start-Animation starten
+            // Dreistufige Start-Animation ausführen
             await PlayStartupSequenceAsync();
 
-            // Im Hintergrund asynchron Updates prüfen & Login wiederherstellen
             await SilentCheckLauncherUpdateAsync();
             await CheckForUpdatesAsync();
             await TryAutoLoginAsync();
             UpdateAccountUIVisibility();
 
-            // Live-Update-Checker im 3-Sekunden-Takt starten
+            // 3-Sekunden-Takt Live-Check im Hintergrund starten
             StartLiveUpdateChecker();
         }
         catch (Exception ex)
@@ -112,7 +111,6 @@ public partial class MainWindow : Window
 
     private async Task PlayStartupSequenceAsync()
     {
-        // 1. Ladebalken-Container sanft einblenden
         DoubleAnimation fadeInProgress = new DoubleAnimation(0.0, 1.0, TimeSpan.FromSeconds(0.4));
         DoubleAnimation slideInProgress = new DoubleAnimation(15, 0, TimeSpan.FromSeconds(0.4)) { DecelerationRatio = 0.3 };
         
@@ -120,25 +118,21 @@ public partial class MainWindow : Window
         StartupProgressContainer.BeginAnimation(TranslateTransform.YProperty, slideInProgress);
         StartupPercentageText.BeginAnimation(UIElement.OpacityProperty, fadeInProgress);
 
-        // 2. Ladebalken flüssig von 0% auf 100% füllen lassen (lädt im Hintergrund die Basisdaten)
         for (int i = 0; i <= 100; i += 4)
         {
             StartupProgressBar.Value = i;
             StartupPercentageText.Text = $"{i}%";
-            await Task.Delay(25); // Steuert die Geschwindigkeit des Ladebalkens
+            await Task.Delay(25);
         }
 
-        // 3. Intro-Screen weich ausblenden
         DoubleAnimation fadeOutIntro = new DoubleAnimation(1.0, 0.0, TimeSpan.FromSeconds(0.5));
         StartupIntroGrid.BeginAnimation(UIElement.OpacityProperty, fadeOutIntro);
         await Task.Delay(500);
         StartupIntroGrid.Visibility = Visibility.Collapsed;
 
-        // 4. Haupt-Launcher einblenden & Logo flüssig einfliegen lassen
         DoubleAnimation fadeInCore = new DoubleAnimation(0.0, 1.0, TimeSpan.FromSeconds(0.6));
         LauncherCoreGrid.BeginAnimation(UIElement.OpacityProperty, fadeInCore);
 
-        // Logo fliegt von oben ein
         DoubleAnimation logoSlide = new DoubleAnimation(-20, 0, TimeSpan.FromSeconds(0.6)) { DecelerationRatio = 0.3 };
         LogoTransform.BeginAnimation(TranslateTransform.YProperty, logoSlide);
     }
@@ -1186,7 +1180,7 @@ public partial class MainWindow : Window
         public string? Version { get; set; }
 
         [JsonPropertyName("downloadUrl")]
-        public string? DownloadUrl {[] set; }
+        public string? DownloadUrl { get; set; }
     }
 
     private sealed class SavedSession
@@ -1304,7 +1298,7 @@ public partial class MainWindow : Window
             }
         }
 
-        5. public float GetCpuUsage()
+        public float GetCpuUsage()
         {
             try
             {
