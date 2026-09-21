@@ -92,7 +92,7 @@ public partial class MainWindow : Window
 
             LauncherVersionText.Text = $"Version: {CurrentLauncherVersion}";
 
-            // Exakte dreistufige Start-Animation ausführen
+            // Dreistufige Start-Animation ausführen
             await PlayStartupSequenceAsync();
 
             await SilentCheckLauncherUpdateAsync();
@@ -116,7 +116,7 @@ public partial class MainWindow : Window
         StartupIntroGrid.BeginAnimation(UIElement.OpacityProperty, fadeInBg);
         await Task.Delay(400);
 
-        // Stufe 2: Fortschrittsanzeige mit flüssigem Übergang einblenden und hochzählen
+        // Stufe 2: Fortschrittsanzeige mit flüssigem Übergang einblenden
         DoubleAnimation fadeInProgress = new DoubleAnimation(0.0, 1.0, TimeSpan.FromSeconds(0.5));
         DoubleAnimation slideProgress = new DoubleAnimation(20, 0, TimeSpan.FromSeconds(0.5)) { DecelerationRatio = 0.3 };
         
@@ -124,11 +124,12 @@ public partial class MainWindow : Window
         StartupProgressContainer.BeginAnimation(TranslateTransform.YProperty, slideProgress);
         StartupPercentageText.BeginAnimation(UIElement.OpacityProperty, fadeInProgress);
 
-        for (int i = 0; i <= 100; i += 4)
+        // Ladebalken langsamer und flüssiger laufen lassen (55ms pro 2%-Schritt)
+        for (int i = 0; i <= 100; i += 2)
         {
             StartupProgressBar.Value = i;
             StartupPercentageText.Text = $"{i}%";
-            await Task.Delay(25);
+            await Task.Delay(55);
         }
 
         // Stufe 3: Intro sanft ausblenden
