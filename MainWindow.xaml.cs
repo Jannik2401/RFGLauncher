@@ -668,14 +668,14 @@ public partial class MainWindow : Window
 
     private async Task<GitHubRelease?> GetLatestGameReleaseAsync()
     {
-        string url = $"https://api.github.com/repos/{GitHubOwner}/{GitHubRepo}/releases?per_page=10";
+        string url = $"https://api.github.com/repos/{GitHubOwner}/{GitHubRepo}/releases?per_page=15";
         using HttpResponseMessage response = await Http.GetAsync(url);
         response.EnsureSuccessStatusCode();
         string json = await response.Content.ReadAsStringAsync();
         var releases = JsonSerializer.Deserialize<GitHubRelease[]>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         
-        // Nimmt das allerneueste Release basierend auf dem Veröffentlichungsdatum
-        return releases?.Where(r => !r.Draft)
+        // Findet das neueste Release, das eine game.zip im Anhang hat (unabhängig vom Tag wie 'last')
+        return releases?.Where(r => !r.Draft && r.Assets.Any(a => string.Equals(a.Name, "game.zip", StringComparison.OrdinalIgnoreCase)))
                         .OrderByDescending(r => r.PublishedAt)
                         .FirstOrDefault();
     }
