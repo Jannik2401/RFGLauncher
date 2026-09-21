@@ -92,7 +92,7 @@ public partial class MainWindow : Window
 
             LauncherVersionText.Text = $"Version: {CurrentLauncherVersion}";
 
-            // Dreistufige Start-Animation ausführen
+            // Exakte dreistufige Start-Animation ausführen
             await PlayStartupSequenceAsync();
 
             await SilentCheckLauncherUpdateAsync();
@@ -100,7 +100,7 @@ public partial class MainWindow : Window
             await TryAutoLoginAsync();
             UpdateAccountUIVisibility();
 
-            // 3-Sekunden-Takt Live-Check im Hintergrund starten
+            // Live-Update-Checker im 3-Sekunden-Takt im Hintergrund starten
             StartLiveUpdateChecker();
         }
         catch (Exception ex)
@@ -111,11 +111,17 @@ public partial class MainWindow : Window
 
     private async Task PlayStartupSequenceAsync()
     {
-        DoubleAnimation fadeInProgress = new DoubleAnimation(0.0, 1.0, TimeSpan.FromSeconds(0.4));
-        DoubleAnimation slideInProgress = new DoubleAnimation(15, 0, TimeSpan.FromSeconds(0.4)) { DecelerationRatio = 0.3 };
+        // Stufe 1: Hintergrund sanft einblenden
+        DoubleAnimation fadeInBg = new DoubleAnimation(0.0, 1.0, TimeSpan.FromSeconds(0.4));
+        StartupIntroGrid.BeginAnimation(UIElement.OpacityProperty, fadeInBg);
+        await Task.Delay(400);
+
+        // Stufe 2: Fortschrittsanzeige mit flüssigem Übergang einblenden und hochzählen
+        DoubleAnimation fadeInProgress = new DoubleAnimation(0.0, 1.0, TimeSpan.FromSeconds(0.5));
+        DoubleAnimation slideProgress = new DoubleAnimation(20, 0, TimeSpan.FromSeconds(0.5)) { DecelerationRatio = 0.3 };
         
         StartupProgressContainer.BeginAnimation(UIElement.OpacityProperty, fadeInProgress);
-        StartupProgressContainer.BeginAnimation(TranslateTransform.YProperty, slideInProgress);
+        StartupProgressContainer.BeginAnimation(TranslateTransform.YProperty, slideProgress);
         StartupPercentageText.BeginAnimation(UIElement.OpacityProperty, fadeInProgress);
 
         for (int i = 0; i <= 100; i += 4)
@@ -125,15 +131,17 @@ public partial class MainWindow : Window
             await Task.Delay(25);
         }
 
+        // Stufe 3: Intro sanft ausblenden
         DoubleAnimation fadeOutIntro = new DoubleAnimation(1.0, 0.0, TimeSpan.FromSeconds(0.5));
         StartupIntroGrid.BeginAnimation(UIElement.OpacityProperty, fadeOutIntro);
         await Task.Delay(500);
         StartupIntroGrid.Visibility = Visibility.Collapsed;
 
+        // Haupt-Launcher und Logo flüssig einfliegen lassen
         DoubleAnimation fadeInCore = new DoubleAnimation(0.0, 1.0, TimeSpan.FromSeconds(0.6));
         LauncherCoreGrid.BeginAnimation(UIElement.OpacityProperty, fadeInCore);
 
-        DoubleAnimation logoSlide = new DoubleAnimation(-20, 0, TimeSpan.FromSeconds(0.6)) { DecelerationRatio = 0.3 };
+        DoubleAnimation logoSlide = new DoubleAnimation(-25, 0, TimeSpan.FromSeconds(0.6)) { DecelerationRatio = 0.3 };
         LogoTransform.BeginAnimation(TranslateTransform.YProperty, logoSlide);
     }
 
