@@ -53,14 +53,15 @@
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="350">
                 <TextBlock Text="RFG Launcher" FontSize="22" FontWeight="Bold" Foreground="#38BDF8" HorizontalAlignment="Center" Margin="0,0,0,20"/>
                 
-                <!-- Fortschrittsanzeige (zunächst unsichtbar für den flüssigen Übergang) -->
+                <!-- Fortschrittsanzeige -->
                 <Border x:Name="StartupProgressContainer" CornerRadius="8" Background="#1E293B" Height="14" Padding="2" Opacity="0">
                     <Border.RenderTransform>
                         <TranslateTransform Y="20"/>
                     </Border.RenderTransform>
                     <ProgressBar x:Name="StartupProgressBar" Height="10" Minimum="0" Maximum="100" Value="0" Background="Transparent" Foreground="#38BDF8" BorderThickness="0"/>
                 </Border>
-                <TextBlock x:Name="StartupPercentageText" Text="0%" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,8,0,0" Opacity="0"/>
+                <!-- Prozentzahl weiter unten platziert (Margin 0,12,0,0) -->
+                <TextBlock x:Name="StartupPercentageText" Text="0%" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,12,0,0" Opacity="0"/>
             </StackPanel>
         </Grid>
 
