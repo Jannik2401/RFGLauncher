@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Threading;
 
 namespace BetaLauncher;
@@ -94,6 +95,12 @@ public partial class MainWindow : Window
             await CheckForUpdatesAsync();
             await TryAutoLoginAsync();
             UpdateAccountUIVisibility();
+
+            // Start-Animation abspielen, sobald alles im Hintergrund geladen ist
+            if (Resources["LaunchAnimation"] is Storyboard sb)
+            {
+                sb.Begin(this);
+            }
         }
         catch (Exception ex)
         {
