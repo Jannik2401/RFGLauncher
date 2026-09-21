@@ -614,12 +614,12 @@ public partial class MainWindow : Window
                 return; 
             }
 
-            string remoteVersion = NormalizeVersion(release.TagName);
-            string localVersion = NormalizeVersion(GetLocalVersion());
+            string remoteVersion = release.TagName?.Trim() ?? "unknown";
+            string localVersion = GetLocalVersion();
 
-            StatusText.Text = !string.Equals(remoteVersion, localVersion, StringComparison.OrdinalIgnoreCase) || !IsGameInstalled()
-                ? $"Update verfügbar: {remoteVersion}" : "Spiel ist aktuell.";
+            bool isUpToDate = string.Equals(remoteVersion, localVersion, StringComparison.OrdinalIgnoreCase) && IsGameInstalled();
 
+            StatusText.Text = isUpToDate ? "Spiel ist aktuell." : $"Update verfügbar: {remoteVersion}";
             VersionText.Text = "Installiert: " + (string.IsNullOrWhiteSpace(localVersion) ? "Keine" : localVersion);
             
             ReleaseNotesText.Text = string.IsNullOrWhiteSpace(release.Body) 
@@ -654,9 +654,10 @@ public partial class MainWindow : Window
             InstallZip(tempZip);
             File.Delete(tempZip);
 
-            File.WriteAllText(VersionFile, NormalizeVersion(release.TagName));
+            File.WriteAllText(VersionFile, release.TagName?.Trim() ?? "unknown");
             StatusText.Text = "Erfolgreich installiert!";
             UpdateHomeInformation();
+            await CheckForUpdatesAsync();
         }
         catch (Exception ex)
         {
@@ -674,7 +675,6 @@ public partial class MainWindow : Window
         string json = await response.Content.ReadAsStringAsync();
         var releases = JsonSerializer.Deserialize<GitHubRelease[]>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         
-        // Findet das neueste Release, das eine game.zip im Anhang hat (unabhängig vom Tag wie 'last')
         return releases?.Where(r => !r.Draft && r.Assets.Any(a => string.Equals(a.Name, "game.zip", StringComparison.OrdinalIgnoreCase)))
                         .OrderByDescending(r => r.PublishedAt)
                         .FirstOrDefault();
@@ -715,8 +715,7 @@ public partial class MainWindow : Window
     }
 
     private string GetLocalVersion() => File.Exists(VersionFile) ? File.ReadAllText(VersionFile).Trim() : string.Empty;
-    private string NormalizeVersion(string? v) => string.IsNullOrWhiteSpace(v) ? string.Empty : (v.StartsWith("v", StringComparison.OrdinalIgnoreCase) ? v.Substring(1) : v).Trim();
-    private Version ParseVersion(string? v) => Version.TryParse(NormalizeVersion(v), out Version? res) ? res : new Version(0, 0, 0);
+    private Version ParseVersion(string? v) => Version.TryParse(v?.Trim().TrimStart('v', 'V'), out Version? res) ? res : new Version(0, 0, 0);
 
     private async Task TryAutoLoginAsync()
     {
