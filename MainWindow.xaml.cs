@@ -50,6 +50,7 @@ public partial class MainWindow : Window
     private readonly HttpClient Http = new();
     private DispatcherTimer? PerformanceTimer;
     private DispatcherTimer? StatusCheckTimer;
+    private DispatcherTimer? LiveUpdateCheckTimer;
 
     private string? LoggedInUsername;
     private string? LoggedInPassword;
@@ -101,6 +102,9 @@ public partial class MainWindow : Window
             {
                 sb.Begin(this);
             }
+
+            // Live-Update-Checker im Hintergrund starten (prüft alle 3 Sekunden)
+            StartLiveUpdateChecker();
         }
         catch (Exception ex)
         {
@@ -112,7 +116,21 @@ public partial class MainWindow : Window
     {
         PerformanceTimer?.Stop();
         StatusCheckTimer?.Stop();
+        LiveUpdateCheckTimer?.Stop();
         Http.Dispose();
+    }
+
+    private void StartLiveUpdateChecker()
+    {
+        LiveUpdateCheckTimer?.Stop();
+        LiveUpdateCheckTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
+        LiveUpdateCheckTimer.Tick += async (s, e) =>
+        {
+            // Prüft im 3-Sekunden-Takt live im Hintergrund auf neue Versionen
+            await SilentCheckLauncherUpdateAsync();
+            await CheckForUpdatesAsync();
+        };
+        LiveUpdateCheckTimer.Start();
     }
 
     private void ApplyTheme(string theme)
@@ -361,7 +379,6 @@ public partial class MainWindow : Window
                     LauncherUpdateStatusText.Text = $"Neues Update: v{onlineVersion}";
                     LauncherUpdateStatusText.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#38BDF8")!;
                     
-                    // Banner einblenden
                     LauncherUpdateBannerText.Text = $"Version v{onlineVersion} steht bereit.";
                     LauncherUpdateNotificationBanner.Visibility = Visibility.Visible;
                 }
@@ -615,7 +632,6 @@ public partial class MainWindow : Window
     {
         try
         {
-            StatusText.Text = "Suche nach Updates...";
             var release = await GetLatestGameReleaseAsync();
             UpdateButton.IsEnabled = true;
 
@@ -651,7 +667,6 @@ public partial class MainWindow : Window
             {
                 StatusText.Text = $"Update verfügbar: {remoteVersion}";
                 
-                // Spiel-Update Banner einblenden
                 GameUpdateBannerText.Text = $"Version {remoteVersion} ist verfügbar.";
                 GameUpdateNotificationBanner.Visibility = Visibility.Visible;
             }
@@ -711,7 +726,6 @@ public partial class MainWindow : Window
         finally { UpdateButton.IsEnabled = true; }
     }
 
-    // Event-Handler für die schwebenden Banner
     private void CloseGameBanner_Click(object sender, RoutedEventArgs e)
     {
         GameUpdateNotificationBanner.Visibility = Visibility.Collapsed;
