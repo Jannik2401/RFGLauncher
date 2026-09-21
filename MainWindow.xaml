@@ -48,14 +48,15 @@
 
     <Grid x:Name="MainGrid">
         
-        <!-- ================= STUFE 1 & 2: INTRO & LADEBILDSCHIRM ================= -->
-        <Grid x:Name="StartupIntroGrid" Background="#0F172A" Panel.ZIndex="100" Opacity="1">
+        <!-- ================= INTRO-ANIMATIONSBILDSCHIRM ================= -->
+        <Grid x:Name="StartupIntroGrid" Background="#0F172A" Panel.ZIndex="100" Opacity="0">
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="350">
-                <TextBlock Text="RFG Launcher startet..." FontSize="18" FontWeight="Bold" Foreground="#38BDF8" HorizontalAlignment="Center" Margin="0,0,0,15"/>
+                <TextBlock Text="RFG Launcher" FontSize="22" FontWeight="Bold" Foreground="#38BDF8" HorizontalAlignment="Center" Margin="0,0,0,20"/>
                 
+                <!-- Fortschrittsanzeige (zunächst unsichtbar für den flüssigen Übergang) -->
                 <Border x:Name="StartupProgressContainer" CornerRadius="8" Background="#1E293B" Height="14" Padding="2" Opacity="0">
                     <Border.RenderTransform>
-                        <TranslateTransform Y="15"/>
+                        <TranslateTransform Y="20"/>
                     </Border.RenderTransform>
                     <ProgressBar x:Name="StartupProgressBar" Height="10" Minimum="0" Maximum="100" Value="0" Background="Transparent" Foreground="#38BDF8" BorderThickness="0"/>
                 </Border>
@@ -72,14 +73,11 @@
 
             <!-- Navigation Sidebar -->
             <Border x:Name="SidebarBorder" Background="{DynamicResource SidebarBackgroundBrush}" Grid.Column="0">
-                <Border.RenderTransform>
-                    <TranslateTransform X="0" Y="0"/>
-                </Border.RenderTransform>
                 <StackPanel Margin="15">
-                    <!-- Das Logo, das nach dem Laden eingeflogen kommt -->
+                    <!-- Das Logo, das nach dem Ladebalken eingeflogen kommt -->
                     <TextBlock x:Name="LogoBlock" Text="RFG Launcher" FontSize="18" FontWeight="Bold" Foreground="#38BDF8" Margin="0,0,0,20" HorizontalAlignment="Center">
                         <TextBlock.RenderTransform>
-                            <TranslateTransform x:Name="LogoTransform" X="0" Y="-20"/>
+                            <TranslateTransform x:Name="LogoTransform" X="0" Y="-25"/>
                         </TextBlock.RenderTransform>
                     </TextBlock>
                     
