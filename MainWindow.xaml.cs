@@ -399,12 +399,40 @@ public partial class MainWindow : Window
         {
             using HttpClient client = new();
             client.DefaultRequestHeaders.UserAgent.ParseAdd("RFG-BetaLauncher-Updater");
-            client.Timeout = TimeSpan.FromSeconds(4);
-            var info = await client.GetFromJsonAsync<LauncherVersionInfo>(LauncherVersionUrl);
+            client.Timeout = TimeSpan.FromSeconds(5);
 
-            if (info != null && !string.IsNullOrWhiteSpace(info.Version))
+            string onlineVersionStr = string.Empty;
+
+            // 1. Versuch über die version.json mit Cache-Buster
+            try
             {
-                Version onlineVersion = ParseVersion(info.Version);
+                string urlWithCacheBuster = $"{LauncherVersionUrl}?t={DateTime.UtcNow.Ticks}";
+                var info = await client.GetFromJsonAsync<LauncherVersionInfo>(urlWithCacheBuster);
+                if (info != null && !string.IsNullOrWhiteSpace(info.Version))
+                {
+                    onlineVersionStr = info.Version;
+                }
+            }
+            catch { }
+
+            // 2. Fallback direkt über die GitHub Release API, falls Raw-Git im Cache hängt
+            if (string.IsNullOrWhiteSpace(onlineVersionStr))
+            {
+                string apiUrl = $"https://api.github.com/repos/{GitHubOwner}/{GitHubRepo}/releases/latest";
+                var response = await client.GetAsync(apiUrl);
+                if (response.IsSuccessStatusCode)
+                {
+                    var release = await response.Content.ReadFromJsonAsync<GitHubRelease>();
+                    if (release != null && !string.IsNullOrWhiteSpace(release.TagName))
+                    {
+                        onlineVersionStr = release.TagName;
+                    }
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(onlineVersionStr))
+            {
+                Version onlineVersion = ParseVersion(onlineVersionStr);
                 Version installedVersion = ParseVersion(CurrentLauncherVersion);
 
                 if (onlineVersion > installedVersion)
@@ -437,20 +465,38 @@ public partial class MainWindow : Window
         {
             LauncherUpdateStatusText.Text = "Suche nach Updates...";
             using HttpClient client = new();
+            string urlWithCacheBuster = $"{LauncherVersionUrl}?t={DateTime.UtcNow.Ticks}";
             client.DefaultRequestHeaders.UserAgent.ParseAdd("RFG-BetaLauncher-Updater");
             client.Timeout = TimeSpan.FromSeconds(5);
-            var info = await client.GetFromJsonAsync<LauncherVersionInfo>(LauncherVersionUrl);
+            var info = await client.GetFromJsonAsync<LauncherVersionInfo>(urlWithCacheBuster);
 
-            if (info != null && !string.IsNullOrWhiteSpace(info.Version))
+            string onlineVersionStr = info?.Version ?? string.Empty;
+            string downloadUrl = info?.DownloadUrl ?? $"https://github.com/{GitHubOwner}/{GitHubRepo}/releases/download/latest/RFGlauncher.exe";
+
+            if (string.IsNullOrWhiteSpace(onlineVersionStr))
             {
-                Version onlineVersion = ParseVersion(info.Version);
+                string apiUrl = $"https://api.github.com/repos/{GitHubOwner}/{GitHubRepo}/releases/latest";
+                var response = await client.GetAsync(apiUrl);
+                if (response.IsSuccessStatusCode)
+                {
+                    var release = await response.Content.ReadFromJsonAsync<GitHubRelease>();
+                    if (release != null && !string.IsNullOrWhiteSpace(release.TagName))
+                    {
+                        onlineVersionStr = release.TagName;
+                    }
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(onlineVersionStr))
+            {
+                Version onlineVersion = ParseVersion(onlineVersionStr);
                 Version installedVersion = ParseVersion(CurrentLauncherVersion);
 
                 if (onlineVersion > installedVersion)
                 {
                     LauncherUpdateStatusText.Text = $"Update gefunden: v{onlineVersion}";
                     LauncherUpdateStatusText.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#38BDF8")!;
-                    StartAutoUpdater(info.DownloadUrl);
+                    StartAutoUpdater(downloadUrl);
                 }
                 else
                 {
@@ -781,11 +827,10 @@ public partial class MainWindow : Window
         try
         {
             using HttpClient client = new();
-            var info = await client.GetFromJsonAsync<LauncherVersionInfo>(LauncherVersionUrl);
-            if (info != null && !string.IsNullOrWhiteSpace(info.DownloadUrl))
-            {
-                StartAutoUpdater(info.DownloadUrl);
-            }
+            string urlWithCacheBuster = $"{LauncherVersionUrl}?t={DateTime.UtcNow.Ticks}";
+            var info = await client.GetFromJsonAsync<LauncherVersionInfo>(urlWithCacheBuster);
+            string downloadUrl = info?.DownloadUrl ?? $"https://github.com/{GitHubOwner}/{GitHubRepo}/releases/download/latest/RFGlauncher.exe";
+            StartAutoUpdater(downloadUrl);
         }
         catch (Exception ex)
         {
