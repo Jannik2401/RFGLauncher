@@ -24,6 +24,7 @@ public partial class MainWindow : Window
         Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.0.0";
 
     private const string LauncherVersionUrl = "https://raw.githubusercontent.com/Jannik2401/RFGLauncher/main/version.json";
+    private const string NewsJsonUrl = "https://raw.githubusercontent.com/Jannik2401/RFGLauncher/main/news.json";
     private const string GitHubOwner = "Jannik2401";
     private const string GitHubRepo = "RFGLauncher";
     private const string GameExeName = "kirmes.exe";
@@ -46,6 +47,7 @@ public partial class MainWindow : Window
     private string UpdateDateFile => Path.Combine(GameDirectory, "last_update_date.txt");
     private string SessionFile => Path.Combine(GameDirectory, "session.json");
     private string SettingsFile => Path.Combine(GameDirectory, "settings.json");
+    private string LastNewsIdFile => Path.Combine(GameDirectory, "last_news_id.txt");
 
     private readonly HttpClient Http = new();
     private DispatcherTimer? PerformanceTimer;
@@ -56,6 +58,8 @@ public partial class MainWindow : Window
     private string? LoggedInPassword;
     private string? LoggedInRole;
     private bool HasBetaAccess;
+
+    private string _lastSeenNewsId = string.Empty;
 
     private bool _isPasswordVisible;
     private string _rawPassword = string.Empty;
@@ -97,10 +101,11 @@ public partial class MainWindow : Window
 
             await SilentCheckLauncherUpdateAsync();
             await CheckForUpdatesAsync();
+            await CheckLiveNewsAsync(); // Live-News beim Start prüfen
             await TryAutoLoginAsync();
             UpdateAccountUIVisibility();
 
-            // Live-Update-Checker im 3-Sekunden-Takt im Hintergrund starten
+            // Live-Update-Checker & News-Checker im 3-Sekunden-Takt im Hintergrund starten
             StartLiveUpdateChecker();
         }
         catch (Exception ex)
@@ -162,8 +167,69 @@ public partial class MainWindow : Window
         {
             await SilentCheckLauncherUpdateAsync();
             await CheckForUpdatesAsync();
+            await CheckLiveNewsAsync();
         };
         LiveUpdateCheckTimer.Start();
+    }
+
+    private async Task CheckLiveNewsAsync()
+    {
+        try
+        {
+            if (File.Exists(LastNewsIdFile))
+            {
+                _lastSeenNewsId = File.ReadAllText(LastNewsIdFile).Trim();
+            }
+
+            using HttpClient client = new();
+            string urlWithCacheBuster = $"{NewsJsonUrl}?t={DateTime.UtcNow.Ticks}";
+            
+            var response = await client.GetAsync(urlWithCacheBuster);
+            if (response.IsSuccessStatusCode)
+            {
+                var newsList = await response.Content.ReadFromJsonAsync<List<NewsItem>>();
+                if (newsList != null && newsList.Count > 0)
+                {
+                    var latestNews = newsList[0];
+
+                    // Befüllt die News-Ansicht in der Sidebar
+                    NewsItemsControl.ItemsSource = newsList;
+
+                    // Popup nur anzeigen, wenn diese News-ID noch nicht lokal bestätigt wurde
+                    if (!string.IsNullOrWhiteSpace(latestNews.Id) && latestNews.Id != _lastSeenNewsId)
+                    {
+                        PopupNewsTitle.Text = latestNews.Title;
+                        PopupNewsContent.Text = latestNews.Content;
+                        PopupNewsTitle.Tag = latestNews.Id;
+                        
+                        LiveNewsPopupOverlay.Visibility = Visibility.Visible;
+                    }
+                }
+            }
+        }
+        catch { }
+    }
+
+    private void CloseLiveNewsPopup_Click(object sender, RoutedEventArgs e)
+    {
+        LiveNewsPopupOverlay.Visibility = Visibility.Collapsed;
+
+        // Speichert lokal auf dem PC ab, dass diese News gelesen wurde
+        if (PopupNewsTitle.Tag is string newsId && !string.IsNullOrEmpty(newsId))
+        {
+            try
+            {
+                File.WriteAllText(LastNewsIdFile, newsId);
+                _lastSeenNewsId = newsId;
+            }
+            catch { }
+        }
+    }
+
+    private void NewsButton_Click(object sender, RoutedEventArgs e)
+    {
+        ShowPage(NewsPage);
+        _ = CheckLiveNewsAsync();
     }
 
     private void ApplyTheme(string theme)
@@ -404,7 +470,6 @@ public partial class MainWindow : Window
             string onlineVersionStr = string.Empty;
             string downloadUrl = string.Empty;
 
-            // 1. Primär direkt die GitHub-Release-API abfragen (erkennt v1.0.59 sofort ohne Cache-Verzögerung)
             try
             {
                 string apiUrl = $"https://api.github.com/repos/{GitHubOwner}/{GitHubRepo}/releases/latest";
@@ -422,7 +487,6 @@ public partial class MainWindow : Window
             }
             catch { }
 
-            // 2. Fallback über die version.json, falls die API einmal klemmen sollte
             if (string.IsNullOrWhiteSpace(onlineVersionStr))
             {
                 try
@@ -553,6 +617,7 @@ public partial class MainWindow : Window
     private void ShowPage(UIElement page)
     {
         HomePage.Visibility = Visibility.Collapsed;
+        NewsPage.Visibility = Visibility.Collapsed;
         UpdatesPage.Visibility = Visibility.Collapsed;
         AccountPage.Visibility = Visibility.Collapsed;
         ChangePasswordPage.Visibility = Visibility.Collapsed;
@@ -1140,7 +1205,7 @@ public partial class MainWindow : Window
             AdminActionStatus.Text = result?.Message ?? string.Empty;
             if (result != null && result.Success) { AdminNewUsernameBox.Clear(); AdminNewTempPassBox.Clear(); await LoadAdminUserListAsync(); }
         }
-        catch { AdminActionStatus.Text = "Fehler."; }
+        catch { AdminActionStatus.Test = "Fehler."; }
     }
 
     private async void AdminToggleBeta_Click(object sender, RoutedEventArgs e)
@@ -1358,6 +1423,21 @@ public partial class MainWindow : Window
 
         public string LockText => IsLocked ? "Gesperrt: Ja" : "Gesperrt: Nein";
         public string LockColor => IsLocked ? "#E11D48" : "#10B981";
+    }
+
+    public sealed class NewsItem
+    {
+        [JsonPropertyName("id")]
+        public string? Id { get; set; }
+
+        [JsonPropertyName("title")]
+        public string? Title { get; set; }
+
+        [JsonPropertyName("content")]
+        public string? Content { get; set; }
+
+        [JsonPropertyName("date")]
+        public string? Date { get; set; }
     }
 
     public sealed class PerformanceCounterWrapper
