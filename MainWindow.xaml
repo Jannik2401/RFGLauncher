@@ -17,13 +17,13 @@
 
         <!-- Zweistufige Start-Animation -->
         <Storyboard x:Key="LaunchAnimation">
-            <!-- Stufe 1: Hintergrund / Fenster fadet von 0 auf 1 ein (0 bis 0.4 Sek.) -->
+            <!-- Stufe 1: Hintergrund / Fenster fadet von 0 auf 1 ein -->
             <DoubleAnimation 
                 Storyboard.TargetName="MainGrid"
                 Storyboard.TargetProperty="Opacity"
                 From="0.0" To="1.0" Duration="0:0:0.4"/>
 
-            <!-- Stufe 2: Logo / Titel text fliegt elegant von oben nach unten ein (Startet bei 0.2 Sek.) -->
+            <!-- Stufe 2: Logo / Titel text fliegt elegant von oben nach unten ein -->
             <DoubleAnimation 
                 Storyboard.TargetName="LogoTransform"
                 Storyboard.TargetProperty="Y"
@@ -138,6 +138,48 @@
                         <TextBlock x:Name="CornerUsernameText" Text="Username" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,10,0"/>
                         <TextBlock x:Name="CornerRoleText" Text="Rolle: USER" FontSize="11" Foreground="#38BDF8" VerticalAlignment="Center"/>
                     </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <!-- LIVE UPDATE BENACHRICHTIGUNGS-BANNER (Unten Rechts schwebend) -->
+            <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,0,10" Panel.ZIndex="30" Width="320">
+                
+                <!-- GAME UPDATE BANNER -->
+                <Border x:Name="GameUpdateNotificationBanner" Style="{StaticResource CardBorderStyle}" Background="#1E293B" BorderBrush="#38BDF8" BorderThickness="1" Margin="0,0,0,10" Visibility="Collapsed">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        
+                        <TextBlock Text="🎮 Neues Spiel-Update!" FontWeight="Bold" Foreground="#38BDF8" FontSize="14" Margin="0,0,0,4"/>
+                        <TextBlock x:Name="GameUpdateBannerText" Text="Eine neue Spielversion ist verfügbar." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" Grid.Row="1" Margin="0,0,0,10"/>
+                        
+                        <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Right">
+                            <Button Content="Später" Style="{StaticResource ActionButtonStyle}" Click="CloseGameBanner_Click" Margin="0,0,8,0" Background="{DynamicResource InputBackgroundBrush}"/>
+                            <Button Content="Jetzt Updaten" Style="{StaticResource ActionButtonStyle}" Click="BannerGameUpdate_Click" Background="#10B981" FontWeight="Bold"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- LAUNCHER UPDATE BANNER -->
+                <Border x:Name="LauncherUpdateNotificationBanner" Style="{StaticResource CardBorderStyle}" Background="#1E293B" BorderBrush="#38BDF8" BorderThickness="1" Visibility="Collapsed">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        
+                        <TextBlock Text="🚀 Neues Launcher-Update!" FontWeight="Bold" Foreground="#38BDF8" FontSize="14" Margin="0,0,0,4"/>
+                        <TextBlock x:Name="LauncherUpdateBannerText" Text="Eine neue Launcher-Version ist da." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" Grid.Row="1" Margin="0,0,0,10"/>
+                        
+                        <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Right">
+                            <Button Content="Später" Style="{StaticResource ActionButtonStyle}" Click="CloseLauncherBanner_Click" Margin="0,0,8,0" Background="{DynamicResource InputBackgroundBrush}"/>
+                            <Button Content="Updaten" Style="{StaticResource ActionButtonStyle}" Click="BannerLauncherUpdate_Click" Background="#38BDF8" Foreground="#0F172A" FontWeight="Bold"/>
+                        </StackPanel>
+                    </Grid>
                 </Border>
             </StackPanel>
 
@@ -345,7 +387,7 @@
             </Grid>
 
             <!-- Inline Account Settings Overlay Panel -->
-            <Border x:Name="AccountSettingsPanel" Background="#CC0F172A" Visibility="Collapsed" Panel.ZIndex="20">
+            <Border x:Name="AccountSettingsPanel" Background="#CC0F172A" Visibility="Collapsed" Panel.ZIndex="40">
                 <Border Background="{DynamicResource CardBackgroundBrush}" CornerRadius="8" Padding="20" Width="350" Height="300" VerticalAlignment="Center" HorizontalAlignment="Center">
                     <StackPanel>
                         <TextBlock Text="Account Einstellungen" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
