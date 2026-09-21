@@ -622,7 +622,6 @@ public partial class MainWindow : Window
 
             VersionText.Text = "Installiert: " + (string.IsNullOrWhiteSpace(localVersion) ? "Keine" : localVersion);
             
-            // GitHub Release Notes direkt in das Textfeld übernehmen
             ReleaseNotesText.Text = string.IsNullOrWhiteSpace(release.Body) 
                 ? "Keine Release Notes für diese Version eingetragen." 
                 : release.Body;
@@ -669,13 +668,16 @@ public partial class MainWindow : Window
 
     private async Task<GitHubRelease?> GetLatestGameReleaseAsync()
     {
-        string url = $"https://api.github.com/repos/{GitHubOwner}/{GitHubRepo}/releases?per_page=50";
+        string url = $"https://api.github.com/repos/{GitHubOwner}/{GitHubRepo}/releases?per_page=10";
         using HttpResponseMessage response = await Http.GetAsync(url);
         response.EnsureSuccessStatusCode();
         string json = await response.Content.ReadAsStringAsync();
         var releases = JsonSerializer.Deserialize<GitHubRelease[]>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-        return releases?.Where(r => !r.Draft && !r.Prerelease && r.Assets.Any(a => string.Equals(a.Name, "game.zip", StringComparison.OrdinalIgnoreCase)))
-                        .OrderByDescending(r => ParseVersion(r.TagName)).FirstOrDefault();
+        
+        // Nimmt das allerneueste Release basierend auf dem Veröffentlichungsdatum
+        return releases?.Where(r => !r.Draft)
+                        .OrderByDescending(r => r.PublishedAt)
+                        .FirstOrDefault();
     }
 
     private async Task DownloadFileWithClientAsync(HttpClient client, string? url, string destination)
@@ -1087,6 +1089,9 @@ public partial class MainWindow : Window
 
         [JsonPropertyName("prerelease")]
         public bool Prerelease { get; set; }
+
+        [JsonPropertyName("published_at")]
+        public DateTime PublishedAt { get; set; }
 
         [JsonPropertyName("assets")]
         public GitHubAsset[] Assets { get; set; } = Array.Empty<GitHubAsset>();
