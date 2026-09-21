@@ -1205,7 +1205,7 @@ public partial class MainWindow : Window
             AdminActionStatus.Text = result?.Message ?? string.Empty;
             if (result != null && result.Success) { AdminNewUsernameBox.Clear(); AdminNewTempPassBox.Clear(); await LoadAdminUserListAsync(); }
         }
-        catch { AdminActionStatus.Test = "Fehler."; }
+        catch { AdminActionStatus.Text = "Fehler."; }
     }
 
     private async void AdminToggleBeta_Click(object sender, RoutedEventArgs e)
