@@ -24,7 +24,6 @@ public partial class MainWindow : Window
         Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.0.0";
 
     private const string LauncherVersionUrl = "https://raw.githubusercontent.com/Jannik2401/RFGLauncher/main/version.json";
-    private const string NewsJsonUrl = "https://raw.githubusercontent.com/Jannik2401/RFGLauncher/main/news.json";
     private const string GitHubOwner = "Jannik2401";
     private const string GitHubRepo = "RFGLauncher";
     private const string GameExeName = "kirmes.exe";
@@ -96,16 +95,14 @@ public partial class MainWindow : Window
 
             LauncherVersionText.Text = $"Version: {CurrentLauncherVersion}";
 
-            // Dreistufige Start-Animation ausführen
             await PlayStartupSequenceAsync();
 
             await SilentCheckLauncherUpdateAsync();
             await CheckForUpdatesAsync();
-            await CheckLiveNewsAsync(); // Live-News beim Start prüfen
+            await CheckLiveNewsAsync(); 
             await TryAutoLoginAsync();
             UpdateAccountUIVisibility();
 
-            // Live-Update-Checker & News-Checker im 3-Sekunden-Takt im Hintergrund starten
             StartLiveUpdateChecker();
         }
         catch (Exception ex)
@@ -116,12 +113,10 @@ public partial class MainWindow : Window
 
     private async Task PlayStartupSequenceAsync()
     {
-        // Stufe 1: Hintergrund sanft einblenden
         DoubleAnimation fadeInBg = new DoubleAnimation(0.0, 1.0, TimeSpan.FromSeconds(0.4));
         StartupIntroGrid.BeginAnimation(UIElement.OpacityProperty, fadeInBg);
         await Task.Delay(400);
 
-        // Stufe 2: Fortschrittsanzeige mit flüssigem Übergang einblenden
         DoubleAnimation fadeInProgress = new DoubleAnimation(0.0, 1.0, TimeSpan.FromSeconds(0.5));
         DoubleAnimation slideProgress = new DoubleAnimation(20, 0, TimeSpan.FromSeconds(0.5)) { DecelerationRatio = 0.3 };
         
@@ -129,7 +124,6 @@ public partial class MainWindow : Window
         StartupProgressContainer.BeginAnimation(TranslateTransform.YProperty, slideProgress);
         StartupPercentageText.BeginAnimation(UIElement.OpacityProperty, fadeInProgress);
 
-        // Ladebalken langsamer und flüssiger laufen lassen (55ms pro 2%-Schritt)
         for (int i = 0; i <= 100; i += 2)
         {
             StartupProgressBar.Value = i;
@@ -137,13 +131,11 @@ public partial class MainWindow : Window
             await Task.Delay(55);
         }
 
-        // Stufe 3: Intro sanft ausblenden
         DoubleAnimation fadeOutIntro = new DoubleAnimation(1.0, 0.0, TimeSpan.FromSeconds(0.5));
         StartupIntroGrid.BeginAnimation(UIElement.OpacityProperty, fadeOutIntro);
         await Task.Delay(500);
         StartupIntroGrid.Visibility = Visibility.Collapsed;
 
-        // Haupt-Launcher und Logo flüssig einfliegen lassen
         DoubleAnimation fadeInCore = new DoubleAnimation(0.0, 1.0, TimeSpan.FromSeconds(0.6));
         LauncherCoreGrid.BeginAnimation(UIElement.OpacityProperty, fadeInCore);
 
@@ -182,9 +174,8 @@ public partial class MainWindow : Window
             }
 
             using HttpClient client = new();
-            string urlWithCacheBuster = $"{NewsJsonUrl}?t={DateTime.UtcNow.Ticks}";
-            
-            var response = await client.GetAsync(urlWithCacheBuster);
+            // Direkt vom Server abfragen, um jegliches GitHub-Caching zu umgehen!
+            var response = await client.GetAsync($"{AccountServerUrl}/api/news/all?t={DateTime.UtcNow.Ticks}");
             if (response.IsSuccessStatusCode)
             {
                 var newsList = await response.Content.ReadFromJsonAsync<List<NewsItem>>();
@@ -192,11 +183,8 @@ public partial class MainWindow : Window
                 {
                     var latestNews = newsList[0];
 
-                    // Immer die aktuelle Liste in der Sidebar anzeigen
                     NewsItemsControl.ItemsSource = newsList;
 
-                    // Wenn noch keine ID bekannt ist, initialisieren wir sie beim ersten Abruf, 
-                    // damit alte vorhandene News kein plötzliches Popup auslösen.
                     if (string.IsNullOrEmpty(_lastSeenNewsId))
                     {
                         _lastSeenNewsId = latestNews.Id ?? string.Empty;
@@ -204,7 +192,6 @@ public partial class MainWindow : Window
                         return;
                     }
 
-                    // Wenn eine neue News oben eingefügt wurde (Live-Trigger)
                     if (!string.IsNullOrWhiteSpace(latestNews.Id) && latestNews.Id != _lastSeenNewsId)
                     {
                         _lastSeenNewsId = latestNews.Id;
@@ -279,6 +266,7 @@ public partial class MainWindow : Window
                 AdminActionStatus.Text = "Ankündigung erfolgreich veröffentlicht!";
                 AdminNewsTitleBox.Clear();
                 AdminNewsContentBox.Clear();
+                await CheckLiveNewsAsync(); // Direkt im Anschluss aktualisieren
             }
             else
             {
@@ -531,35 +519,15 @@ public partial class MainWindow : Window
 
             try
             {
-                string apiUrl = $"https://api.github.com/repos/{GitHubOwner}/{GitHubRepo}/releases/latest";
-                var response = await client.GetAsync(apiUrl);
-                if (response.IsSuccessStatusCode)
+                string urlWithCacheBuster = $"{LauncherVersionUrl}?t={DateTime.UtcNow.Ticks}";
+                var info = await client.GetFromJsonAsync<LauncherVersionInfo>(urlWithCacheBuster);
+                if (info != null && !string.IsNullOrWhiteSpace(info.Version))
                 {
-                    var release = await response.Content.ReadFromJsonAsync<GitHubRelease>();
-                    if (release != null && !string.IsNullOrWhiteSpace(release.TagName))
-                    {
-                        onlineVersionStr = release.TagName;
-                        var asset = release.Assets.FirstOrDefault(a => string.Equals(a.Name, "RFGlauncher.exe", StringComparison.OrdinalIgnoreCase));
-                        downloadUrl = asset?.BrowserDownloadUrl ?? $"https://github.com/{GitHubOwner}/{GitHubRepo}/releases/download/latest/RFGlauncher.exe";
-                    }
+                    onlineVersionStr = info.Version;
+                    downloadUrl = info.DownloadUrl ?? string.Empty;
                 }
             }
             catch { }
-
-            if (string.IsNullOrWhiteSpace(onlineVersionStr))
-            {
-                try
-                {
-                    string urlWithCacheBuster = $"{LauncherVersionUrl}?t={DateTime.UtcNow.Ticks}";
-                    var info = await client.GetFromJsonAsync<LauncherVersionInfo>(urlWithCacheBuster);
-                    if (info != null && !string.IsNullOrWhiteSpace(info.Version))
-                    {
-                        onlineVersionStr = info.Version;
-                        downloadUrl = info.DownloadUrl ?? downloadUrl;
-                    }
-                }
-                catch { }
-            }
 
             if (!string.IsNullOrWhiteSpace(onlineVersionStr))
             {
@@ -602,30 +570,10 @@ public partial class MainWindow : Window
             string onlineVersionStr = string.Empty;
             string downloadUrl = $"https://github.com/{GitHubOwner}/{GitHubRepo}/releases/download/latest/RFGlauncher.exe";
 
-            try
-            {
-                string apiUrl = $"https://api.github.com/repos/{GitHubOwner}/{GitHubRepo}/releases/latest";
-                var response = await client.GetAsync(apiUrl);
-                if (response.IsSuccessStatusCode)
-                {
-                    var release = await response.Content.ReadFromJsonAsync<GitHubRelease>();
-                    if (release != null && !string.IsNullOrWhiteSpace(release.TagName))
-                    {
-                        onlineVersionStr = release.TagName;
-                        var asset = release.Assets.FirstOrDefault(a => string.Equals(a.Name, "RFGlauncher.exe", StringComparison.OrdinalIgnoreCase));
-                        if (asset?.BrowserDownloadUrl != null) downloadUrl = asset.BrowserDownloadUrl;
-                    }
-                }
-            }
-            catch { }
-
-            if (string.IsNullOrWhiteSpace(onlineVersionStr))
-            {
-                string urlWithCacheBuster = $"{LauncherVersionUrl}?t={DateTime.UtcNow.Ticks}";
-                var info = await client.GetFromJsonAsync<LauncherVersionInfo>(urlWithCacheBuster);
-                onlineVersionStr = info?.Version ?? string.Empty;
-                if (!string.IsNullOrWhiteSpace(info?.DownloadUrl)) downloadUrl = info.DownloadUrl;
-            }
+            string urlWithCacheBuster = $"{LauncherVersionUrl}?t={DateTime.UtcNow.Ticks}";
+            var info = await client.GetFromJsonAsync<LauncherVersionInfo>(urlWithCacheBuster);
+            onlineVersionStr = info?.Version ?? string.Empty;
+            if (!string.IsNullOrWhiteSpace(info?.DownloadUrl)) downloadUrl = info.DownloadUrl;
 
             if (!string.IsNullOrWhiteSpace(onlineVersionStr))
             {
@@ -969,18 +917,9 @@ public partial class MainWindow : Window
         {
             using HttpClient client = new();
             string downloadUrl = $"https://github.com/{GitHubOwner}/{GitHubRepo}/releases/download/latest/RFGlauncher.exe";
-            try
-            {
-                string apiUrl = $"https://api.github.com/repos/{GitHubOwner}/{GitHubRepo}/releases/latest";
-                var response = await client.GetAsync(apiUrl);
-                if (response.IsSuccessStatusCode)
-                {
-                    var release = await response.Content.ReadFromJsonAsync<GitHubRelease>();
-                    var asset = release?.Assets.FirstOrDefault(a => string.Equals(a.Name, "RFGlauncher.exe", StringComparison.OrdinalIgnoreCase));
-                    if (asset?.BrowserDownloadUrl != null) downloadUrl = asset.BrowserDownloadUrl;
-                }
-            }
-            catch { }
+            string urlWithCacheBuster = $"{LauncherVersionUrl}?t={DateTime.UtcNow.Ticks}";
+            var info = await client.GetFromJsonAsync<LauncherVersionInfo>(urlWithCacheBuster);
+            if (!string.IsNullOrWhiteSpace(info?.DownloadUrl)) downloadUrl = info.DownloadUrl;
             StartAutoUpdater(downloadUrl);
         }
         catch (Exception ex)
@@ -1442,7 +1381,7 @@ public partial class MainWindow : Window
         public string? Role { get; set; }
 
         [JsonPropertyName("hasBetaAccess")]
-        public bool HasBetaAccess { get: set; }
+        public bool HasBetaAccess { get; set; }
 
         [JsonPropertyName("mustChangePassword")]
         public bool MustChangePassword { get; set; }
