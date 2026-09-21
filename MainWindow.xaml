@@ -7,7 +7,7 @@
         WindowStartupLocation="CenterScreen">
 
     <Window.Resources>
-        <!-- Dynamische Farb-Brushes für Dark- und Light-Mode -->
+        <!-- Dynamische Farb-Brushes -->
         <SolidColorBrush x:Key="WindowBackgroundBrush" Color="#0F172A"/>
         <SolidColorBrush x:Key="CardBackgroundBrush" Color="#1E293B"/>
         <SolidColorBrush x:Key="TextPrimaryBrush" Color="#F8FAFC"/>
@@ -15,33 +15,43 @@
         <SolidColorBrush x:Key="SidebarBackgroundBrush" Color="#1E293B"/>
         <SolidColorBrush x:Key="InputBackgroundBrush" Color="#334155"/>
 
-        <!-- Start-Animationen -->
+        <!-- Zweistufige Start-Animation -->
         <Storyboard x:Key="LaunchAnimation">
-            <!-- 1. Hintergrund / Hauptfenster sanft einblenden (Fade-in) -->
+            <!-- Stufe 1: Hintergrund / Fenster fadet von 0 auf 1 ein (0 bis 0.4 Sek.) -->
             <DoubleAnimation 
                 Storyboard.TargetName="MainGrid"
                 Storyboard.TargetProperty="Opacity"
-                From="0.0" To="1.0" Duration="0:0:0.6"/>
+                From="0.0" To="1.0" Duration="0:0:0.4"/>
 
-            <!-- 2. Sidebar fliegt von links ein -->
+            <!-- Stufe 2: Logo / Titel text fliegt elegant von oben nach unten ein (Startet bei 0.2 Sek.) -->
+            <DoubleAnimation 
+                Storyboard.TargetName="LogoTransform"
+                Storyboard.TargetProperty="Y"
+                From="-30" To="0" BeginTime="0:0:0.2" Duration="0:0:0.5" DecelerationRatio="0.3"/>
+            <DoubleAnimation 
+                Storyboard.TargetName="LogoBlock"
+                Storyboard.TargetProperty="Opacity"
+                From="0.0" To="1.0" BeginTime="0:0:0.2" Duration="0:0:0.4"/>
+
+            <!-- Sidebar fliegt parallel dazu von links ein -->
             <DoubleAnimation 
                 Storyboard.TargetName="SidebarBorder"
                 Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
-                From="-50" To="0" Duration="0:0:0.5" DecelerationRatio="0.3"/>
+                From="-60" To="0" BeginTime="0:0:0.1" Duration="0:0:0.5" DecelerationRatio="0.3"/>
             <DoubleAnimation 
                 Storyboard.TargetName="SidebarBorder"
                 Storyboard.TargetProperty="Opacity"
-                From="0.0" To="1.0" Duration="0:0:0.4"/>
+                From="0.0" To="1.0" BeginTime="0:0:0.1" Duration="0:0:0.4"/>
 
-            <!-- 3. Hauptinhalt gleitet leicht von unten nach oben herein -->
+            <!-- Hauptinhalt gleitet leicht von unten herein -->
             <DoubleAnimation 
                 Storyboard.TargetName="ContentAreaGrid"
                 Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
-                From="30" To="0" Duration="0:0:0.5" DecelerationRatio="0.3"/>
+                From="25" To="0" BeginTime="0:0:0.2" Duration="0:0:0.5" DecelerationRatio="0.3"/>
             <DoubleAnimation 
                 Storyboard.TargetName="ContentAreaGrid"
                 Storyboard.TargetProperty="Opacity"
-                From="0.0" To="1.0" Duration="0:0:0.5"/>
+                From="0.0" To="1.0" BeginTime="0:0:0.2" Duration="0:0:0.4"/>
         </Storyboard>
 
         <!-- Standard Button Style -->
@@ -75,7 +85,7 @@
         </Style>
     </Window.Resources>
 
-    <!-- Haupt-Grid startet unsichtbar für die Animation -->
+    <!-- Haupt-Grid startet komplett unsichtbar -->
     <Grid x:Name="MainGrid" Opacity="0">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="220"/>
@@ -88,7 +98,12 @@
                 <TranslateTransform X="0" Y="0"/>
             </Border.RenderTransform>
             <StackPanel Margin="15">
-                <TextBlock Text="RFG Launcher" FontSize="18" FontWeight="Bold" Foreground="#38BDF8" Margin="0,0,0,20" HorizontalAlignment="Center"/>
+                <!-- ANIMIERTES LOGO / TITEL -->
+                <TextBlock x:Name="LogoBlock" Text="RFG Launcher" FontSize="18" FontWeight="Bold" Foreground="#38BDF8" Margin="0,0,0,20" HorizontalAlignment="Center" Opacity="0">
+                    <TextBlock.RenderTransform>
+                        <TranslateTransform x:Name="LogoTransform" X="0" Y="0"/>
+                    </TextBlock.RenderTransform>
+                </TextBlock>
                 
                 <Button Content="Home" Style="{StaticResource ActionButtonStyle}" Click="HomeButton_Click" Margin="0,5"/>
                 <Button Content="Updates" Style="{StaticResource ActionButtonStyle}" Click="UpdatesButton_Click" Margin="0,5"/>
@@ -114,7 +129,7 @@
                 <TranslateTransform X="0" Y="0"/>
             </Grid.RenderTransform>
             
-            <!-- Top Corner User Profile / Login trigger -->
+            <!-- Top Corner User Profile -->
             <StackPanel HorizontalAlignment="Right" VerticalAlignment="Top" Orientation="Horizontal" Panel.ZIndex="10">
                 <Button x:Name="AccountMenuButton" Content="Anmelden" Style="{StaticResource ActionButtonStyle}" Click="AccountButton_Click"/>
                 
@@ -172,7 +187,6 @@
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="350">
                     <TextBlock Text="Account Login" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,20"/>
                     
-                    <!-- Login Panel -->
                     <StackPanel x:Name="AccountLoginPanel">
                         <TextBlock Text="Benutzername" Margin="0,0,0,5"/>
                         <TextBox x:Name="AccountUsernameTextBox" Padding="6" Background="{DynamicResource InputBackgroundBrush}" Foreground="{DynamicResource TextPrimaryBrush}" BorderThickness="0" Margin="0,0,0,15"/>
@@ -188,7 +202,6 @@
                         <Button x:Name="AccountLoginButton" Content="Anmelden" Style="{StaticResource ActionButtonStyle}" Click="LoginAccountButton_Click"/>
                     </StackPanel>
 
-                    <!-- Profile Panel -->
                     <StackPanel x:Name="AccountProfilePanel" Visibility="Collapsed">
                         <TextBlock Text="Eingeloggt als:" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,5"/>
                         <TextBlock x:Name="ProfileUsernameDisplay" Text="Username" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
@@ -235,7 +248,6 @@
                         <Button Content="Benutzer erstellen" Style="{StaticResource ActionButtonStyle}" Click="AdminCreateUser_Click"/>
                     </StackPanel>
 
-                    <!-- Scrollbare Liste -->
                     <ScrollViewer Height="430" VerticalScrollBarVisibility="Auto">
                         <ItemsControl x:Name="UsersItemsControl">
                             <ItemsControl.ItemTemplate>
