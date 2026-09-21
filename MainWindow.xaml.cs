@@ -402,21 +402,10 @@ public partial class MainWindow : Window
             client.Timeout = TimeSpan.FromSeconds(5);
 
             string onlineVersionStr = string.Empty;
+            string downloadUrl = string.Empty;
 
-            // 1. Versuch über die version.json mit Cache-Buster
+            // 1. Primär direkt die GitHub-Release-API abfragen (erkennt v1.0.59 sofort ohne Cache-Verzögerung)
             try
-            {
-                string urlWithCacheBuster = $"{LauncherVersionUrl}?t={DateTime.UtcNow.Ticks}";
-                var info = await client.GetFromJsonAsync<LauncherVersionInfo>(urlWithCacheBuster);
-                if (info != null && !string.IsNullOrWhiteSpace(info.Version))
-                {
-                    onlineVersionStr = info.Version;
-                }
-            }
-            catch { }
-
-            // 2. Fallback direkt über die GitHub Release API, falls Raw-Git im Cache hängt
-            if (string.IsNullOrWhiteSpace(onlineVersionStr))
             {
                 string apiUrl = $"https://api.github.com/repos/{GitHubOwner}/{GitHubRepo}/releases/latest";
                 var response = await client.GetAsync(apiUrl);
@@ -426,8 +415,27 @@ public partial class MainWindow : Window
                     if (release != null && !string.IsNullOrWhiteSpace(release.TagName))
                     {
                         onlineVersionStr = release.TagName;
+                        var asset = release.Assets.FirstOrDefault(a => string.Equals(a.Name, "RFGlauncher.exe", StringComparison.OrdinalIgnoreCase));
+                        downloadUrl = asset?.BrowserDownloadUrl ?? $"https://github.com/{GitHubOwner}/{GitHubRepo}/releases/download/latest/RFGlauncher.exe";
                     }
                 }
+            }
+            catch { }
+
+            // 2. Fallback über die version.json, falls die API einmal klemmen sollte
+            if (string.IsNullOrWhiteSpace(onlineVersionStr))
+            {
+                try
+                {
+                    string urlWithCacheBuster = $"{LauncherVersionUrl}?t={DateTime.UtcNow.Ticks}";
+                    var info = await client.GetFromJsonAsync<LauncherVersionInfo>(urlWithCacheBuster);
+                    if (info != null && !string.IsNullOrWhiteSpace(info.Version))
+                    {
+                        onlineVersionStr = info.Version;
+                        downloadUrl = info.DownloadUrl ?? downloadUrl;
+                    }
+                }
+                catch { }
             }
 
             if (!string.IsNullOrWhiteSpace(onlineVersionStr))
@@ -465,15 +473,13 @@ public partial class MainWindow : Window
         {
             LauncherUpdateStatusText.Text = "Suche nach Updates...";
             using HttpClient client = new();
-            string urlWithCacheBuster = $"{LauncherVersionUrl}?t={DateTime.UtcNow.Ticks}";
             client.DefaultRequestHeaders.UserAgent.ParseAdd("RFG-BetaLauncher-Updater");
             client.Timeout = TimeSpan.FromSeconds(5);
-            var info = await client.GetFromJsonAsync<LauncherVersionInfo>(urlWithCacheBuster);
 
-            string onlineVersionStr = info?.Version ?? string.Empty;
-            string downloadUrl = info?.DownloadUrl ?? $"https://github.com/{GitHubOwner}/{GitHubRepo}/releases/download/latest/RFGlauncher.exe";
+            string onlineVersionStr = string.Empty;
+            string downloadUrl = $"https://github.com/{GitHubOwner}/{GitHubRepo}/releases/download/latest/RFGlauncher.exe";
 
-            if (string.IsNullOrWhiteSpace(onlineVersionStr))
+            try
             {
                 string apiUrl = $"https://api.github.com/repos/{GitHubOwner}/{GitHubRepo}/releases/latest";
                 var response = await client.GetAsync(apiUrl);
@@ -483,8 +489,19 @@ public partial class MainWindow : Window
                     if (release != null && !string.IsNullOrWhiteSpace(release.TagName))
                     {
                         onlineVersionStr = release.TagName;
+                        var asset = release.Assets.FirstOrDefault(a => string.Equals(a.Name, "RFGlauncher.exe", StringComparison.OrdinalIgnoreCase));
+                        if (asset?.BrowserDownloadUrl != null) downloadUrl = asset.BrowserDownloadUrl;
                     }
                 }
+            }
+            catch { }
+
+            if (string.IsNullOrWhiteSpace(onlineVersionStr))
+            {
+                string urlWithCacheBuster = $"{LauncherVersionUrl}?t={DateTime.UtcNow.Ticks}";
+                var info = await client.GetFromJsonAsync<LauncherVersionInfo>(urlWithCacheBuster);
+                onlineVersionStr = info?.Version ?? string.Empty;
+                if (!string.IsNullOrWhiteSpace(info?.DownloadUrl)) downloadUrl = info.DownloadUrl;
             }
 
             if (!string.IsNullOrWhiteSpace(onlineVersionStr))
@@ -827,9 +844,19 @@ public partial class MainWindow : Window
         try
         {
             using HttpClient client = new();
-            string urlWithCacheBuster = $"{LauncherVersionUrl}?t={DateTime.UtcNow.Ticks}";
-            var info = await client.GetFromJsonAsync<LauncherVersionInfo>(urlWithCacheBuster);
-            string downloadUrl = info?.DownloadUrl ?? $"https://github.com/{GitHubOwner}/{GitHubRepo}/releases/download/latest/RFGlauncher.exe";
+            string downloadUrl = $"https://github.com/{GitHubOwner}/{GitHubRepo}/releases/download/latest/RFGlauncher.exe";
+            try
+            {
+                string apiUrl = $"https://api.github.com/repos/{GitHubOwner}/{GitHubRepo}/releases/latest";
+                var response = await client.GetAsync(apiUrl);
+                if (response.IsSuccessStatusCode)
+                {
+                    var release = await response.Content.ReadFromJsonAsync<GitHubRelease>();
+                    var asset = release?.Assets.FirstOrDefault(a => string.Equals(a.Name, "RFGlauncher.exe", StringComparison.OrdinalIgnoreCase));
+                    if (asset?.BrowserDownloadUrl != null) downloadUrl = asset.BrowserDownloadUrl;
+                }
+            }
+            catch { }
             StartAutoUpdater(downloadUrl);
         }
         catch (Exception ex)
