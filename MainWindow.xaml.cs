@@ -192,12 +192,24 @@ public partial class MainWindow : Window
                 {
                     var latestNews = newsList[0];
 
-                    // Befüllt die News-Ansicht in der Sidebar
+                    // Immer die aktuelle Liste in der Sidebar anzeigen
                     NewsItemsControl.ItemsSource = newsList;
 
-                    // Popup nur anzeigen, wenn diese News-ID noch nicht lokal bestätigt wurde
+                    // Wenn noch keine ID bekannt ist, initialisieren wir sie beim ersten Abruf, 
+                    // damit alte vorhandene News kein plötzliches Popup auslösen.
+                    if (string.IsNullOrEmpty(_lastSeenNewsId))
+                    {
+                        _lastSeenNewsId = latestNews.Id ?? string.Empty;
+                        File.WriteAllText(LastNewsIdFile, _lastSeenNewsId);
+                        return;
+                    }
+
+                    // Wenn eine neue News oben eingefügt wurde (Live-Trigger)
                     if (!string.IsNullOrWhiteSpace(latestNews.Id) && latestNews.Id != _lastSeenNewsId)
                     {
+                        _lastSeenNewsId = latestNews.Id;
+                        File.WriteAllText(LastNewsIdFile, _lastSeenNewsId);
+
                         PopupNewsTitle.Text = latestNews.Title;
                         PopupNewsContent.Text = latestNews.Content;
                         PopupNewsTitle.Tag = latestNews.Id;
@@ -213,17 +225,6 @@ public partial class MainWindow : Window
     private void CloseLiveNewsPopup_Click(object sender, RoutedEventArgs e)
     {
         LiveNewsPopupOverlay.Visibility = Visibility.Collapsed;
-
-        // Speichert lokal auf dem PC ab, dass diese News gelesen wurde
-        if (PopupNewsTitle.Tag is string newsId && !string.IsNullOrEmpty(newsId))
-        {
-            try
-            {
-                File.WriteAllText(LastNewsIdFile, newsId);
-                _lastSeenNewsId = newsId;
-            }
-            catch { }
-        }
     }
 
     private void NewsButton_Click(object sender, RoutedEventArgs e)
@@ -232,7 +233,6 @@ public partial class MainWindow : Window
         _ = CheckLiveNewsAsync();
     }
 
-    // Steuerung der Admin-Tabs (Accounts / News erstellen)
     private void AdminTabAccounts_Click(object sender, RoutedEventArgs e)
     {
         AdminAccountsSection.Visibility = Visibility.Visible;
@@ -1442,7 +1442,7 @@ public partial class MainWindow : Window
         public string? Role { get; set; }
 
         [JsonPropertyName("hasBetaAccess")]
-        public bool HasBetaAccess { get; set; }
+        public bool HasBetaAccess { get: set; }
 
         [JsonPropertyName("mustChangePassword")]
         public bool MustChangePassword { get; set; }
