@@ -92,24 +92,55 @@ public partial class MainWindow : Window
 
             LauncherVersionText.Text = $"Version: {CurrentLauncherVersion}";
 
+            // Dreistufige Start-Animation starten
+            await PlayStartupSequenceAsync();
+
+            // Im Hintergrund asynchron Updates prüfen & Login wiederherstellen
             await SilentCheckLauncherUpdateAsync();
             await CheckForUpdatesAsync();
             await TryAutoLoginAsync();
             UpdateAccountUIVisibility();
 
-            // Start-Animation abspielen
-            if (Resources["LaunchAnimation"] is Storyboard sb)
-            {
-                sb.Begin(this);
-            }
-
-            // Live-Update-Checker im Hintergrund starten (prüft alle 3 Sekunden)
+            // Live-Update-Checker im 3-Sekunden-Takt starten
             StartLiveUpdateChecker();
         }
         catch (Exception ex)
         {
             StatusText.Text = "Launcher-Fehler: " + ex.Message;
         }
+    }
+
+    private async Task PlayStartupSequenceAsync()
+    {
+        // 1. Ladebalken-Container sanft einblenden
+        DoubleAnimation fadeInProgress = new DoubleAnimation(0.0, 1.0, TimeSpan.FromSeconds(0.4));
+        DoubleAnimation slideInProgress = new DoubleAnimation(15, 0, TimeSpan.FromSeconds(0.4)) { DecelerationRatio = 0.3 };
+        
+        StartupProgressContainer.BeginAnimation(UIElement.OpacityProperty, fadeInProgress);
+        StartupProgressContainer.BeginAnimation(TranslateTransform.YProperty, slideInProgress);
+        StartupPercentageText.BeginAnimation(UIElement.OpacityProperty, fadeInProgress);
+
+        // 2. Ladebalken flüssig von 0% auf 100% füllen lassen (lädt im Hintergrund die Basisdaten)
+        for (int i = 0; i <= 100; i += 4)
+        {
+            StartupProgressBar.Value = i;
+            StartupPercentageText.Text = $"{i}%";
+            await Task.Delay(25); // Steuert die Geschwindigkeit des Ladebalkens
+        }
+
+        // 3. Intro-Screen weich ausblenden
+        DoubleAnimation fadeOutIntro = new DoubleAnimation(1.0, 0.0, TimeSpan.FromSeconds(0.5));
+        StartupIntroGrid.BeginAnimation(UIElement.OpacityProperty, fadeOutIntro);
+        await Task.Delay(500);
+        StartupIntroGrid.Visibility = Visibility.Collapsed;
+
+        // 4. Haupt-Launcher einblenden & Logo flüssig einfliegen lassen
+        DoubleAnimation fadeInCore = new DoubleAnimation(0.0, 1.0, TimeSpan.FromSeconds(0.6));
+        LauncherCoreGrid.BeginAnimation(UIElement.OpacityProperty, fadeInCore);
+
+        // Logo fliegt von oben ein
+        DoubleAnimation logoSlide = new DoubleAnimation(-20, 0, TimeSpan.FromSeconds(0.6)) { DecelerationRatio = 0.3 };
+        LogoTransform.BeginAnimation(TranslateTransform.YProperty, logoSlide);
     }
 
     private void MainWindow_Closed(object? sender, EventArgs e)
@@ -126,7 +157,6 @@ public partial class MainWindow : Window
         LiveUpdateCheckTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
         LiveUpdateCheckTimer.Tick += async (s, e) =>
         {
-            // Prüft im 3-Sekunden-Takt live im Hintergrund auf neue Versionen
             await SilentCheckLauncherUpdateAsync();
             await CheckForUpdatesAsync();
         };
@@ -666,7 +696,6 @@ public partial class MainWindow : Window
             if (updateAvailable)
             {
                 StatusText.Text = $"Update verfügbar: {remoteVersion}";
-                
                 GameUpdateBannerText.Text = $"Version {remoteVersion} ist verfügbar.";
                 GameUpdateNotificationBanner.Visibility = Visibility.Visible;
             }
@@ -1157,7 +1186,7 @@ public partial class MainWindow : Window
         public string? Version { get; set; }
 
         [JsonPropertyName("downloadUrl")]
-        public string? DownloadUrl { get; set; }
+        public string? DownloadUrl {[] set; }
     }
 
     private sealed class SavedSession
@@ -1275,7 +1304,7 @@ public partial class MainWindow : Window
             }
         }
 
-        public float GetCpuUsage()
+        5. public float GetCpuUsage()
         {
             try
             {
