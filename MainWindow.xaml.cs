@@ -624,7 +624,6 @@ public partial class MainWindow : Window
             string remoteVersion = release.TagName?.Trim() ?? "unknown";
             string localVersion = GetLocalVersion();
 
-            // Prüfen ob das Release anhand des Veröffentlichungsdatums neuer ist
             bool isNewerRelease = false;
             if (File.Exists(UpdateDateFile))
             {
@@ -678,7 +677,6 @@ public partial class MainWindow : Window
             InstallZip(tempZip);
             File.Delete(tempZip);
 
-            // Version & exaktes Veröffentlichungsdatum abspeichern
             File.WriteAllText(VersionFile, release.TagName?.Trim() ?? "unknown");
             File.WriteAllText(UpdateDateFile, release.PublishedAt.ToString("O"));
 
