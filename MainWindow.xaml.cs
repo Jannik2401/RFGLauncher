@@ -96,7 +96,7 @@ public partial class MainWindow : Window
             await TryAutoLoginAsync();
             UpdateAccountUIVisibility();
 
-            // Start-Animation abspielen, sobald alles im Hintergrund geladen ist
+            // Start-Animation abspielen
             if (Resources["LaunchAnimation"] is Storyboard sb)
             {
                 sb.Begin(this);
@@ -360,11 +360,16 @@ public partial class MainWindow : Window
                 {
                     LauncherUpdateStatusText.Text = $"Neues Update: v{onlineVersion}";
                     LauncherUpdateStatusText.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#38BDF8")!;
+                    
+                    // Banner einblenden
+                    LauncherUpdateBannerText.Text = $"Version v{onlineVersion} steht bereit.";
+                    LauncherUpdateNotificationBanner.Visibility = Visibility.Visible;
                 }
                 else
                 {
                     LauncherUpdateStatusText.Text = "Launcher ist aktuell.";
                     LauncherUpdateStatusText.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#10B981")!;
+                    LauncherUpdateNotificationBanner.Visibility = Visibility.Collapsed;
                 }
             }
         }
@@ -642,7 +647,20 @@ public partial class MainWindow : Window
 
             bool updateAvailable = isNewerRelease || !string.Equals(remoteVersion, localVersion, StringComparison.OrdinalIgnoreCase) || !IsGameInstalled();
 
-            StatusText.Text = updateAvailable ? $"Update verfügbar: {remoteVersion}" : "Spiel ist aktuell.";
+            if (updateAvailable)
+            {
+                StatusText.Text = $"Update verfügbar: {remoteVersion}";
+                
+                // Spiel-Update Banner einblenden
+                GameUpdateBannerText.Text = $"Version {remoteVersion} ist verfügbar.";
+                GameUpdateNotificationBanner.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                StatusText.Text = "Spiel ist aktuell.";
+                GameUpdateNotificationBanner.Visibility = Visibility.Collapsed;
+            }
+
             VersionText.Text = "Installiert: " + (string.IsNullOrWhiteSpace(localVersion) ? "Keine" : localVersion);
             
             ReleaseNotesText.Text = string.IsNullOrWhiteSpace(release.Body) 
@@ -681,6 +699,7 @@ public partial class MainWindow : Window
             File.WriteAllText(UpdateDateFile, release.PublishedAt.ToString("O"));
 
             StatusText.Text = "Erfolgreich installiert!";
+            GameUpdateNotificationBanner.Visibility = Visibility.Collapsed;
             UpdateHomeInformation();
             await CheckForUpdatesAsync();
         }
@@ -690,6 +709,42 @@ public partial class MainWindow : Window
             MessageBox.Show("Fehler: " + ex.Message, "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
         }
         finally { UpdateButton.IsEnabled = true; }
+    }
+
+    // Event-Handler für die schwebenden Banner
+    private void CloseGameBanner_Click(object sender, RoutedEventArgs e)
+    {
+        GameUpdateNotificationBanner.Visibility = Visibility.Collapsed;
+    }
+
+    private async void BannerGameUpdate_Click(object sender, RoutedEventArgs e)
+    {
+        GameUpdateNotificationBanner.Visibility = Visibility.Collapsed;
+        ShowPage(UpdatesPage);
+        await DownloadAndInstallLatestAsync();
+    }
+
+    private void CloseLauncherBanner_Click(object sender, RoutedEventArgs e)
+    {
+        LauncherUpdateNotificationBanner.Visibility = Visibility.Collapsed;
+    }
+
+    private async void BannerLauncherUpdate_Click(object sender, RoutedEventArgs e)
+    {
+        LauncherUpdateNotificationBanner.Visibility = Visibility.Collapsed;
+        try
+        {
+            using HttpClient client = new();
+            var info = await client.GetFromJsonAsync<LauncherVersionInfo>(LauncherVersionUrl);
+            if (info != null && !string.IsNullOrWhiteSpace(info.DownloadUrl))
+            {
+                StartAutoUpdater(info.DownloadUrl);
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show("Fehler beim Starten des Updates: " + ex.Message, "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
     private async Task<GitHubRelease?> GetLatestGameReleaseAsync()
