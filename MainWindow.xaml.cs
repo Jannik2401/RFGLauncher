@@ -131,7 +131,6 @@ public partial class MainWindow : Window
             appResources["InputBackgroundBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#334155")!);
         }
 
-        // Erzwinge sofortige Aktualisierung der UI-Brushes
         this.InvalidateVisual();
     }
 
@@ -608,7 +607,12 @@ public partial class MainWindow : Window
             var release = await GetLatestGameReleaseAsync();
             UpdateButton.IsEnabled = true;
 
-            if (release == null) { StatusText.Text = "Kein Release gefunden."; return; }
+            if (release == null) 
+            { 
+                StatusText.Text = "Kein Release gefunden."; 
+                ReleaseNotesText.Text = "Keine Release Notes verfügbar.";
+                return; 
+            }
 
             string remoteVersion = NormalizeVersion(release.TagName);
             string localVersion = NormalizeVersion(GetLocalVersion());
@@ -617,9 +621,17 @@ public partial class MainWindow : Window
                 ? $"Update verfügbar: {remoteVersion}" : "Spiel ist aktuell.";
 
             VersionText.Text = "Installiert: " + (string.IsNullOrWhiteSpace(localVersion) ? "Keine" : localVersion);
-            ReleaseNotesText.Text = release.Body ?? "Keine Notes.";
+            
+            // GitHub Release Notes direkt in das Textfeld übernehmen
+            ReleaseNotesText.Text = string.IsNullOrWhiteSpace(release.Body) 
+                ? "Keine Release Notes für diese Version eingetragen." 
+                : release.Body;
         }
-        catch { StatusText.Text = "Fehler bei Update-Prüfung."; }
+        catch (Exception ex) 
+        { 
+            StatusText.Text = "Fehler bei Update-Prüfung.";
+            ReleaseNotesText.Text = "Fehler beim Laden der Release Notes: " + ex.Message;
+        }
     }
 
     private async Task DownloadAndInstallLatestAsync()
