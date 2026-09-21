@@ -51,10 +51,8 @@
         <!-- ================= STUFE 1 & 2: INTRO & LADEBILDSCHIRM ================= -->
         <Grid x:Name="StartupIntroGrid" Background="#0F172A" Panel.ZIndex="100" Opacity="1">
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="350">
-                <!-- Lade-Titel -->
                 <TextBlock Text="RFG Launcher startet..." FontSize="18" FontWeight="Bold" Foreground="#38BDF8" HorizontalAlignment="Center" Margin="0,0,0,15"/>
                 
-                <!-- Die animierte Fortschrittsanzeige -->
                 <Border x:Name="StartupProgressContainer" CornerRadius="8" Background="#1E293B" Height="14" Padding="2" Opacity="0">
                     <Border.RenderTransform>
                         <TranslateTransform Y="15"/>
