@@ -43,7 +43,7 @@ public partial class MainWindow : Window
     );
 
     private string VersionFile => Path.Combine(GameDirectory, "version.txt");
-    private string DigestFile => Path.Combine(GameDirectory, "game.digest");
+    private string UpdateDateFile => Path.Combine(GameDirectory, "last_update_date.txt");
     private string SessionFile => Path.Combine(GameDirectory, "session.json");
     private string SettingsFile => Path.Combine(GameDirectory, "settings.json");
 
@@ -624,9 +624,26 @@ public partial class MainWindow : Window
             string remoteVersion = release.TagName?.Trim() ?? "unknown";
             string localVersion = GetLocalVersion();
 
-            bool isUpToDate = string.Equals(remoteVersion, localVersion, StringComparison.OrdinalIgnoreCase) && IsGameInstalled();
+            // Prüfen ob das Release anhand des Veröffentlichungsdatums neuer ist
+            bool isNewerRelease = false;
+            if (File.Exists(UpdateDateFile))
+            {
+                if (DateTime.TryParse(File.ReadAllText(UpdateDateFile).Trim(), out DateTime lastInstallDate))
+                {
+                    if (release.PublishedAt > lastInstallDate)
+                    {
+                        isNewerRelease = true;
+                    }
+                }
+            }
+            else
+            {
+                isNewerRelease = true;
+            }
 
-            StatusText.Text = isUpToDate ? "Spiel ist aktuell." : $"Update verfügbar: {remoteVersion}";
+            bool updateAvailable = isNewerRelease || !string.Equals(remoteVersion, localVersion, StringComparison.OrdinalIgnoreCase) || !IsGameInstalled();
+
+            StatusText.Text = updateAvailable ? $"Update verfügbar: {remoteVersion}" : "Spiel ist aktuell.";
             VersionText.Text = "Installiert: " + (string.IsNullOrWhiteSpace(localVersion) ? "Keine" : localVersion);
             
             ReleaseNotesText.Text = string.IsNullOrWhiteSpace(release.Body) 
@@ -661,7 +678,10 @@ public partial class MainWindow : Window
             InstallZip(tempZip);
             File.Delete(tempZip);
 
+            // Version & exaktes Veröffentlichungsdatum abspeichern
             File.WriteAllText(VersionFile, release.TagName?.Trim() ?? "unknown");
+            File.WriteAllText(UpdateDateFile, release.PublishedAt.ToString("O"));
+
             StatusText.Text = "Erfolgreich installiert!";
             UpdateHomeInformation();
             await CheckForUpdatesAsync();
