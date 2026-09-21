@@ -43,7 +43,6 @@ public partial class MainWindow : Window
     );
 
     private string VersionFile => Path.Combine(GameDirectory, "version.txt");
-    private string UpdateDateFile => Path.Combine(GameDirectory, "last_update_date.txt");
     private string SessionFile => Path.Combine(GameDirectory, "session.json");
     private string SettingsFile => Path.Combine(GameDirectory, "settings.json");
     private string LastNewsIdFile => Path.Combine(GameDirectory, "last_news_id.txt");
@@ -73,7 +72,6 @@ public partial class MainWindow : Window
         InitializeComponent();
 
         Http.DefaultRequestHeaders.UserAgent.ParseAdd("RFG-BetaLauncher/1.0");
-        Http.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github+json");
         Http.Timeout = TimeSpan.FromMinutes(30);
 
         Loaded += MainWindow_Loaded;
@@ -180,7 +178,6 @@ public partial class MainWindow : Window
                 var newsList = await response.Content.ReadFromJsonAsync<List<NewsItem>>();
                 if (newsList != null)
                 {
-                    // UI-Thread Aktualisierung für das News-Panel erzwingen
                     Dispatcher.Invoke(() =>
                     {
                         NewsItemsControl.ItemsSource = null;
@@ -524,19 +521,12 @@ public partial class MainWindow : Window
             client.Timeout = TimeSpan.FromSeconds(5);
 
             string onlineVersionStr = string.Empty;
-            string downloadUrl = string.Empty;
-
-            try
+            string urlWithCacheBuster = $"{LauncherVersionUrl}?t={DateTime.UtcNow.Ticks}";
+            var info = await client.GetFromJsonAsync<LauncherVersionInfo>(urlWithCacheBuster);
+            if (info != null && !string.IsNullOrWhiteSpace(info.Version))
             {
-                string urlWithCacheBuster = $"{LauncherVersionUrl}?t={DateTime.UtcNow.Ticks}";
-                var info = await client.GetFromJsonAsync<LauncherVersionInfo>(urlWithCacheBuster);
-                if (info != null && !string.IsNullOrWhiteSpace(info.Version))
-                {
-                    onlineVersionStr = info.Version;
-                    downloadUrl = info.DownloadUrl ?? string.Empty;
-                }
+                onlineVersionStr = info.Version;
             }
-            catch { }
 
             if (!string.IsNullOrWhiteSpace(onlineVersionStr))
             {
@@ -547,7 +537,6 @@ public partial class MainWindow : Window
                 {
                     LauncherUpdateStatusText.Text = $"Neues Update: v{onlineVersion}";
                     LauncherUpdateStatusText.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#38BDF8")!;
-                    
                     LauncherUpdateBannerText.Text = $"Version v{onlineVersion} steht bereit.";
                     LauncherUpdateNotificationBanner.Visibility = Visibility.Visible;
                 }
@@ -576,12 +565,10 @@ public partial class MainWindow : Window
             client.DefaultRequestHeaders.UserAgent.ParseAdd("RFG-BetaLauncher-Updater");
             client.Timeout = TimeSpan.FromSeconds(5);
 
-            string onlineVersionStr = string.Empty;
             string downloadUrl = $"https://github.com/{GitHubOwner}/{GitHubRepo}/releases/download/latest/RFGlauncher.exe";
-
             string urlWithCacheBuster = $"{LauncherVersionUrl}?t={DateTime.UtcNow.Ticks}";
             var info = await client.GetFromJsonAsync<LauncherVersionInfo>(urlWithCacheBuster);
-            onlineVersionStr = info?.Version ?? string.Empty;
+            string onlineVersionStr = info?.Version ?? string.Empty;
             if (!string.IsNullOrWhiteSpace(info?.DownloadUrl)) downloadUrl = info.DownloadUrl;
 
             if (!string.IsNullOrWhiteSpace(onlineVersionStr))
@@ -591,23 +578,17 @@ public partial class MainWindow : Window
 
                 if (onlineVersion > installedVersion)
                 {
-                    LauncherUpdateStatusText.Text = $"Update gefunden: v{onlineVersion}";
-                    LauncherUpdateStatusText.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#38BDF8")!;
                     StartAutoUpdater(downloadUrl);
                 }
                 else
                 {
                     MessageBox.Show($"Du nutzt bereits die neueste Version (v{installedVersion}).", "Aktuell", MessageBoxButton.OK, MessageBoxImage.Information);
-                    LauncherUpdateStatusText.Text = "Launcher ist aktuell.";
-                    LauncherUpdateStatusText.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#10B981")!;
                 }
             }
         }
         catch (Exception ex)
         {
             MessageBox.Show("Fehler bei der Update-Prüfung: " + ex.Message, "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
-            LauncherUpdateStatusText.Text = "Launcher ist aktuell.";
-            LauncherUpdateStatusText.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#10B981")!;
         }
         finally
         {
@@ -809,36 +790,21 @@ public partial class MainWindow : Window
     {
         try
         {
-            var release = await GetLatestGameReleaseAsync();
+            using HttpClient client = new();
+            var versionInfo = await client.GetFromJsonAsync<GameVersionResponse>($"{AccountServerUrl}/api/game/version");
             UpdateButton.IsEnabled = true;
 
-            if (release == null) 
+            if (versionInfo == null || string.IsNullOrWhiteSpace(versionInfo.Version)) 
             { 
-                StatusText.Text = "Kein Release gefunden."; 
+                StatusText.Text = "Keine Version gefunden."; 
                 ReleaseNotesText.Text = "Keine Release Notes verfügbar.";
                 return; 
             }
 
-            string remoteVersion = release.TagName?.Trim() ?? "unknown";
+            string remoteVersion = versionInfo.Version.Trim();
             string localVersion = GetLocalVersion();
 
-            bool isNewerRelease = false;
-            if (File.Exists(UpdateDateFile))
-            {
-                if (DateTime.TryParse(File.ReadAllText(UpdateDateFile).Trim(), out DateTime lastInstallDate))
-                {
-                    if (release.PublishedAt > lastInstallDate)
-                    {
-                        isNewerRelease = true;
-                    }
-                }
-            }
-            else
-            {
-                isNewerRelease = true;
-            }
-
-            bool updateAvailable = isNewerRelease || !string.Equals(remoteVersion, localVersion, StringComparison.OrdinalIgnoreCase) || !IsGameInstalled();
+            bool updateAvailable = !string.Equals(remoteVersion, localVersion, StringComparison.OrdinalIgnoreCase) || !IsGameInstalled();
 
             if (updateAvailable)
             {
@@ -853,15 +819,12 @@ public partial class MainWindow : Window
             }
 
             VersionText.Text = "Installiert: " + (string.IsNullOrWhiteSpace(localVersion) ? "Keine" : localVersion);
-            
-            ReleaseNotesText.Text = string.IsNullOrWhiteSpace(release.Body) 
-                ? "Keine Release Notes für diese Version eingetragen." 
-                : release.Body;
+            ReleaseNotesText.Text = $"Aktuelle Server-Version: {remoteVersion}\nBereit zum Herunterladen (Rate-Limit geschützt).";
         }
         catch (Exception ex) 
         { 
             StatusText.Text = "Fehler bei Update-Prüfung.";
-            ReleaseNotesText.Text = "Fehler beim Laden der Release Notes: " + ex.Message;
+            ReleaseNotesText.Text = "Fehler beim Laden: " + ex.Message;
         }
     }
 
@@ -870,24 +833,25 @@ public partial class MainWindow : Window
         try
         {
             UpdateButton.IsEnabled = false;
-            var release = await GetLatestGameReleaseAsync();
-            if (release == null) return;
-
-            var asset = release.Assets.FirstOrDefault(a => string.Equals(a.Name, "game.zip", StringComparison.OrdinalIgnoreCase));
-            if (asset == null) { MessageBox.Show("game.zip fehlt im Release.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
+            using HttpClient client = new();
+            var versionInfo = await client.GetFromJsonAsync<GameVersionResponse>($"{AccountServerUrl}/api/game/version");
+            if (versionInfo == null || string.IsNullOrWhiteSpace(versionInfo.DownloadUrl)) 
+            {
+                MessageBox.Show("Kein Download-Link auf dem Server hinterlegt.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
 
             string tempZip = Path.Combine(Path.GetTempPath(), "RFG_game_update.zip");
             if (File.Exists(tempZip)) File.Delete(tempZip);
 
-            StatusText.Text = "Lade herunter...";
-            using (HttpClient client = new()) { await DownloadFileWithClientAsync(client, asset.BrowserDownloadUrl, tempZip); }
+            StatusText.Text = "Lade Spiel herunter...";
+            await DownloadFileWithClientAsync(client, versionInfo.DownloadUrl, tempZip);
 
             StatusText.Text = "Installiere...";
             InstallZip(tempZip);
             File.Delete(tempZip);
 
-            File.WriteAllText(VersionFile, release.TagName?.Trim() ?? "unknown");
-            File.WriteAllText(UpdateDateFile, release.PublishedAt.ToString("O"));
+            File.WriteAllText(VersionFile, versionInfo.Version?.Trim() ?? "1.0.0");
 
             StatusText.Text = "Erfolgreich installiert!";
             GameUpdateNotificationBanner.Visibility = Visibility.Collapsed;
@@ -935,19 +899,6 @@ public partial class MainWindow : Window
         {
             MessageBox.Show("Fehler beim Starten des Updates: " + ex.Message, "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
         }
-    }
-
-    private async Task<GitHubRelease?> GetLatestGameReleaseAsync()
-    {
-        string url = $"https://api.github.com/repos/{GitHubOwner}/{GitHubRepo}/releases?per_page=15";
-        using HttpResponseMessage response = await Http.GetAsync(url);
-        response.EnsureSuccessStatusCode();
-        string json = await response.Content.ReadAsStringAsync();
-        var releases = JsonSerializer.Deserialize<GitHubRelease[]>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-        
-        return releases?.Where(r => !r.Draft && r.Assets.Any(a => string.Equals(a.Name, "game.zip", StringComparison.OrdinalIgnoreCase)))
-                        .OrderByDescending(r => r.PublishedAt)
-                        .FirstOrDefault();
     }
 
     private async Task DownloadFileWithClientAsync(HttpClient client, string? url, string destination)
@@ -1336,6 +1287,18 @@ public partial class MainWindow : Window
         public string? DownloadUrl { get; set; }
     }
 
+    private sealed class GameVersionResponse
+    {
+        [JsonPropertyName("success")]
+        public bool Success { get; set; }
+
+        [JsonPropertyName("version")]
+        public string? Version { get; set; }
+
+        [JsonPropertyName("downloadUrl")]
+        public string? DownloadUrl { get; set; }
+    }
+
     private sealed class SavedSession
     {
         [JsonPropertyName("username")]
@@ -1343,36 +1306,6 @@ public partial class MainWindow : Window
 
         [JsonPropertyName("password")]
         public string? Password { get; set; }
-    }
-
-    private sealed class GitHubRelease
-    {
-        [JsonPropertyName("tag_name")]
-        public string? TagName { get; set; }
-
-        [JsonPropertyName("body")]
-        public string? Body { get; set; }
-
-        [JsonPropertyName("draft")]
-        public bool Draft { get; set; }
-
-        [JsonPropertyName("prerelease")]
-        public bool Prerelease { get; set; }
-
-        [JsonPropertyName("published_at")]
-        public DateTime PublishedAt { get; set; }
-
-        [JsonPropertyName("assets")]
-        public GitHubAsset[] Assets { get; set; } = Array.Empty<GitHubAsset>();
-    }
-
-    private sealed class GitHubAsset
-    {
-        [JsonPropertyName("name")]
-        public string? Name { get; set; }
-
-        [JsonPropertyName("browser_download_url")]
-        public string? BrowserDownloadUrl { get; set; }
     }
 
     private sealed class AccountResponse
@@ -1493,8 +1426,6 @@ public partial class MainWindow : Window
                 return 0f;
             }
         }
-
-        List<string>? _unusedCache; // Platzhalter für Konsistenz
 
         private static long GetTotalMemoryInBytes()
         {
