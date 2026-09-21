@@ -174,34 +174,43 @@ public partial class MainWindow : Window
             }
 
             using HttpClient client = new();
-            // Direkt vom Server abfragen, um jegliches GitHub-Caching zu umgehen!
             var response = await client.GetAsync($"{AccountServerUrl}/api/news/all?t={DateTime.UtcNow.Ticks}");
             if (response.IsSuccessStatusCode)
             {
                 var newsList = await response.Content.ReadFromJsonAsync<List<NewsItem>>();
-                if (newsList != null && newsList.Count > 0)
+                if (newsList != null)
                 {
-                    var latestNews = newsList[0];
-
-                    NewsItemsControl.ItemsSource = newsList;
-
-                    if (string.IsNullOrEmpty(_lastSeenNewsId))
+                    // UI-Thread Aktualisierung für das News-Panel erzwingen
+                    Dispatcher.Invoke(() =>
                     {
-                        _lastSeenNewsId = latestNews.Id ?? string.Empty;
-                        File.WriteAllText(LastNewsIdFile, _lastSeenNewsId);
-                        return;
-                    }
+                        NewsItemsControl.ItemsSource = null;
+                        NewsItemsControl.ItemsSource = newsList;
+                    });
 
-                    if (!string.IsNullOrWhiteSpace(latestNews.Id) && latestNews.Id != _lastSeenNewsId)
+                    if (newsList.Count > 0)
                     {
-                        _lastSeenNewsId = latestNews.Id;
-                        File.WriteAllText(LastNewsIdFile, _lastSeenNewsId);
+                        var latestNews = newsList[0];
 
-                        PopupNewsTitle.Text = latestNews.Title;
-                        PopupNewsContent.Text = latestNews.Content;
-                        PopupNewsTitle.Tag = latestNews.Id;
-                        
-                        LiveNewsPopupOverlay.Visibility = Visibility.Visible;
+                        if (string.IsNullOrEmpty(_lastSeenNewsId))
+                        {
+                            _lastSeenNewsId = latestNews.Id ?? string.Empty;
+                            File.WriteAllText(LastNewsIdFile, _lastSeenNewsId);
+                            return;
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(latestNews.Id) && latestNews.Id != _lastSeenNewsId)
+                        {
+                            _lastSeenNewsId = latestNews.Id;
+                            File.WriteAllText(LastNewsIdFile, _lastSeenNewsId);
+
+                            Dispatcher.Invoke(() =>
+                            {
+                                PopupNewsTitle.Text = latestNews.Title;
+                                PopupNewsContent.Text = latestNews.Content;
+                                PopupNewsTitle.Tag = latestNews.Id;
+                                LiveNewsPopupOverlay.Visibility = Visibility.Visible;
+                            });
+                        }
                     }
                 }
             }
@@ -266,7 +275,7 @@ public partial class MainWindow : Window
                 AdminActionStatus.Text = "Ankündigung erfolgreich veröffentlicht!";
                 AdminNewsTitleBox.Clear();
                 AdminNewsContentBox.Clear();
-                await CheckLiveNewsAsync(); // Direkt im Anschluss aktualisieren
+                await CheckLiveNewsAsync();
             }
             else
             {
@@ -1484,6 +1493,8 @@ public partial class MainWindow : Window
                 return 0f;
             }
         }
+
+        List<string>? _unusedCache; // Platzhalter für Konsistenz
 
         private static long GetTotalMemoryInBytes()
         {
