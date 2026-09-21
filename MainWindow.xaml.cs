@@ -67,7 +67,6 @@ public partial class MainWindow : Window
 
     private bool _isInitializingTheme = true;
 
-    // Speichert das aktuell gefundene GitHub-Release temporär für den Download
     private GitHubRelease? _latestFetchedRelease;
 
     public MainWindow()
@@ -789,7 +788,6 @@ public partial class MainWindow : Window
 
     private async void UpdateButton_Click(object sender, RoutedEventArgs e) => await DownloadAndInstallLatestAsync();
 
-    // Holt das absolut neueste Release direkt von GitHub (nutzt die offizielle /releases/latest URL, die extrem selten ins Rate-Limit läuft)
     private async Task<GitHubRelease?> GetLatestGameReleaseAsync()
     {
         try
@@ -857,7 +855,6 @@ public partial class MainWindow : Window
         {
             UpdateButton.IsEnabled = false;
 
-            // Falls das Release noch nicht geholt wurde, jetzt abrufen
             if (_latestFetchedRelease == null)
             {
                 _latestFetchedRelease = await GetLatestGameReleaseAsync();
@@ -1419,7 +1416,7 @@ public partial class MainWindow : Window
         public string BetaColor => HasBetaAccess ? "#10B981" : "#E11D48";
 
         public string LockText => IsLocked ? "Gesperrt: Ja" : "Gesperrt: Nein";
-       [cite: 1] public string LockColor => IsLocked ? "#E11D48" : "#10B981";
+        public string LockColor => IsLocked ? "#E11D48" : "#10B981";
     }
 
     public sealed class NewsItem
@@ -1439,7 +1436,7 @@ public partial class MainWindow : Window
 
     public sealed class PerformanceCounterWrapper
     {
-       [cite: 1] private readonly PerformanceCounter? cpuCounter;
+        private readonly PerformanceCounter? cpuCounter;
         private readonly Process currentProcess;
 
         public PerformanceCounterWrapper()
