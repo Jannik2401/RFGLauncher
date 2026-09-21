@@ -232,6 +232,65 @@ public partial class MainWindow : Window
         _ = CheckLiveNewsAsync();
     }
 
+    // Steuerung der Admin-Tabs (Accounts / News erstellen)
+    private void AdminTabAccounts_Click(object sender, RoutedEventArgs e)
+    {
+        AdminAccountsSection.Visibility = Visibility.Visible;
+        AdminNewsSection.Visibility = Visibility.Collapsed;
+        AdminTabAccountsBtn.Background = (SolidColorBrush)new BrushConverter().ConvertFrom("#38BDF8")!;
+        AdminTabAccountsBtn.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#0F172A")!;
+        AdminTabNewsBtn.Background = (SolidColorBrush)new BrushConverter().ConvertFrom("#334155")!;
+        AdminTabNewsBtn.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#F8FAFC")!;
+    }
+
+    private void AdminTabNews_Click(object sender, RoutedEventArgs e)
+    {
+        AdminNewsSection.Visibility = Visibility.Visible;
+        AdminAccountsSection.Visibility = Visibility.Collapsed;
+        AdminTabNewsBtn.Background = (SolidColorBrush)new BrushConverter().ConvertFrom("#38BDF8")!;
+        AdminTabNewsBtn.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#0F172A")!;
+        AdminTabAccountsBtn.Background = (SolidColorBrush)new BrushConverter().ConvertFrom("#334155")!;
+        AdminTabAccountsBtn.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom("#F8FAFC")!;
+    }
+
+    private async void PublishNewsButton_Click(object sender, RoutedEventArgs e)
+    {
+        string title = AdminNewsTitleBox.Text.Trim();
+        string content = AdminNewsContentBox.Text.Trim();
+
+        if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(content))
+        {
+            AdminActionStatus.Text = "Bitte Titel und Inhalt für die News eingeben.";
+            return;
+        }
+
+        try
+        {
+            AdminActionStatus.Text = "Veröffentliche Ankündigung...";
+            using HttpClient client = new();
+            if (!string.IsNullOrEmpty(LoggedInUsername)) client.DefaultRequestHeaders.Add("X-Admin-User", LoggedInUsername);
+            if (!string.IsNullOrEmpty(LoggedInPassword)) client.DefaultRequestHeaders.Add("X-Admin-Pass", LoggedInPassword);
+
+            var response = await client.PostAsJsonAsync($"{AccountServerUrl}/api/admin/publish-news", new { title, content });
+            var result = await response.Content.ReadFromJsonAsync<AccountResponse>();
+
+            if (result != null && result.Success)
+            {
+                AdminActionStatus.Text = "Ankündigung erfolgreich veröffentlicht!";
+                AdminNewsTitleBox.Clear();
+                AdminNewsContentBox.Clear();
+            }
+            else
+            {
+                AdminActionStatus.Text = result?.Message ?? "Fehler beim Veröffentlichen.";
+            }
+        }
+        catch (Exception ex)
+        {
+            AdminActionStatus.Text = "Fehler: " + ex.Message;
+        }
+    }
+
     private void ApplyTheme(string theme)
     {
         var appResources = Application.Current.Resources;
