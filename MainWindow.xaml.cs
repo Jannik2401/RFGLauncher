@@ -795,14 +795,21 @@ public partial class MainWindow : Window
             string url = $"https://api.github.com/repos/{GitHubOwner}/{GitHubRepo}/releases";
             using HttpClient client = new();
             client.DefaultRequestHeaders.UserAgent.ParseAdd("RFG-GameDownloader/1.0");
+            
             using HttpResponseMessage response = await client.GetAsync(url);
-            if (!response.IsSuccessStatusCode) return null;
             string json = await response.Content.ReadAsStringAsync();
+            
+            // Debug-Ausgabe in Visual Studio (Ausgabe-Fenster)
+            Debug.WriteLine($"GitHub Status: {response.StatusCode}, Inhalt: {json}");
+
+            if (!response.IsSuccessStatusCode) return null;
+            
             var releases = JsonSerializer.Deserialize<List<GitHubRelease>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             return releases?.FirstOrDefault();
         }
-        catch
+        catch (Exception ex)
         {
+            Debug.WriteLine("GitHub Fehler: " + ex.Message);
             return null;
         }
     }
