@@ -799,13 +799,14 @@ public partial class MainWindow : Window
             using HttpResponseMessage response = await client.GetAsync(url);
             string json = await response.Content.ReadAsStringAsync();
             
-            // Debug-Ausgabe in Visual Studio (Ausgabe-Fenster)
-            Debug.WriteLine($"GitHub Status: {response.StatusCode}, Inhalt: {json}");
-
             if (!response.IsSuccessStatusCode) return null;
             
             var releases = JsonSerializer.Deserialize<List<GitHubRelease>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-            return releases?.FirstOrDefault();
+            
+            // Nimmt das neueste Release basierend auf dem Erstellungs-/Veröffentlichungsdatum (unterstützt auch Pre-releases)
+            return releases?
+                .OrderByDescending(r => r.PublishedAt)
+                .FirstOrDefault();
         }
         catch (Exception ex)
         {
