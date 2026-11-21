@@ -378,9 +378,9 @@
                         <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,20">
                             <StackPanel>
                                 <TextBlock Text="3D Modellierer" FontSize="13" Foreground="#38BDF8" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,2"/>
-                                <TextBlock Text="Greentiger, Blaubeerteilchen, Felixgame21, TimmyPro" FontSize="15" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,15" TextAlignment="Center" TextWrapping="Wrap"/>
+                                <TextBlock Text="Greentiger, Blaubeerteilchen, Felixgame21" FontSize="15" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,15" TextAlignment="Center" TextWrapping="Wrap"/>
                                 <TextBlock Text="Scripter" FontSize="13" Foreground="#38BDF8" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,2"/>
-                                <TextBlock Text="Crazyfunworld_Jannik, Blaubeerteilchen, Dennys" FontSize="15" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,15" TextAlignment="Center" TextWrapping="Wrap"/>
+                                <TextBlock Text="Crazyfunworld_Jannik, Blaubeerteilchen" FontSize="15" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,15" TextAlignment="Center" TextWrapping="Wrap"/>
                                 <TextBlock Text="Beta Tester" FontSize="13" Foreground="#38BDF8" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,2"/>
                                 <TextBlock Text="Elias_2x9" FontSize="15" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap"/>
                             </StackPanel>
